@@ -1,0 +1,537 @@
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+  body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; margin: 2cm; color: #1a1a1a; }
+  h1 { font-size: 18pt; color: #1F3864; border-bottom: 3px solid #1F3864; padding-bottom: 6px; }
+  h2 { font-size: 14pt; color: #2E5090; border-bottom: 1px solid #2E5090; margin-top: 24px; }
+  h3 { font-size: 12pt; color: #1F3864; margin-top: 16px; }
+  h4 { font-size: 11pt; color: #2E5090; }
+  .header-box { background: #EBF2FF; border-left: 4px solid #2E5090; padding: 12px 16px; margin: 16px 0; }
+  .header-box table { width: 100%; border-collapse: collapse; }
+  .header-box td { padding: 3px 8px; font-size: 10.5pt; }
+  .header-box td:first-child { font-weight: bold; color: #1F3864; width: 160px; }
+  blockquote { background: #F5F7FA; border-left: 4px solid #2E5090; margin: 8px 0; padding: 8px 12px; font-style: italic; }
+  .green-box { background: #F0FFF4; border-left: 4px solid #2E7D32; padding: 8px 12px; margin: 8px 0; }
+  .blue-box { background: #EBF5FB; border-left: 4px solid #1565C0; padding: 8px 12px; margin: 8px 0; }
+  .gold-box { background: #FFFDE7; border-left: 4px solid #F9A825; padding: 8px 12px; margin: 8px 0; }
+  .red-box { background: #FFF3F3; border-left: 4px solid #C62828; padding: 8px 12px; margin: 8px 0; }
+  .score-table { width: 100%; border-collapse: collapse; margin: 8px 0; }
+  .score-table th { background: #1F3864; color: white; padding: 6px 10px; text-align: left; font-size: 10pt; }
+  .score-table td { border: 1px solid #ddd; padding: 6px 10px; font-size: 10pt; }
+  .score-table tr:nth-child(even) { background: #F5F7FA; }
+  .section-badge { display: inline-block; background: #2E5090; color: white; padding: 3px 10px; border-radius: 3px; font-size: 10pt; font-weight: bold; margin-bottom: 8px; }
+  .warmup-badge { background: #388E3C; }
+  .fund-badge { background: #1565C0; }
+  .app-badge { background: #6A1B9A; }
+  .deep-badge { background: #BF360C; }
+  .code-badge { background: #37474F; }
+  .score-badge { background: #1F3864; }
+  ul li { margin: 3px 0; }
+  .page-break { page-break-before: always; }
+  .footer { margin-top: 32px; border-top: 1px solid #ccc; padding-top: 8px; font-size: 9pt; color: #666; }
+</style>
+</head>
+<body>
+
+<h1>🎯 Challenge Técnico — SRE Semi Senior</h1>
+
+<div class="header-box">
+  <table>
+    <tr><td>Puesto</td><td>SRE Semi Senior</td></tr>
+    <tr><td>Nivel</td><td>Semi Senior (Mid → Senior)</td></tr>
+    <tr><td>Stack</td><td>AWS · Terraform · Docker · Kubernetes · Bash/Python · CI/CD · Grafana · Prometheus · OpenTelemetry</td></tr>
+    <tr><td>Duración estimada</td><td>60 minutos</td></tr>
+    <tr><td>Enfoque</td><td>Mixto (Teórico + Situacional + Código)</td></tr>
+    <tr><td>Fecha de generación</td><td>2026-03-24</td></tr>
+    <tr><td>Umbral de aprobación</td><td>≥ 14 / 21 puntos (67%)</td></tr>
+  </table>
+</div>
+
+<hr/>
+
+<!-- ═══════════════════════════════════════════ -->
+<h2>1. WARM-UP <span style="font-weight:normal; font-size:11pt; color:#666">(5 min — No evaluable, romper el hielo)</span></h2>
+<!-- ═══════════════════════════════════════════ -->
+
+<p><strong>W1.</strong> Cuéntame de un proyecto donde tuviste que mejorar la disponibilidad o confiabilidad de un servicio. ¿Cuál era la situación inicial y qué lograste?</p>
+
+<p><strong>W2.</strong> ¿Qué herramientas usas día a día en tu rol actual (o anterior) y con cuál te sientes más cómodo/a? ¿Por qué?</p>
+
+<p><em>Objetivo: Entender el contexto real del candidato y calibrar la profundidad de las preguntas siguientes.</em></p>
+
+<hr/>
+
+<!-- ═══════════════════════════════════════════ -->
+<h2>2. FUNDAMENTOS <span style="font-weight:normal; font-size:11pt; color:#666">(15 min)</span></h2>
+<!-- ═══════════════════════════════════════════ -->
+
+<h3>📦 Tecnología: Terraform / IaC</h3>
+
+<h4>Pregunta 1: Gestión del Terraform State en equipo</h4>
+
+<blockquote>
+  <strong>Enunciado:</strong> ¿Qué es el Terraform state y por qué es crítico en entornos donde trabajan múltiples personas? ¿Cómo lo gestionarías en un proyecto real con varios ingenieros haciendo cambios simultáneos?
+</blockquote>
+
+<div class="green-box">
+  <strong>🟢 Respuesta mínima esperada (must-mention):</strong>
+  <ul>
+    <li>El state almacena el mapa entre recursos declarados y los reales en el proveedor cloud</li>
+    <li>Sin remote state, cada persona tiene su propio estado local → conflictos y drift</li>
+    <li>Remote backend (S3 + DynamoDB para locking en AWS) para state compartido y consistente</li>
+    <li>State locking previene modificaciones concurrentes que corrompan el estado</li>
+  </ul>
+</div>
+
+<div class="blue-box">
+  <strong>📖 Explicación de referencia:</strong><br/>
+  El Terraform state es el archivo <code>terraform.tfstate</code> que mapea los recursos del código HCL con los recursos reales creados en el proveedor. En equipos, el backend remoto (ej: S3 con versionado + DynamoDB para el lock) es el estándar: garantiza que todos trabajan contra el mismo estado y que dos personas no ejecuten <code>apply</code> simultáneamente. Adicionalmente, el state puede contener datos sensibles (passwords, keys), por lo que debe cifrarse en reposo (S3 SSE-KMS) y nunca commitearse a Git.
+</div>
+
+<div class="gold-box">
+  <strong>⭐ Respuesta destacada (diferenciador senior):</strong><br/>
+  Menciona workspaces para múltiples ambientes, Terragrunt para DRY configuration, módulos versionados en Terraform Registry privado, y estrategias de state splitting (un state por servicio, no un monolito). Habla de <code>terraform state mv</code> para refactoring sin destruir recursos.
+</div>
+
+<div class="red-box">
+  <strong>🔴 Red flags:</strong>
+  <ul>
+    <li>"Guardo el .tfstate en Git" → vulnerabilidad de seguridad + conflictos de merge</li>
+    <li>No sabe qué es el state locking o su importancia</li>
+    <li>Confunde state con plan o con el archivo de variables</li>
+  </ul>
+</div>
+
+<table class="score-table">
+  <tr><th>Nivel</th><th>Criterio</th></tr>
+  <tr><td>0 — No apto</td><td>No sabe qué es el state o dice que va en Git</td></tr>
+  <tr><td>1 — Básico</td><td>Sabe que existe remote state pero no menciona locking</td></tr>
+  <tr><td>2 — Competente</td><td>Explica S3 + DynamoDB, locking y seguridad del state</td></tr>
+  <tr><td>3 — Destacado</td><td>Agrega workspaces/Terragrunt, state splitting, estrategias de migración</td></tr>
+</table>
+
+<br/>
+<h3>☁️ Tecnología: AWS / Cloud</h3>
+
+<h4>Pregunta 2: Arquitectura de red VPC para múltiples ambientes</h4>
+
+<blockquote>
+  <strong>Enunciado:</strong> Necesitas diseñar la arquitectura de red base en AWS para una aplicación web con tres ambientes: dev, staging y producción. ¿Cómo estructurarías las VPCs, subnets y seguridad? ¿Qué consideraciones de costos y seguridad tomarías?
+</blockquote>
+
+<div class="green-box">
+  <strong>🟢 Respuesta mínima esperada (must-mention):</strong>
+  <ul>
+    <li>VPC por ambiente (aislamiento) con CIDR ranges no solapados</li>
+    <li>Subnets públicas (ALB, NAT Gateway) vs privadas (aplicaciones, bases de datos)</li>
+    <li>Security Groups como firewall stateful por recurso</li>
+    <li>NAT Gateway para salida a Internet desde subnets privadas</li>
+  </ul>
+</div>
+
+<div class="blue-box">
+  <strong>📖 Explicación de referencia:</strong><br/>
+  El patrón estándar es una VPC por ambiente con subnets en al menos 2 AZs para alta disponibilidad. Las subnets públicas alojan el Application Load Balancer y el NAT Gateway; las privadas alojan las instancias/containers y las bases de datos (en una subnet aún más restrictiva sin ruta a Internet). Los Security Groups son el principal control de acceso a nivel de recurso (stateful), complementados con NACLs a nivel de subnet para reglas de denegación explícita.
+</div>
+
+<div class="gold-box">
+  <strong>⭐ Respuesta destacada:</strong><br/>
+  Menciona planificación de CIDR para VPC peering futuro, Transit Gateway para conectividad hub-and-spoke, AWS PrivateLink para acceso a servicios sin salir a Internet, y VPC Flow Logs para auditoría. Distingue NACLs (stateless) vs SGs (stateful) y cuándo usar cada uno.
+</div>
+
+<div class="red-box">
+  <strong>🔴 Red flags:</strong>
+  <ul>
+    <li>Pone las bases de datos en subnets públicas</li>
+    <li>No distingue subnets públicas de privadas (confunde con "tiene internet o no")</li>
+    <li>Un solo NAT Gateway para todas las AZs sin mencionar el tradeoff de disponibilidad</li>
+  </ul>
+</div>
+
+<table class="score-table">
+  <tr><th>Nivel</th><th>Criterio</th></tr>
+  <tr><td>0 — No apto</td><td>No sabe diseñar una VPC básica o pone todo en subnets públicas</td></tr>
+  <tr><td>1 — Básico</td><td>Conoce VPC y subnets pero no menciona multi-AZ ni separación por capas</td></tr>
+  <tr><td>2 — Competente</td><td>Diseño correcto con subnets públicas/privadas, SGs, NAT Gateway multi-AZ</td></tr>
+  <tr><td>3 — Destacado</td><td>Agrega Transit Gateway, PrivateLink, VPC Flow Logs, CIDR planning estratégico</td></tr>
+</table>
+
+<br/>
+<h3>📊 Tecnología: Observabilidad</h3>
+
+<h4>Pregunta 3: Los tres pilares — métricas, logs y trazas</h4>
+
+<blockquote>
+  <strong>Enunciado:</strong> Explícame la diferencia entre métricas, logs y trazas distribuidas. Si llegaras a un equipo sin observabilidad implementada, ¿por dónde empezarías y por qué?
+</blockquote>
+
+<div class="green-box">
+  <strong>🟢 Respuesta mínima esperada (must-mention):</strong>
+  <ul>
+    <li><strong>Métricas</strong>: datos numéricos agregados en el tiempo (CPU, latencia p99, error rate) — bajo costo, alta retención</li>
+    <li><strong>Logs</strong>: eventos discretos con contexto completo — alto costo, útil para debug</li>
+    <li><strong>Trazas</strong>: seguimiento de una request a través de múltiples servicios — esencial en microservicios</li>
+    <li>Comenzaría por métricas (RED: Rate, Errors, Duration) + alertas básicas</li>
+  </ul>
+</div>
+
+<div class="blue-box">
+  <strong>📖 Explicación de referencia:</strong><br/>
+  Los tres pilares son complementarios. Las métricas (Prometheus + Grafana) responden "¿qué está mal?"; los logs responden "¿por qué?"; las trazas (Jaeger, Zipkin, OpenTelemetry) responden "¿dónde en el sistema?". La prioridad de implementación suele ser: métricas con alertas → logs estructurados centralizados → trazas distribuidas. OpenTelemetry como estándar vendor-neutral permite instrumentar una vez y exportar a múltiples backends.
+</div>
+
+<div class="gold-box">
+  <strong>⭐ Respuesta destacada:</strong><br/>
+  Define SLIs (indicadores) basados en métricas RED/USE, habla de correlación entre los tres pilares mediante Trace ID en logs, menciona cardinality cost en Prometheus, y diferencia entre monitoreo reactivo (alertas) y observabilidad proactiva (exploración). Conoce OpenTelemetry Collector como pipeline centralizado.
+</div>
+
+<div class="red-box">
+  <strong>🔴 Red flags:</strong>
+  <ul>
+    <li>Confunde logs con métricas ("un log es una métrica")</li>
+    <li>No conoce la diferencia entre monitoring y observability</li>
+    <li>Propone implementar trazas antes que métricas básicas</li>
+  </ul>
+</div>
+
+<table class="score-table">
+  <tr><th>Nivel</th><th>Criterio</th></tr>
+  <tr><td>0 — No apto</td><td>No diferencia los tres pilares o los confunde</td></tr>
+  <tr><td>1 — Básico</td><td>Los diferencia pero no sabe cómo priorizarlos ni implementarlos</td></tr>
+  <tr><td>2 — Competente</td><td>Explica los tres pilares, prioriza correctamente y menciona herramientas (Prometheus, Grafana, OTel)</td></tr>
+  <tr><td>3 — Destacado</td><td>RED/USE methods, SLI definition, OTel Collector, correlación entre señales, cardinality</td></tr>
+</table>
+
+<hr/>
+
+<!-- ═══════════════════════════════════════════ -->
+<h2>3. APLICACIÓN PRÁCTICA <span style="font-weight:normal; font-size:11pt; color:#666">(15 min)</span></h2>
+<!-- ═══════════════════════════════════════════ -->
+
+<h4>Pregunta 4: Diagnóstico de pipeline CI/CD intermitente</h4>
+
+<blockquote>
+  <strong>Enunciado:</strong> Tu pipeline de CI/CD falla intermitentemente en el step de deploy a producción. Los logs del pipeline muestran un timeout en la conexión al cluster de Kubernetes. El problema ocurre 1 de cada 5 deploys aproximadamente. ¿Cómo abordas el diagnóstico sistemáticamente?
+</blockquote>
+
+<div class="green-box">
+  <strong>🟢 Respuesta mínima esperada (must-mention):</strong>
+  <ul>
+    <li>Revisar <code>kubectl describe pod</code> y <code>kubectl get events</code> en el namespace</li>
+    <li>Verificar resource limits del cluster (nodes con presión de CPU/memoria)</li>
+    <li>Revisar logs del componente de deploy (Helm, ArgoCD, kubectl rollout)</li>
+    <li>Correlacionar timestamp del fallo con métricas del cluster en Grafana</li>
+  </ul>
+</div>
+
+<div class="blue-box">
+  <strong>📖 Explicación de referencia:</strong><br/>
+  El enfoque sistemático va de infraestructura → red → aplicación. Primero verificar health del cluster (nodos en NotReady, pod evictions, node pressure). Luego revisar la conectividad entre el runner de CI y el API server de Kubernetes (timeouts de red, Network Policies, SGs). Después revisar el proceso de deploy en sí: si usa <code>kubectl rollout</code>, revisar si los pods del nuevo deploy quedan en Pending o CrashLoopBackOff. Los errores intermitentes suelen indicar resource constraints o race conditions en el scheduling.
+</div>
+
+<div class="gold-box">
+  <strong>⭐ Respuesta destacada:</strong><br/>
+  Propone agregar métricas de duración del deploy al pipeline, revisar el Kubernetes Scheduler y el HPA durante el deploy, verificar PodDisruptionBudgets, y revisar si el timeout es en el API server de K8s (posible overload) vs en la aplicación (liveness/readiness probes mal configurados). Menciona runbooks para estandarizar la respuesta.
+</div>
+
+<div class="red-box">
+  <strong>🔴 Red flags:</strong>
+  <ul>
+    <li>Propone reintentar el deploy sin diagnosticar la causa raíz</li>
+    <li>No conoce los comandos básicos de kubectl para diagnóstico</li>
+    <li>No distingue entre un problema de red y un problema de la aplicación</li>
+  </ul>
+</div>
+
+<table class="score-table">
+  <tr><th>Nivel</th><th>Criterio</th></tr>
+  <tr><td>0 — No apto</td><td>Solo sabe hacer retry o no tiene metodología</td></tr>
+  <tr><td>1 — Básico</td><td>Revisa logs del pipeline pero no profundiza en Kubernetes</td></tr>
+  <tr><td>2 — Competente</td><td>Diagnóstico sistemático infra → red → app, usa kubectl correctamente</td></tr>
+  <tr><td>3 — Destacado</td><td>Correlación con métricas, PDB, HPA, runbooks, propone instrumentación preventiva</td></tr>
+</table>
+
+<br/>
+<h4>Pregunta 5: Estructura de repositorio Terraform multi-ambiente</h4>
+
+<blockquote>
+  <strong>Enunciado:</strong> ¿Cómo estructurarías un repositorio de Terraform para gestionar infraestructura en tres ambientes (dev/staging/prod) y dos regiones AWS? El equipo tiene 5 ingenieros. Dibuja o describe la estructura de carpetas y explica las decisiones de diseño.
+</blockquote>
+
+<div class="green-box">
+  <strong>🟢 Respuesta mínima esperada (must-mention):</strong>
+  <ul>
+    <li>Módulos reutilizables separados de las configuraciones de ambiente</li>
+    <li>Un directorio por ambiente (o workspace) con sus propias variables</li>
+    <li>Remote state independiente por ambiente para evitar blast radius</li>
+    <li>Principio DRY: no duplicar código de infraestructura entre ambientes</li>
+  </ul>
+</div>
+
+<div class="blue-box">
+  <strong>📖 Explicación de referencia:</strong><br/>
+  La estructura recomendada separa módulos reutilizables (ej: <code>modules/vpc</code>, <code>modules/eks</code>) de las configuraciones por ambiente (<code>environments/dev</code>, <code>environments/staging</code>, <code>environments/prod</code>). Cada ambiente tiene su propio backend remoto y puede tener variables distintas. Los módulos se versionan con tags de Git o en un registry privado para garantizar que prod use una versión estable mientras dev experimenta.
+</div>
+
+<div class="gold-box">
+  <strong>⭐ Respuesta destacada:</strong><br/>
+  Menciona Terragrunt para eliminar repetición de backend config, módulos versionados en Terraform Registry privado, atlantis o Spacelift para GitOps de infraestructura, y política de promotion (dev → staging → prod debe ser código, no clicks manuales). Habla de cómo manejar secrets (AWS Secrets Manager, no en variables.tf).
+</div>
+
+<div class="red-box">
+  <strong>🔴 Red flags:</strong>
+  <ul>
+    <li>Un único estado para todos los ambientes (cambio en dev puede romper prod)</li>
+    <li>Copiar/pegar código entre ambientes (sin módulos)</li>
+    <li>Hardcodear secrets en archivos .tfvars</li>
+  </ul>
+</div>
+
+<table class="score-table">
+  <tr><th>Nivel</th><th>Criterio</th></tr>
+  <tr><td>0 — No apto</td><td>No conoce módulos o propone un solo state para todo</td></tr>
+  <tr><td>1 — Básico</td><td>Usa directorios por ambiente pero sin módulos ni DRY</td></tr>
+  <tr><td>2 — Competente</td><td>Módulos reutilizables, state separado por ambiente, variables por entorno</td></tr>
+  <tr><td>3 — Destacado</td><td>Terragrunt, módulos versionados, GitOps de IaC, secrets management</td></tr>
+</table>
+
+<hr/>
+
+<!-- ═══════════════════════════════════════════ -->
+<h2>4. PROFUNDIDAD TÉCNICA <span style="font-weight:normal; font-size:11pt; color:#666">(15 min)</span></h2>
+<!-- ═══════════════════════════════════════════ -->
+
+<h4>Pregunta 6: SLOs, Error Budget y confiabilidad</h4>
+
+<blockquote>
+  <strong>Enunciado:</strong> ¿Qué es un SLO y cómo lo definirías para una API REST crítica de un sistema de pagos? ¿Qué métricas usarías como SLIs? ¿Qué harías si el equipo de desarrollo consume el error budget a mitad del mes?
+</blockquote>
+
+<div class="green-box">
+  <strong>🟢 Respuesta mínima esperada (must-mention):</strong>
+  <ul>
+    <li><strong>SLI</strong>: métrica medible (ej: latencia p99 &lt; 500ms, error rate &lt; 0.1%)</li>
+    <li><strong>SLO</strong>: objetivo sobre el SLI en una ventana de tiempo (ej: 99.9% de requests exitosas en 30 días)</li>
+    <li><strong>Error budget</strong>: el margen de error permitido (0.1% = ~43 min/mes de downtime permitido)</li>
+    <li>Si se agota el budget: freeze de features no críticas, foco en estabilidad</li>
+  </ul>
+</div>
+
+<div class="blue-box">
+  <strong>📖 Explicación de referencia:</strong><br/>
+  Los SLIs para una API de pagos serían: availability (% requests HTTP 2xx/3xx), latencia (p50, p95, p99), y error rate. El SLO podría ser: "99.95% de las transacciones completan en menos de 1s durante ventanas de 30 días". El error budget es la cantidad de fallo permitida: 0.05% de requests pueden fallar. La política de error budget define qué pasa cuando se agota: bloqueo de deploys, postmortem obligatorio, refactor de reliability antes del próximo feature.
+</div>
+
+<div class="gold-box">
+  <strong>⭐ Respuesta destacada:</strong><br/>
+  Menciona burn rate alerts (alertar cuando el error budget se consume 2x más rápido de lo normal), la diferencia entre SLO de disponibilidad y de latencia, ventanas rolling vs calendar, cómo instrumentar los SLIs con Prometheus y calcular el error budget burn en Grafana. Habla de que un SLO muy alto (99.999%) puede ser contraproducente al eliminar todo el margen de cambio.
+</div>
+
+<div class="red-box">
+  <strong>🔴 Red flags:</strong>
+  <ul>
+    <li>Confunde SLA (contrato con cliente) con SLO (objetivo interno) con SLI (métrica)</li>
+    <li>No sabe qué hacer cuando se consume el error budget ("simplemente monitorear más")</li>
+    <li>Define SLO de 100% ("queremos cero errores") sin entender el costo</li>
+  </ul>
+</div>
+
+<table class="score-table">
+  <tr><th>Nivel</th><th>Criterio</th></tr>
+  <tr><td>0 — No apto</td><td>No conoce los términos o los confunde sistemáticamente</td></tr>
+  <tr><td>1 — Básico</td><td>Define SLO pero no sabe calcular error budget ni qué hacer al agotarlo</td></tr>
+  <tr><td>2 — Competente</td><td>Define SLI/SLO/error budget correctamente y propone política ante agotamiento</td></tr>
+  <tr><td>3 — Destacado</td><td>Burn rate alerts, ventanas rolling, tradeoff 99.9 vs 99.99, instrumentación en Prometheus</td></tr>
+</table>
+
+<br/>
+<h4>Pregunta 7: Kubernetes — CrashLoopBackOff</h4>
+
+<blockquote>
+  <strong>Enunciado:</strong> Un pod en producción está en estado <code>CrashLoopBackOff</code>. El equipo de desarrollo dice que "en local funciona bien". Describe el proceso sistemático que seguirías para diagnosticar y resolver el problema.
+</blockquote>
+
+<div class="green-box">
+  <strong>🟢 Respuesta mínima esperada (must-mention):</strong>
+  <ul>
+    <li><code>kubectl logs &lt;pod&gt; --previous</code> para ver logs del container que crasheó</li>
+    <li><code>kubectl describe pod &lt;pod&gt;</code> para ver events, exit code, restart count</li>
+    <li>Revisar resource limits (OOMKilled → exit code 137)</li>
+    <li>Verificar variables de entorno / secrets montados correctamente</li>
+  </ul>
+</div>
+
+<div class="blue-box">
+  <strong>📖 Explicación de referencia:</strong><br/>
+  El proceso sistemático: (1) <code>kubectl describe pod</code> para ver el exit code y los events — el exit code es el primer indicador (137 = OOMKilled, 1 = error de aplicación, 125-128 = error de Docker). (2) <code>kubectl logs --previous</code> para los logs del último intento. (3) Verificar que ConfigMaps y Secrets estén montados. (4) Revisar si las liveness/readiness probes están correctamente configuradas (un probe demasiado agresivo mata pods que están iniciando). (5) Comparar imagen de prod vs local (variables de entorno, recursos disponibles).
+</div>
+
+<div class="gold-box">
+  <strong>⭐ Respuesta destacada:</strong><br/>
+  Menciona <code>kubectl debug</code> para inspeccionar un pod sin aplicación, diferenciar entre crash por la aplicación vs crash por el runtime de containers, revisar init containers si existen, node pressure que evita el scheduling correcto, y cómo usar <code>kubectl exec</code> si el pod llega a Running aunque sea brevemente. Habla de reproducir el problema localmente con las mismas variables de entorno de producción.
+</div>
+
+<div class="red-box">
+  <strong>🔴 Red flags:</strong>
+  <ul>
+    <li>Solo sabe hacer <code>kubectl restart</code> sin diagnosticar</li>
+    <li>No conoce <code>kubectl logs --previous</code> (solo intenta ver logs del pod crasheado en vivo)</li>
+    <li>No sabe qué significa el exit code o no lo revisa</li>
+  </ul>
+</div>
+
+<table class="score-table">
+  <tr><th>Nivel</th><th>Criterio</th></tr>
+  <tr><td>0 — No apto</td><td>Solo sabe hacer restart, no tiene metodología de diagnóstico</td></tr>
+  <tr><td>1 — Básico</td><td>Revisa logs pero no sabe interpretar exit codes ni describe</td></tr>
+  <tr><td>2 — Competente</td><td>Proceso sistemático completo: logs --previous, describe, exit codes, resources, env</td></tr>
+  <tr><td>3 — Destacado</td><td>kubectl debug, init containers, liveness probes mal configuradas, node pressure</td></tr>
+</table>
+
+<hr/>
+
+<!-- ═══════════════════════════════════════════ -->
+<h2>5. CODE CHALLENGE <span style="font-weight:normal; font-size:11pt; color:#666">(15 min — Bash o Python)</span></h2>
+<!-- ═══════════════════════════════════════════ -->
+
+<blockquote>
+  <strong>Enunciado:</strong> Escribe un script en <strong>Bash o Python</strong> que realice un health check de un conjunto de endpoints HTTP y genere un reporte de estado. El script debe:
+  <ul>
+    <li>Recibir una lista de URLs (puede ser un archivo o argumentos)</li>
+    <li>Hacer GET a cada URL con timeout de 5 segundos</li>
+    <li>Registrar: URL, HTTP status code, tiempo de respuesta en ms, y estado (OK / DEGRADED / DOWN)</li>
+    <li>Criterios: OK = 2xx en &lt; 1000ms · DEGRADED = 2xx en ≥ 1000ms · DOWN = error o no 2xx</li>
+    <li>Imprimir un resumen al final con total OK / DEGRADED / DOWN</li>
+  </ul>
+</blockquote>
+
+<div class="blue-box">
+  <strong>📖 Solución de referencia (Python):</strong>
+  <pre style="font-family: Consolas, monospace; font-size: 9.5pt; background: #F5F5F5; padding: 12px; border-radius: 4px;">
+import sys
+import time
+import requests
+from dataclasses import dataclass
+from typing import List
+
+TIMEOUT = 5
+DEGRADED_THRESHOLD_MS = 1000
+
+@dataclass
+class CheckResult:
+    url: str
+    status_code: int | None
+    response_ms: float
+    state: str  # OK | DEGRADED | DOWN
+
+def check_endpoint(url: str) -> CheckResult:
+    start = time.monotonic()
+    try:
+        response = requests.get(url, timeout=TIMEOUT)
+        elapsed_ms = (time.monotonic() - start) * 1000
+        if 200 <= response.status_code < 300:
+            state = "OK" if elapsed_ms < DEGRADED_THRESHOLD_MS else "DEGRADED"
+        else:
+            state = "DOWN"
+        return CheckResult(url, response.status_code, elapsed_ms, state)
+    except requests.RequestException:
+        elapsed_ms = (time.monotonic() - start) * 1000
+        return CheckResult(url, None, elapsed_ms, "DOWN")
+
+def main(urls: List[str]) -> None:
+    results = [check_endpoint(url) for url in urls]
+    print(f"\n{'URL':<50} {'STATUS':>6} {'TIME(ms)':>10} {'STATE':<10}")
+    print("-" * 80)
+    for r in results:
+        code = str(r.status_code) if r.status_code else "N/A"
+        print(f"{r.url:<50} {code:>6} {r.response_ms:>10.1f} {r.state:<10}")
+    print("\n── RESUMEN ──")
+    for state in ("OK", "DEGRADED", "DOWN"):
+        count = sum(1 for r in results if r.state == state)
+        print(f"  {state}: {count}")
+
+if __name__ == "__main__":
+    urls = sys.argv[1:] or ["https://httpbin.org/get", "https://httpbin.org/status/503"]
+    main(urls)
+  </pre>
+</div>
+
+<div class="green-box">
+  <strong>🟢 Criterios de evaluación del código:</strong>
+  <ul>
+    <li>Manejo de errores (timeout, connection refused, DNS fail) sin que el script explote</li>
+    <li>Medición correcta del tiempo de respuesta</li>
+    <li>Lógica de clasificación OK/DEGRADED/DOWN correcta</li>
+    <li>Output legible y resumen al final</li>
+    <li>Código limpio, funciones pequeñas, sin magic numbers</li>
+  </ul>
+</div>
+
+<div class="red-box">
+  <strong>🔴 Red flags en el código:</strong>
+  <ul>
+    <li>No maneja excepciones (script se rompe con el primer DOWN)</li>
+    <li>No mide el tiempo o lo mide incorrectamente (después de manejar la excepción)</li>
+    <li>Hardcodea URLs en el código en vez de recibirlas como parámetro</li>
+    <li>No hay resumen final</li>
+  </ul>
+</div>
+
+<table class="score-table">
+  <tr><th>Nivel</th><th>Criterio</th></tr>
+  <tr><td>0 — No apto</td><td>No puede escribir el script o produce código que no ejecuta</td></tr>
+  <tr><td>1 — Básico</td><td>Hace el GET pero no maneja errores ni mide tiempo correctamente</td></tr>
+  <tr><td>2 — Competente</td><td>Funciona correctamente, maneja errores, output legible, clasificación correcta</td></tr>
+  <tr><td>3 — Destacado</td><td>Código limpio, tipado, configurable, puede extenderse fácilmente (ej: agregar alertas)</td></tr>
+</table>
+
+<hr/>
+
+<!-- ═══════════════════════════════════════════ -->
+<h2>6. SCORECARD RESUMEN</h2>
+<!-- ═══════════════════════════════════════════ -->
+
+<table class="score-table">
+  <tr>
+    <th>#</th>
+    <th>Pregunta</th>
+    <th>Tecnología</th>
+    <th>Puntaje máx.</th>
+    <th>Puntaje obtenido</th>
+  </tr>
+  <tr><td>1</td><td>Terraform State en equipo</td><td>Terraform / IaC</td><td>3</td><td>___</td></tr>
+  <tr><td>2</td><td>Arquitectura VPC multi-ambiente</td><td>AWS / Redes</td><td>3</td><td>___</td></tr>
+  <tr><td>3</td><td>Tres pilares de observabilidad</td><td>Observabilidad</td><td>3</td><td>___</td></tr>
+  <tr><td>4</td><td>Diagnóstico pipeline CI/CD</td><td>CI/CD + K8s</td><td>3</td><td>___</td></tr>
+  <tr><td>5</td><td>Estructura repo Terraform multi-env</td><td>Terraform / IaC</td><td>3</td><td>___</td></tr>
+  <tr><td>6</td><td>SLOs y Error Budget</td><td>SRE Principles</td><td>3</td><td>___</td></tr>
+  <tr><td>7</td><td>CrashLoopBackOff K8s</td><td>Kubernetes</td><td>3</td><td>___</td></tr>
+  <tr><td>Code</td><td>Health Check script</td><td>Bash / Python</td><td>3</td><td>___</td></tr>
+  <tr style="font-weight:bold; background:#EBF2FF;"><td colspan="3">TOTAL</td><td>21</td><td>___</td></tr>
+</table>
+
+<br/>
+<table class="score-table">
+  <tr><th>Rango</th><th>Interpretación</th><th>Recomendación</th></tr>
+  <tr><td>18 – 21 pts (86–100%)</td><td style="color:#1B5E20;font-weight:bold">Excepcional</td><td>Proceder a oferta. Perfil Senior real.</td></tr>
+  <tr><td>14 – 17 pts (67–81%)</td><td style="color:#1565C0;font-weight:bold">Aprobado</td><td>Continuar proceso. Cumple el perfil Semi Senior.</td></tr>
+  <tr><td>10 – 13 pts (48–62%)</td><td style="color:#E65100;font-weight:bold">Condicional</td><td>Segunda entrevista con foco en gaps. Evaluar potencial.</td></tr>
+  <tr><td>0 – 9 pts (&lt;48%)</td><td style="color:#B71C1C;font-weight:bold">No apto</td><td>Perfil no alcanza el nivel requerido para el cargo.</td></tr>
+</table>
+
+<br/>
+<h3>📝 Notas del entrevistador</h3>
+<table style="width:100%; border-collapse:collapse;">
+  <tr><td style="border:1px solid #ddd; padding:8px; height:50px; vertical-align:top; font-size:10pt; color:#999;">Observaciones generales:</td></tr>
+  <tr><td style="border:1px solid #ddd; padding:8px; height:50px; vertical-align:top; font-size:10pt; color:#999;">Fortalezas identificadas:</td></tr>
+  <tr><td style="border:1px solid #ddd; padding:8px; height:50px; vertical-align:top; font-size:10pt; color:#999;">Áreas de mejora / gaps:</td></tr>
+  <tr><td style="border:1px solid #ddd; padding:8px; height:40px; vertical-align:top; font-size:10pt; color:#999;">Decisión final:</td></tr>
+</table>
+
+<div class="footer">
+  Generado por TechChallenge Architect · ACL Chile · 2026-03-24 · Confidencial — Solo para uso interno en procesos de selección.
+</div>
+
+</body>
+</html>
