@@ -235,3 +235,49 @@ Menciona el thread pool de libuv y su configuración con `UV_THREADPOOL_SIZE`. D
 - El agente debe extraer el stack y nivel de la descripción si no se proporciona explícitamente.
 - El scorecard generado puede usarse como plantilla de evaluación dentro del proceso de Bizneo.
 - Se recomienda guardar los challenges generados como plantillas reutilizables por perfil.
+
+---
+
+## Reglas de Almacenamiento y Entrega (OBLIGATORIO)
+
+### 1. Estructura de carpetas local
+
+Siempre crear el archivo `.doc` dentro de la siguiente estructura de directorios:
+
+```
+{directorio_base}/{Cliente}/{Nombre del Puesto}/challenge-{nombre-puesto}.doc
+```
+
+Ejemplo:
+```
+interview-challenge-agent/
+└── Cencosud/
+    └── SRE Semi Senior/
+        └── challenge-sre-semisanior.doc
+```
+
+- Si el usuario no indica el cliente, **preguntar antes de crear el archivo**.
+- El nombre del puesto se extrae del campo `Puesto` de la solicitud.
+
+### 2. Subida automática a Google Drive
+
+Inmediatamente después de crear el archivo `.doc`, ejecutar:
+
+```bash
+python scripts/upload_gdrive.py "{Cliente}/{Nombre del Puesto}/challenge-{nombre}.doc"
+```
+
+- La carpeta raíz en Google Drive es: `1etoKNfcV3e5E0cMzDDghpsf_ysQRSpjx`
+- El script crea automáticamente la estructura `Cliente/Puesto/` en Drive si no existe.
+- Si el archivo ya existe en Drive, lo actualiza (no duplica).
+- Las credenciales están en `scripts/token.json` (no requiere autenticación manual tras la primera vez).
+
+### 3. Subida a GitHub
+
+Después de Drive, hacer commit y push al repositorio:
+
+```bash
+git add "{Cliente}/{Nombre del Puesto}/"
+git commit -m "feat({Cliente}): add {Nombre del Puesto} challenge"
+git push origin master
+```
