@@ -1,0 +1,100 @@
+Cliente
+Cencosud
+Nombre de la jefatura
+Juan Marambio
+Nivel de complejidad de la jefatura
+Alta
+Complejidad de la jefatura
+complejo
+
+KAM / Responsable
+Miguel Flores
+Seniority del cargo
+Semi Senior
+Código interno - tipo de proceso
+0000C
+Reclutador responsable del proceso
+Gonzalo Ponce
+Funciones y/o responsabilidades
+1. Funciones Principales (Responsabilidades)
+El objetivo central es garantizar el cumplimiento de normativas (como GDPR, LGPD o leyes locales) y mitigar riesgos legales y reputacionales.
+
+
+
+Evaluaciones de Impacto (DPIA): Realizar análisis de riesgos sobre la privacidad antes de lanzar nuevos productos o servicios (ej. una nueva App de compras).
+
+
+
+Gestión del Ciclo de Vida del Dato: Definir cómo se recolectan, almacenan, usan y eliminan los datos personales, asegurando que no se guarden más tiempo del necesario.
+
+
+
+Atención de Derechos ARCO: Gestionar las solicitudes de los clientes para Acceder, Rectificar, Cancelar u Oponerse al tratamiento de sus datos.
+
+
+
+Privacy by Design: Colaborar con los equipos de desarrollo para que la privacidad sea una característica desde la fase de diseño y no un "parche" posterior.
+
+
+
+Respuesta a Brechas de Datos: Liderar el protocolo de notificación a las autoridades y a los usuarios afectados en caso de una filtración de datos personales.
+
+
+
+Auditoría de Terceros: Revisar contratos y medidas de seguridad de proveedores que procesan datos de la empresa (Cloud, agencias de marketing, logística).
+
+
+
+2. Hard Skills (Competencias Técnicas)
+
+Para ser efectivo, este perfil debe dominar tres áreas: Leyes, Tecnología y Procesos.
+
+
+
+A. Marco Normativo y Legal
+
+Dominio de Legislación: Conocimiento profundo de la ley local de protección de datos y estándares internacionales (GDPR es el referente global).
+
+
+
+Redacción Jurídica: Capacidad para redactar avisos de privacidad, términos y condiciones, y cláusulas contractuales de transferencia de datos.
+
+
+
+B. Conocimientos Técnicos de IT
+
+Seguridad de la Información: Entender conceptos como cifrado (en tránsito y en reposo), anonimización y seudonimización de datos.
+
+
+
+Arquitectura de Datos: Comprender cómo fluyen los datos en bases de datos (SQL/NoSQL) y entornos de Big Data.
+
+
+
+Gobernanza de Datos: Manejo de herramientas para el descubrimiento y clasificación de datos sensibles.
+
+
+
+C. Gestión de Riesgos
+
+Metodologías de Riesgo: Aplicación de marcos como ISO/IEC 27701 (extensión de privacidad de ISO 27001) o el marco de privacidad del NIST.
+
+Requisitos excluyentes
+2. Data Privacy Officer / Specialist
+Encargado de asegurar que el flujo de datos cumpla con las normativas legales y éticas.
+
+
+
+Hard Skills: Dominio de GDPR, LGPD o leyes locales; implementación de Privacy by Design; técnicas de anonimización y cifrado de datos.
+
+
+
+Experiencia: Trayectoria en cumplimiento normativo y auditoría de datos.
+
+
+
+Certificaciones clave: CIPP (Certified Information Privacy Professional).
+
+
+
+Misión: Garantizar que el uso de Advanced Analytics no vulnere la privacidad de los usuarios.

@@ -1,0 +1,477 @@
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+  body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; margin: 2cm; color: #1a1a1a; }
+  h1 { font-size: 18pt; color: #1F3864; border-bottom: 3px solid #1F3864; padding-bottom: 6px; }
+  h2 { font-size: 14pt; color: #2E5090; border-bottom: 1px solid #2E5090; margin-top: 24px; }
+  h3 { font-size: 12pt; color: #1F3864; margin-top: 16px; }
+  h4 { font-size: 11pt; color: #2E5090; }
+  .header-box { background: #EBF2FF; border-left: 4px solid #2E5090; padding: 12px 16px; margin: 16px 0; }
+  .header-box table { width: 100%; border-collapse: collapse; }
+  .header-box td { padding: 3px 8px; font-size: 10.5pt; }
+  .header-box td:first-child { font-weight: bold; color: #1F3864; width: 200px; }
+  blockquote { background: #F5F7FA; border-left: 4px solid #2E5090; margin: 8px 0; padding: 8px 12px; font-style: italic; }
+  .green-box { background: #F0FFF4; border-left: 4px solid #2E7D32; padding: 8px 12px; margin: 8px 0; }
+  .blue-box { background: #EBF5FB; border-left: 4px solid #1565C0; padding: 8px 12px; margin: 8px 0; }
+  .gold-box { background: #FFFDE7; border-left: 4px solid #F9A825; padding: 8px 12px; margin: 8px 0; }
+  .red-box { background: #FFF3F3; border-left: 4px solid #C62828; padding: 8px 12px; margin: 8px 0; }
+  .score-table { width: 100%; border-collapse: collapse; margin: 8px 0; }
+  .score-table th { background: #1F3864; color: white; padding: 6px 10px; text-align: left; font-size: 10pt; }
+  .score-table td { border: 1px solid #ddd; padding: 6px 10px; font-size: 10pt; }
+  .score-table tr:nth-child(even) { background: #F5F7FA; }
+  ul li { margin: 3px 0; }
+  .footer { margin-top: 32px; border-top: 1px solid #ccc; padding-top: 8px; font-size: 9pt; color: #666; }
+  pre { font-family: Consolas, monospace; font-size: 9.5pt; background: #F5F5F5; padding: 12px; border-radius: 4px; white-space: pre-wrap; }
+</style>
+</head>
+<body>
+
+<h1>🔐 Challenge Técnico — Data Privacy Officer / Specialist</h1>
+
+<div class="header-box">
+  <table>
+    <tr><td>Cliente</td><td>Cencosud</td></tr>
+    <tr><td>Jefatura</td><td>Juan Marambio</td></tr>
+    <tr><td>KAM / Responsable</td><td>Miguel Flores</td></tr>
+    <tr><td>Reclutador</td><td>Gonzalo Ponce</td></tr>
+    <tr><td>Puesto</td><td>Data Privacy Officer / Specialist</td></tr>
+    <tr><td>Nivel</td><td>Semi Senior | Complejidad Alta</td></tr>
+    <tr><td>Stack</td><td>GDPR · LGPD · Ley 19.628 (Chile) · Privacy by Design · ISO/IEC 27701 · NIST Privacy Framework · DPIA · Derechos ARCO · Cifrado · Anonimización</td></tr>
+    <tr><td>Duración estimada</td><td>60 minutos</td></tr>
+    <tr><td>Enfoque</td><td>Mixto (Teórico + Situacional + Caso Práctico)</td></tr>
+    <tr><td>Fecha de generación</td><td>2026-03-24</td></tr>
+    <tr><td>Umbral de aprobación</td><td>≥ 14 / 21 puntos (67%)</td></tr>
+  </table>
+</div>
+
+<hr/>
+
+<!-- ═══ WARM-UP ═══ -->
+<h2>1. WARM-UP <span style="font-weight:normal; font-size:11pt; color:#666">(5 min — No evaluable)</span></h2>
+
+<p><strong>W1.</strong> Cuéntame de un proyecto o proceso donde hayas tenido que implementar o reforzar cumplimiento normativo en materia de datos. ¿Cuál fue tu rol y cuál fue el resultado?</p>
+<p><strong>W2.</strong> ¿Con qué regulaciones de privacidad has trabajado más en tu trayectoria y en qué industrias? ¿Qué diferencias encuentras entre ellas?</p>
+<p><em>Objetivo: Calibrar el nivel real de exposición a normativas y la profundidad de su experiencia práctica.</em></p>
+
+<hr/>
+
+<!-- ═══ FUNDAMENTOS ═══ -->
+<h2>2. FUNDAMENTOS <span style="font-weight:normal; font-size:11pt; color:#666">(15 min)</span></h2>
+
+<h3>⚖️ Marco Normativo</h3>
+<h4>Pregunta 1: GDPR vs legislación local — diferencias clave</h4>
+
+<blockquote>
+  <strong>Enunciado:</strong> Cencosud opera en Chile, Brasil, Argentina, Perú y Colombia. Cada país tiene su propia ley de protección de datos. ¿Cuáles son las diferencias más relevantes entre el GDPR europeo y las leyes locales de la región? ¿Por qué el GDPR se usa como referente incluso donde no aplica directamente?
+</blockquote>
+
+<div class="green-box">
+  <strong>🟢 Respuesta mínima esperada (must-mention):</strong>
+  <ul>
+    <li>GDPR: regulación más estricta del mundo, aplica extraterritorialmente si hay datos de ciudadanos UE</li>
+    <li>LGPD (Brasil): muy similar al GDPR, bases legales análogas, ANPD como autoridad</li>
+    <li>Ley 19.628 (Chile): en proceso de reforma — Ley 21.719 moderniza el marco y crea el Consejo para la Transparencia con nuevas facultades</li>
+    <li>GDPR como referente: eleva el estándar global; empresas que lo cumplen quedan bien posicionadas para cualquier regulación local</li>
+  </ul>
+</div>
+
+<div class="blue-box">
+  <strong>📖 Explicación de referencia:</strong><br/>
+  El GDPR (2018) estableció el estándar moderno: consentimiento granular, derecho al olvido, portabilidad de datos, notificación de brechas en 72 horas, y multas de hasta €20M o 4% del revenue global. La LGPD brasileña (2020) replicó gran parte de su estructura con las bases legales del Art. 7. En Chile, la Ley 19.628 de 1999 es obsoleta; la nueva Ley 21.719 (2024) introduce el modelo de autorización expresa, derechos ARCO ampliados y la Agencia de Protección de Datos Personales. Usar GDPR como baseline es estratégicamente inteligente para una empresa multipaís como Cencosud.
+</div>
+
+<div class="gold-box">
+  <strong>⭐ Respuesta destacada:</strong><br/>
+  Menciona el principio de extraterritorialidad del GDPR (Art. 3) y cómo afecta a Cencosud si tiene clientes o empleados en la UE. Habla de transferencias internacionales de datos (cláusulas contractuales tipo, adequacy decisions). Conoce la Ley 21.719 chilena y sus plazos de implementación. Diferencia entre Data Controller y Data Processor y las implicancias contractuales.
+</div>
+
+<div class="red-box">
+  <strong>🔴 Red flags:</strong>
+  <ul>
+    <li>No conoce la diferencia entre GDPR y LGPD ("son lo mismo")</li>
+    <li>Cree que la Ley 19.628 es el marco vigente sin mencionar la reforma</li>
+    <li>No sabe qué es la extraterritorialidad del GDPR</li>
+  </ul>
+</div>
+
+<table class="score-table">
+  <tr><th>Nivel</th><th>Criterio</th></tr>
+  <tr><td>0 — No apto</td><td>Solo conoce una regulación superficialmente</td></tr>
+  <tr><td>1 — Básico</td><td>Conoce GDPR y LGPD pero no las leyes locales de la región</td></tr>
+  <tr><td>2 — Competente</td><td>Diferencia las regulaciones, conoce Ley 21.719 y las bases legales</td></tr>
+  <tr><td>3 — Destacado</td><td>Extraterritorialidad, transferencias internacionales, Data Controller vs Processor, plazos Ley 21.719</td></tr>
+</table>
+
+<br/>
+<h3>🔧 Técnicas de Protección de Datos</h3>
+<h4>Pregunta 2: Anonimización vs Seudonimización — cuándo usar cada una</h4>
+
+<blockquote>
+  <strong>Enunciado:</strong> El equipo de Advanced Analytics de Cencosud quiere usar datos de compras de clientes para entrenar un modelo de recomendación. El DPO debe definir cómo proteger esos datos. ¿Cuál es la diferencia entre anonimización y seudonimización? ¿Cuál recomendarías en este caso y por qué?
+</blockquote>
+
+<div class="green-box">
+  <strong>🟢 Respuesta mínima esperada (must-mention):</strong>
+  <ul>
+    <li><strong>Anonimización</strong>: proceso irreversible — el dato ya no puede vincularse a una persona. Sale del ámbito de la ley de privacidad.</li>
+    <li><strong>Seudonimización</strong>: el dato se reemplaza por un identificador (ej: hash), pero con la tabla de mapeo se puede re-identificar. Sigue siendo dato personal.</li>
+    <li>Para Analytics: seudonimización permite mantener consistencia longitudinal (seguir al mismo cliente anónimamente) manteniendo cierto nivel de protección</li>
+    <li>La anonimización verdadera es difícil de garantizar con datos ricos (re-identificación por combinación de atributos)</li>
+  </ul>
+</div>
+
+<div class="blue-box">
+  <strong>📖 Explicación de referencia:</strong><br/>
+  El GDPR (Recital 26) establece que los datos verdaderamente anónimos no son datos personales y quedan fuera de su alcance. Sin embargo, la anonimización "fuerte" es extremadamente difícil: estudios demuestran que con 3-4 atributos quasi-identificadores (edad, género, código postal, historial de compras) se puede re-identificar al 87% de la población. La seudonimización (Art. 4.5 GDPR) es la alternativa práctica: reemplazar el RUT/email con un hash SHA-256 + salt, guardar la tabla de mapeo con acceso restringido, y aplicar k-anonymity o differential privacy para el dataset de entrenamiento.
+</div>
+
+<div class="gold-box">
+  <strong>⭐ Respuesta destacada:</strong><br/>
+  Menciona técnicas avanzadas: k-anonymity (cada registro indistinguible de al menos k-1 otros), l-diversity, differential privacy (ruido estadístico que protege individuos sin comprometer el agregado). Habla de Privacy-Enhancing Technologies (PETs) y federated learning como alternativas donde el modelo se entrena sin centralizar datos personales.
+</div>
+
+<div class="red-box">
+  <strong>🔴 Red flags:</strong>
+  <ul>
+    <li>Dice que anonimización y seudonimización son lo mismo</li>
+    <li>Cree que encriptar = anonimizar (la encriptación es reversible)</li>
+    <li>No considera el riesgo de re-identificación por combinación de atributos</li>
+  </ul>
+</div>
+
+<table class="score-table">
+  <tr><th>Nivel</th><th>Criterio</th></tr>
+  <tr><td>0 — No apto</td><td>Confunde ambos conceptos o cree que encriptar es anonimizar</td></tr>
+  <tr><td>1 — Básico</td><td>Diferencia correctamente pero no evalúa cuál aplicar en el contexto</td></tr>
+  <tr><td>2 — Competente</td><td>Recomienda seudonimización con justificación técnica y legal correcta</td></tr>
+  <tr><td>3 — Destacado</td><td>k-anonymity, differential privacy, PETs, federated learning, re-identificación</td></tr>
+</table>
+
+<br/>
+<h3>📋 Derechos del Titular</h3>
+<h4>Pregunta 3: Derechos ARCO — proceso y plazos</h4>
+
+<blockquote>
+  <strong>Enunciado:</strong> Un cliente de Cencosud ejerce su derecho de cancelación (eliminación) sobre todos sus datos personales. El equipo de marketing insiste en que necesitan mantener el historial de compras para cumplimiento tributario. ¿Cómo gestionas esta tensión? ¿Qué proceso sigues y cuáles son los plazos?
+</blockquote>
+
+<div class="green-box">
+  <strong>🟢 Respuesta mínima esperada (must-mention):</strong>
+  <ul>
+    <li>ARCO = Acceso, Rectificación, Cancelación/Eliminación, Oposición</li>
+    <li>Plazos: GDPR 30 días calendario; LGPD 15 días; Ley 21.719 Chile 30 días hábiles</li>
+    <li>La obligación tributaria (SII) es una <strong>base legal alternativa</strong> al consentimiento — permite conservar datos durante el período fiscal obligatorio (6 años en Chile)</li>
+    <li>Solución: eliminar los datos de marketing/segmentación, conservar solo lo mínimo necesario para cumplimiento legal, con acceso restringido</li>
+  </ul>
+</div>
+
+<div class="blue-box">
+  <strong>📖 Explicación de referencia:</strong><br/>
+  El derecho a la cancelación/eliminación no es absoluto. El GDPR Art. 17 y sus equivalentes locales establecen excepciones cuando el tratamiento es necesario para: cumplir una obligación legal, ejercer o defender reclamaciones legales, o razones de interés público. En este caso, la Ley Tributaria chilena exige conservar documentación contable por 6 años. La buena práctica es: (1) eliminar todos los datos de marketing y perfil de usuario, (2) conservar solo el registro transaccional mínimo necesario para tributación, (3) marcar esos datos como "solo cumplimiento legal" con acceso auditado, (4) informar al titular qué se elimina y qué se conserva con qué base legal.
+</div>
+
+<div class="gold-box">
+  <strong>⭐ Respuesta destacada:</strong><br/>
+  Menciona el proceso formal de gestión de solicitudes ARCO: canal de recepción, acreditación de identidad del titular, registro de la solicitud, respuesta documentada, y escalamiento a la autoridad si se deniega. Habla de implementar un sistema de gestión de derechos (OneTrust, TrustArc) para automatizar el flujo. Conoce la diferencia entre eliminación técnica y lógica (soft delete con retención controlada).
+</div>
+
+<div class="red-box">
+  <strong>🔴 Red flags:</strong>
+  <ul>
+    <li>Dice que hay que eliminar todo sin considerar las excepciones legales</li>
+    <li>No conoce los plazos de respuesta obligatorios</li>
+    <li>No sabe cómo acreditar la identidad del solicitante antes de procesar la solicitud</li>
+  </ul>
+</div>
+
+<table class="score-table">
+  <tr><th>Nivel</th><th>Criterio</th></tr>
+  <tr><td>0 — No apto</td><td>No conoce los derechos ARCO o no sabe gestionar la solicitud</td></tr>
+  <tr><td>1 — Básico</td><td>Conoce ARCO pero no sabe resolver la tensión legal-marketing</td></tr>
+  <tr><td>2 — Competente</td><td>Resuelve correctamente: elimina marketing, conserva tributación con base legal, cumple plazos</td></tr>
+  <tr><td>3 — Destacado</td><td>Sistema de gestión, soft delete, OneTrust/TrustArc, proceso completo documentado</td></tr>
+</table>
+
+<hr/>
+
+<!-- ═══ APLICACIÓN PRÁCTICA ═══ -->
+<h2>3. APLICACIÓN PRÁCTICA <span style="font-weight:normal; font-size:11pt; color:#666">(15 min)</span></h2>
+
+<h4>Pregunta 4: DPIA para una nueva App de fidelización</h4>
+
+<blockquote>
+  <strong>Enunciado:</strong> Cencosud va a lanzar una nueva App de fidelización que recopilará: geolocalización en tiempo real, historial de compras, preferencias de productos y datos biométricos (Face ID para login). El equipo de producto quiere lanzar en 3 meses. ¿Qué es una DPIA, cuándo es obligatoria, y cómo la conducirías en este caso?
+</blockquote>
+
+<div class="green-box">
+  <strong>🟢 Respuesta mínima esperada (must-mention):</strong>
+  <ul>
+    <li>DPIA = Data Protection Impact Assessment — análisis sistemático de riesgos sobre la privacidad ANTES del lanzamiento</li>
+    <li>Obligatoria cuando hay: datos biométricos, geolocalización masiva, perfilamiento a gran escala, o nuevas tecnologías (GDPR Art. 35)</li>
+    <li>Este caso <strong>requiere DPIA obligatoria</strong> (datos biométricos + geolocalización + perfilamiento)</li>
+    <li>Debe hacerse antes del lanzamiento, no después</li>
+  </ul>
+</div>
+
+<div class="blue-box">
+  <strong>📖 Explicación de referencia:</strong><br/>
+  Una DPIA sigue estos pasos: (1) Descripción del tratamiento (qué datos, para qué, quién accede, con qué terceros se comparte). (2) Evaluación de necesidad y proporcionalidad (¿es realmente necesaria la geolocalización en tiempo real?). (3) Identificación y valoración de riesgos (probabilidad × impacto para el titular). (4) Medidas de mitigación (encriptación, minimización de datos, controles de acceso). (5) Consulta al DPO y eventualmente a la autoridad de control si el riesgo residual es alto. Los datos biométricos son categoría especial bajo GDPR Art. 9 — requieren consentimiento explícito o base legal específica.
+</div>
+
+<div class="gold-box">
+  <strong>⭐ Respuesta destacada:</strong><br/>
+  Cuestiona si el Face ID es estrictamente necesario (¿podría usarse PIN/contraseña como alternativa menos invasiva?). Menciona el principio de minimización de datos y privacy by default. Identifica que la geolocalización en tiempo real puede ser dato de categoría especial si revela lugares de culto, centros de salud o domicilio. Propone un timeline realista: DPIA tarda 4-6 semanas; el equipo de producto debe integrarla en su proceso de diseño, no verla como obstáculo.
+</div>
+
+<div class="red-box">
+  <strong>🔴 Red flags:</strong>
+  <ul>
+    <li>No sabe qué es una DPIA o la confunde con una auditoría de seguridad</li>
+    <li>Dice que la DPIA puede hacerse después del lanzamiento "si hay problemas"</li>
+    <li>No identifica que los datos biométricos son categoría especial que eleva el riesgo</li>
+  </ul>
+</div>
+
+<table class="score-table">
+  <tr><th>Nivel</th><th>Criterio</th></tr>
+  <tr><td>0 — No apto</td><td>No conoce DPIA o dice que no es necesaria en este caso</td></tr>
+  <tr><td>1 — Básico</td><td>Conoce DPIA pero no identifica todos los triggers de obligatoriedad</td></tr>
+  <tr><td>2 — Competente</td><td>Conduce DPIA correctamente, identifica datos biométricos como categoría especial, propone mitigaciones</td></tr>
+  <tr><td>3 — Destacado</td><td>Cuestiona necesidad del biométrico, minimización, geolocalización como dato sensible, integra DPIA en el proceso de diseño del producto</td></tr>
+</table>
+
+<br/>
+<h4>Pregunta 5: Privacy by Design — colaboración con desarrollo</h4>
+
+<blockquote>
+  <strong>Enunciado:</strong> El equipo de desarrollo dice que "la privacidad es cosa del área legal, no nuestra". ¿Cómo convences a un equipo técnico de implementar Privacy by Design desde el inicio? Da un ejemplo concreto de cómo se vería en el desarrollo de la App de fidelización.
+</blockquote>
+
+<div class="green-box">
+  <strong>🟢 Respuesta mínima esperada (must-mention):</strong>
+  <ul>
+    <li>Privacy by Design: 7 principios de Ann Cavoukian — privacidad proactiva, por defecto, embedida en el diseño</li>
+    <li>Ejemplos concretos: no recopilar más datos de los necesarios (minimización), datos cifrados en tránsito y en reposo, permisos granulares en la App</li>
+    <li>Argumento para el equipo: corregir privacidad post-lanzamiento es 10x más caro que diseñarla desde el inicio (y puede bloquear el lanzamiento)</li>
+    <li>Privacy by Default: la App debe nacer con la configuración más restrictiva de privacidad activada</li>
+  </ul>
+</div>
+
+<div class="blue-box">
+  <strong>📖 Explicación de referencia:</strong><br/>
+  Los 7 principios de Privacy by Design son: (1) Proactivo, no reactivo. (2) Privacidad como configuración predeterminada. (3) Privacidad embebida en el diseño. (4) Funcionalidad completa (privacidad sin comprometer utilidad). (5) Seguridad de extremo a extremo. (6) Visibilidad y transparencia. (7) Respeto por la privacidad del usuario. En la App de fidelización, esto se traduce en: geolocalización solo cuando la App está en uso (no en background), permisos solicitados just-in-time, historial de compras en servidor con acceso restringido, posibilidad de exportar o eliminar el perfil desde la propia App.
+</div>
+
+<div class="gold-box">
+  <strong>⭐ Respuesta destacada:</strong><br/>
+  Propone integrar el DPO en las ceremonias de desarrollo (sprint planning, refinamiento) para revisar historias de usuario con impacto en privacidad. Habla de Privacy User Stories ("Como usuario, quiero controlar qué datos comparto con Cencosud"). Menciona Data Flow Mapping para visualizar todos los flujos de datos de la App y detectar puntos de riesgo. Usa el argumento de confianza del consumidor: la privacidad como ventaja competitiva.
+</div>
+
+<div class="red-box">
+  <strong>🔴 Red flags:</strong>
+  <ul>
+    <li>Acepta que la privacidad es solo responsabilidad del área legal</li>
+    <li>No conoce los principios de Privacy by Design</li>
+    <li>No puede dar ejemplos técnicos concretos — solo habla en abstracto</li>
+  </ul>
+</div>
+
+<table class="score-table">
+  <tr><th>Nivel</th><th>Criterio</th></tr>
+  <tr><td>0 — No apto</td><td>No conoce Privacy by Design o no puede explicarlo con ejemplos</td></tr>
+  <tr><td>1 — Básico</td><td>Conoce el concepto pero no sabe cómo colaborar con el equipo técnico</td></tr>
+  <tr><td>2 — Competente</td><td>7 principios, ejemplos concretos en la App, argumento de costo y riesgo</td></tr>
+  <tr><td>3 — Destacado</td><td>Integración en sprints, Privacy User Stories, Data Flow Mapping, privacidad como ventaja competitiva</td></tr>
+</table>
+
+<hr/>
+
+<!-- ═══ PROFUNDIDAD TÉCNICA ═══ -->
+<h2>4. PROFUNDIDAD TÉCNICA <span style="font-weight:normal; font-size:11pt; color:#666">(15 min)</span></h2>
+
+<h4>Pregunta 6: Respuesta a brecha de datos — protocolo y plazos</h4>
+
+<blockquote>
+  <strong>Enunciado:</strong> El equipo de seguridad te informa un domingo a las 22:00 que detectaron acceso no autorizado a la base de datos de clientes de Cencosud Chile. Se estima que fueron expuestos nombre, RUT, email y historial de compras de 500.000 clientes. ¿Qué haces? Describe el protocolo hora a hora durante las primeras 72 horas.
+</blockquote>
+
+<div class="green-box">
+  <strong>🟢 Respuesta mínima esperada (must-mention):</strong>
+  <ul>
+    <li>GDPR: notificación a la autoridad de control en 72 horas desde que se "tiene conocimiento" de la brecha</li>
+    <li>Ley 21.719 Chile: notificación a la Agencia dentro de 72 horas si hay riesgo significativo para los titulares</li>
+    <li>Pasos inmediatos: contener la brecha (aislar sistemas), preservar evidencia, activar comité de crisis</li>
+    <li>Evaluación de riesgo: determinar si el riesgo para los titulares es "alto" (si lo es → notificar también a los afectados)</li>
+  </ul>
+</div>
+
+<div class="blue-box">
+  <strong>📖 Explicación de referencia:</strong><br/>
+  <strong>0-2h:</strong> Confirmar la brecha con el equipo de seguridad, activar el plan de respuesta a incidentes, notificar internamente (CEO, Legal, Comunicaciones). <strong>2-24h:</strong> Contener (aislar el sistema afectado), preservar logs para investigación forense, evaluar el alcance real (¿qué datos, cuántos titulares, se usaron ya los datos?). <strong>24-72h:</strong> Preparar y enviar notificación a la Agencia/autoridad (en formato estándar: qué pasó, cuántos afectados, qué datos, medidas tomadas, contacto del DPO). Evaluar si notificar a los 500.000 clientes directamente (RUT + email comprometidos = riesgo alto → notificación obligatoria). <strong>Post-72h:</strong> Notificación a clientes afectados (email + comunicado en web), investigación forense completa, informe final a la autoridad con medidas correctivas.
+</div>
+
+<div class="gold-box">
+  <strong>⭐ Respuesta destacada:</strong><br/>
+  Distingue entre "tener conocimiento" de una brecha (trigger del plazo de 72h) y el momento de la detección técnica. Menciona el Registro de Violaciones de Seguridad (obligatorio internamente aunque no se notifique a la autoridad). Habla de la coordinación con el área de Comunicaciones para el mensaje a clientes (sin generar pánico pero siendo transparentes). Conoce las multas: GDPR hasta €10M o 2% del revenue por no notificar en plazo.
+</div>
+
+<div class="red-box">
+  <strong>🔴 Red flags:</strong>
+  <ul>
+    <li>Dice que hay que esperar a tener toda la información antes de notificar ("cuando sepamos todo")</li>
+    <li>No sabe el plazo de 72 horas o lo confunde con días hábiles</li>
+    <li>No considera notificar a los titulares afectados (500K personas con RUT expuesto = riesgo alto)</li>
+  </ul>
+</div>
+
+<table class="score-table">
+  <tr><th>Nivel</th><th>Criterio</th></tr>
+  <tr><td>0 — No apto</td><td>No tiene protocolo o no conoce los plazos legales</td></tr>
+  <tr><td>1 — Básico</td><td>Conoce las 72h pero no tiene un proceso claro hora a hora</td></tr>
+  <tr><td>2 — Competente</td><td>Protocolo completo: contención → autoridad (72h) → evaluación riesgo → notificación titulares</td></tr>
+  <tr><td>3 — Destacado</td><td>"Tener conocimiento" vs detección, Registro de Violaciones, multas, coordinación comunicacional</td></tr>
+</table>
+
+<br/>
+<h4>Pregunta 7: Auditoría de terceros — proveedores cloud y agencias</h4>
+
+<blockquote>
+  <strong>Enunciado:</strong> Cencosud usa AWS para alojar su plataforma de e-commerce, una agencia de marketing digital para campañas personalizadas y una empresa de logística que accede a datos de dirección de clientes. ¿Cómo gestionas la responsabilidad sobre los datos personales en cada caso? ¿Qué cláusulas contractuales exiges y qué controles operativos implementas?
+</blockquote>
+
+<div class="green-box">
+  <strong>🟢 Respuesta mínima esperada (must-mention):</strong>
+  <ul>
+    <li>Distinción: Cencosud = Data Controller; AWS/agencia/logística = Data Processors</li>
+    <li>Obligación legal: firmar un Data Processing Agreement (DPA) con cada processor</li>
+    <li>El DPA debe incluir: finalidad del tratamiento, medidas de seguridad, subprocesadores autorizados, obligación de notificar brechas, derecho de auditoría</li>
+    <li>Cencosud sigue siendo responsable ante la ley aunque el processor falle</li>
+  </ul>
+</div>
+
+<div class="blue-box">
+  <strong>📖 Explicación de referencia:</strong><br/>
+  GDPR Art. 28 y sus equivalentes locales exigen que el Controller solo use Processors que ofrezcan "garantías suficientes". AWS tiene sus propios DPA estándar que incluyen los Standard Contractual Clauses (SCCs) para transferencias internacionales. La agencia de marketing es un caso crítico: si usa los datos para sus propios fines (no solo los de Cencosud), deja de ser Processor y se convierte en Co-Controller, lo que cambia radicalmente el marco legal. Los controles operativos incluyen: principio de necesidad (la agencia solo accede a los datos mínimos para la campaña), prohibición de retención post-campaña, derecho de auditoría anual, y revisión periódica de las medidas de seguridad del proveedor.
+</div>
+
+<div class="gold-box">
+  <strong>⭐ Respuesta destacada:</strong><br/>
+  Identifica el riesgo de que la agencia se convierta en Co-Controller (caso común en ad-tech). Menciona los SCCs para transferencias desde Chile/Brasil a servidores de AWS en EE.UU. Habla de una due diligence de privacidad antes de contratar nuevos proveedores (privacy questionnaire, revisión de certificaciones como ISO 27001, SOC 2). Propone un inventario de terceros con clasificación por nivel de riesgo y frecuencia de revisión.
+</div>
+
+<div class="red-box">
+  <strong>🔴 Red flags:</strong>
+  <ul>
+    <li>Cree que la responsabilidad se transfiere completamente al proveedor con el DPA</li>
+    <li>No distingue entre Controller y Processor</li>
+    <li>No sabe qué debe incluir un DPA o nunca ha redactado/revisado uno</li>
+  </ul>
+</div>
+
+<table class="score-table">
+  <tr><th>Nivel</th><th>Criterio</th></tr>
+  <tr><td>0 — No apto</td><td>No conoce la distinción Controller/Processor ni el DPA</td></tr>
+  <tr><td>1 — Básico</td><td>Sabe que hay que firmar un DPA pero no conoce su contenido ni el rol de Co-Controller</td></tr>
+  <tr><td>2 — Competente</td><td>DPA completo, distinción Controller/Processor/Co-Controller, controles operativos</td></tr>
+  <tr><td>3 — Destacado</td><td>SCCs para transferencias internacionales, due diligence, inventario de terceros, riesgo ad-tech</td></tr>
+</table>
+
+<hr/>
+
+<!-- ═══ CASO PRÁCTICO ═══ -->
+<h2>5. CASO PRÁCTICO <span style="font-weight:normal; font-size:11pt; color:#666">(15 min — Análisis de situación)</span></h2>
+
+<blockquote>
+  <strong>Enunciado:</strong> Cencosud quiere cruzar los datos de compras del supermercado con los datos de salud inferidos de una farmacia del grupo para crear un scoring de salud de sus clientes y ofrecerles seguros personalizados. El negocio estima €50M de revenue adicional. El CEO te pregunta: "¿Podemos hacerlo?". <br/><br/>
+  Tienes 10 minutos para analizar el caso y presentar tu respuesta. Considera: legalidad, riesgos, alternativas y tu recomendación final.
+</blockquote>
+
+<div class="green-box">
+  <strong>🟢 Criterios mínimos de evaluación:</strong>
+  <ul>
+    <li>Identifica que los datos de farmacia son datos de salud = <strong>categoría especial</strong> (Art. 9 GDPR) — protección máxima</li>
+    <li>El cruce de datos para un propósito diferente al original requiere <strong>base legal específica o nuevo consentimiento</strong></li>
+    <li>El scoring de salud activa obligación de DPIA (perfilamiento con datos sensibles a gran escala)</li>
+    <li>Respuesta equilibrada: no es un "no" rotundo, sino "podemos hacerlo SI..." con condiciones claras</li>
+  </ul>
+</div>
+
+<div class="blue-box">
+  <strong>📖 Análisis de referencia:</strong><br/>
+  <strong>Legalidad:</strong> Los datos de salud requieren consentimiento explícito (Art. 9.2.a GDPR) o excepción específica. El cliente que compró en la farmacia no consintió que sus datos se cruzaran con supermercado para crear un perfil de salud. El fin original (vender medicamentos) es incompatible con el nuevo fin (scoring para seguros) bajo el principio de limitación de finalidad.<br/>
+  <strong>Riesgos:</strong> Multa máxima GDPR; daño reputacional masivo si se filtra ("Cencosud usa tus compras de farmacia para calificarte"); potencial discriminación (no vender seguros a personas con ciertas condiciones).<br/>
+  <strong>Alternativa viable:</strong> Campaña opt-in donde los clientes consientan explícitamente el cruce de datos a cambio de beneficios claros (descuentos en seguros). Con consentimiento libre, informado, específico y expreso = legal.
+</div>
+
+<div class="gold-box">
+  <strong>⭐ Respuesta destacada:</strong><br/>
+  Presenta la respuesta en formato ejecutivo: riesgo legal (cuantificado en posible multa), riesgo reputacional, alternativa viable con estimación de tasa de conversión del opt-in, y timeline para implementación legal. Menciona el principio de proporcionalidad: ¿el €50M justifica el riesgo? No si la multa puede ser 4% del revenue global de Cencosud. Habla de Privacy Impact vs Business Value matrix para priorizar iniciativas de analytics.
+</div>
+
+<div class="red-box">
+  <strong>🔴 Red flags:</strong>
+  <ul>
+    <li>Dice "sí se puede" sin identificar los riesgos legales</li>
+    <li>Dice "no se puede" sin proponer ninguna alternativa (el DPO debe ser un habilitador, no un bloqueador)</li>
+    <li>No identifica que los datos de farmacia son categoría especial de salud</li>
+    <li>No menciona la necesidad de DPIA ni de consentimiento explícito</li>
+  </ul>
+</div>
+
+<table class="score-table">
+  <tr><th>Nivel</th><th>Criterio</th></tr>
+  <tr><td>0 — No apto</td><td>No identifica los riesgos o responde "sí se puede" sin condiciones</td></tr>
+  <tr><td>1 — Básico</td><td>Identifica el problema pero solo dice "no se puede" sin alternativas</td></tr>
+  <tr><td>2 — Competente</td><td>Análisis legal correcto + alternativa opt-in viable + recomendación equilibrada al CEO</td></tr>
+  <tr><td>3 — Destacado</td><td>Formato ejecutivo, cuantificación de riesgo, Privacy Impact matrix, DPO como habilitador</td></tr>
+</table>
+
+<hr/>
+
+<!-- ═══ SCORECARD ═══ -->
+<h2>6. SCORECARD RESUMEN</h2>
+
+<table class="score-table">
+  <tr>
+    <th>#</th>
+    <th>Pregunta</th>
+    <th>Área</th>
+    <th>Puntaje máx.</th>
+    <th>Puntaje obtenido</th>
+  </tr>
+  <tr><td>1</td><td>GDPR vs legislaciones locales</td><td>Marco Normativo</td><td>3</td><td>___</td></tr>
+  <tr><td>2</td><td>Anonimización vs Seudonimización</td><td>Técnicas de Protección</td><td>3</td><td>___</td></tr>
+  <tr><td>3</td><td>Derechos ARCO — proceso y plazos</td><td>Derechos del Titular</td><td>3</td><td>___</td></tr>
+  <tr><td>4</td><td>DPIA para nueva App</td><td>Gestión de Riesgos</td><td>3</td><td>___</td></tr>
+  <tr><td>5</td><td>Privacy by Design con equipo técnico</td><td>Implementación</td><td>3</td><td>___</td></tr>
+  <tr><td>6</td><td>Respuesta a brecha de datos (72h)</td><td>Incidentes</td><td>3</td><td>___</td></tr>
+  <tr><td>7</td><td>Auditoría de terceros / DPA</td><td>Gestión de Proveedores</td><td>3</td><td>___</td></tr>
+  <tr><td>Caso</td><td>Scoring de salud — análisis ejecutivo</td><td>Criterio y Liderazgo</td><td>3</td><td>___</td></tr>
+  <tr style="font-weight:bold; background:#EBF2FF;"><td colspan="3">TOTAL</td><td>24</td><td>___</td></tr>
+</table>
+
+<br/>
+<table class="score-table">
+  <tr><th>Rango</th><th>Interpretación</th><th>Recomendación</th></tr>
+  <tr><td>20 – 24 pts (83–100%)</td><td style="color:#1B5E20;font-weight:bold">Excepcional</td><td>Proceder a oferta. Perfil cercano a Senior DPO.</td></tr>
+  <tr><td>16 – 19 pts (67–79%)</td><td style="color:#1565C0;font-weight:bold">Aprobado</td><td>Continuar proceso. Cumple el perfil Semi Senior con solidez.</td></tr>
+  <tr><td>12 – 15 pts (50–63%)</td><td style="color:#E65100;font-weight:bold">Condicional</td><td>Segunda entrevista con foco en gaps normativos o técnicos.</td></tr>
+  <tr><td>0 – 11 pts (&lt;50%)</td><td style="color:#B71C1C;font-weight:bold">No apto</td><td>Perfil no alcanza el nivel requerido para el cargo.</td></tr>
+</table>
+
+<br/>
+<h3>📝 Notas del entrevistador</h3>
+<table style="width:100%; border-collapse:collapse;">
+  <tr><td style="border:1px solid #ddd; padding:8px; height:50px; vertical-align:top; font-size:10pt; color:#999;">Observaciones generales:</td></tr>
+  <tr><td style="border:1px solid #ddd; padding:8px; height:50px; vertical-align:top; font-size:10pt; color:#999;">Fortalezas identificadas:</td></tr>
+  <tr><td style="border:1px solid #ddd; padding:8px; height:50px; vertical-align:top; font-size:10pt; color:#999;">Áreas de mejora / gaps:</td></tr>
+  <tr><td style="border:1px solid #ddd; padding:8px; height:40px; vertical-align:top; font-size:10pt; color:#999;">Decisión final:</td></tr>
+</table>
+
+<div class="footer">
+  Generado por TechChallenge Architect · ACL Chile · Cliente: Cencosud · 2026-03-24 · Confidencial — Solo para uso interno en procesos de selección.
+</div>
+
+</body>
+</html>
