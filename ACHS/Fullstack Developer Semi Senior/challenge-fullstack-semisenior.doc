@@ -1,0 +1,572 @@
+================================================================================
+CHALLENGE TÉCNICO — ENTREVISTA IT
+================================================================================
+Puesto:           Fullstack Developer Semi Senior
+Cliente:          ACHS
+Centro de Costo:  40890
+KAM / Responsable: Francisca Alvarez
+Jefatura:         Javier Alvarez (perfil técnico, busca proactividad y mejora continua)
+Reclutador:       Maire Magallanes
+Seniority:        Semi Senior
+Stack Principal:  TypeScript (excluyente), AdonisJS 6, Node.js, React, PostgreSQL / SQL Server, MongoDB
+Duración:         60 min
+Enfoque:          Mixto (Teórico + Práctico)
+Contexto negocio: Industria financiera — pagos de sueldos, pensiones, seguros, remuneraciones
+Fecha generación: 2026-03-26
+================================================================================
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECCIÓN 1 — WARM-UP (5 min)
+Estas preguntas no son evaluables. Su objetivo es romper el hielo y conocer
+el contexto del candidato.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+WU-1: Cuéntame brevemente sobre tu último proyecto: ¿qué construiste, cuál era
+      el stack y cuál fue tu mayor desafío técnico?
+
+WU-2: ¿Has trabajado en proyectos del sector financiero (banca, seguros,
+      remuneraciones)? ¿Qué particularidades técnicas o de negocio encontraste
+      en ese contexto?
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECCIÓN 2 — FUNDAMENTOS (15 min)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+────────────────────────────────────────
+Tecnología: TypeScript
+────────────────────────────────────────
+
+PREGUNTA F-1: Sistema de tipos en TypeScript — tipos avanzados
+
+  ENUNCIADO:
+  ¿Cuál es la diferencia entre `interface` y `type` en TypeScript? ¿Cuándo
+  usarías `unknown` en lugar de `any`, y por qué esto importa en un sistema
+  financiero que procesa pagos de sueldos?
+
+  🟢 RESPUESTA MÍNIMA ESPERADA (must-mention):
+  - `interface` soporta declaration merging; `type` permite union/intersection
+    y es más flexible para alias complejos.
+  - `any` desactiva el type-checker; `unknown` obliga a hacer type-guard antes
+    de operar, garantizando seguridad en runtime.
+  - En datos financieros (montos, RUTs, cuentas bancarias), usar `unknown` en
+    entradas externas previene que un campo no validado se procese sin control.
+
+  📖 EXPLICACIÓN DE REFERENCIA:
+  En TypeScript estricto (strict: true), la preferencia actual es usar `type`
+  para alias de datos/DTOs y reservar `interface` para contratos públicos de
+  módulos (permite que terceros hagan merging). `unknown` es la forma segura
+  de tipar datos externos (respuestas de API, payloads de webhooks bancarios):
+  antes de operar sobre el valor, se debe hacer una type guard (typeof, Zod
+  parse, etc.). Esto es crítico en sistemas financieros donde un monto que
+  llega como string podría procesarse como NaN si no hay validación.
+
+  ⭐ RESPUESTA DESTACADA:
+  Menciona `satisfies` operator (TS 4.9+) para validar que un objeto cumple
+  un tipo sin perder el tipo inferido. Habla de `branded types` para
+  primitivos financieros (e.g., `type Money = number & { _brand: 'Money' }`)
+  que evitan mezclar centavos con pesos en operaciones aritméticas.
+
+  🔴 RED FLAGS:
+  - "Uso any porque es más fácil" — indica bajo nivel en TS o malos hábitos.
+  - No sabe diferenciar interface de type en casos prácticos.
+  - Cree que unknown y any son equivalentes.
+
+  PUNTUACIÓN:
+  | Nivel      | Criterio                                                        |
+  |------------|---------------------------------------------------------------|
+  | 0 - No apto| No distingue interface/type; confunde any con unknown          |
+  | 1 - Básico | Da definiciones correctas pero sin aplicación práctica         |
+  | 2 - Competente | Explica trade-offs y aplica al contexto financiero        |
+  | 3 - Destacado  | Menciona branded types o satisfies con justificación real |
+
+────────────────────────────────────────
+
+PREGUNTA F-2: Programación asíncrona en Node.js/TypeScript
+
+  ENUNCIADO:
+  Explica cómo funciona el Event Loop en Node.js. ¿Cuál es la diferencia entre
+  Promises, async/await y callbacks? ¿Cómo manejarías errores en cadenas de
+  promesas dentro de un proceso de pago de remuneraciones?
+
+  🟢 RESPUESTA MÍNIMA ESPERADA (must-mention):
+  - El Event Loop es single-threaded; delega I/O a libuv sin bloquear el hilo
+    principal.
+  - async/await es azúcar sintáctica sobre Promises; facilita manejo de errores
+    con try/catch en vez de .catch() encadenados.
+  - En procesos financieros: usar try/catch con tipado de error + logging
+    estructurado; nunca dejar una promesa rechazada sin manejar
+    (unhandledRejection puede caer el proceso).
+
+  📖 EXPLICACIÓN DE REFERENCIA:
+  En Node.js, el hilo principal nunca espera: el Event Loop procesa callbacks
+  de I/O completado, timers y microtasks en fases definidas. Para cadenas de
+  pagos (validar cuenta → debitar → acreditar → emitir comprobante), la
+  práctica recomendada es encapsular cada paso en funciones async tipadas con
+  Result types o excepciones personalizadas, garantizando rollback o
+  compensación si falla un paso intermedio. `Promise.allSettled` es preferible
+  a `Promise.all` cuando se procesan lotes de pagos: no aborta ante el primer
+  error sino que retorna el estado de cada ítem.
+
+  ⭐ RESPUESTA DESTACADA:
+  Menciona patrones transaccionales (Saga pattern) para operaciones de pago
+  distribuidas. Habla de `AsyncLocalStorage` para propagar contexto de
+  trazabilidad (correlationId) a través de toda la cadena async.
+
+  🔴 RED FLAGS:
+  - Usa callbacks para lógica de negocio nueva (indica código legacy sin
+    refactor).
+  - No maneja rechazo de promesas (no sabe del evento `unhandledRejection`).
+  - Confunde paralelismo con concurrencia en Node.
+
+  PUNTUACIÓN:
+  | Nivel      | Criterio                                                        |
+  |------------|---------------------------------------------------------------|
+  | 0 - No apto| No entiende async/await o el Event Loop                        |
+  | 1 - Básico | Explica async/await pero sin estrategia de error handling       |
+  | 2 - Competente | Manejo de errores tipado + contexto financiero            |
+  | 3 - Destacado  | Menciona Saga, AsyncLocalStorage, Result types            |
+
+────────────────────────────────────────
+
+PREGUNTA F-3: Bases de datos relacionales — PostgreSQL / SQL Server
+
+  ENUNCIADO:
+  En un sistema de pago de sueldos, tienes una tabla `pagos` con millones de
+  registros. La consulta que busca los pagos de un empleado en un rango de
+  fechas demora 8 segundos. ¿Cómo diagnosticarías y resolverías este problema
+  de performance?
+
+  🟢 RESPUESTA MÍNIMA ESPERADA (must-mention):
+  - Usar EXPLAIN ANALYZE (PG) / SET STATISTICS IO ON (SQL Server) para ver el
+    plan de ejecución y detectar full scans.
+  - Crear índice compuesto en (empleado_id, fecha_pago) o (empleado_id, fecha_pago DESC).
+  - Evaluar si la consulta hace N+1 queries o joins innecesarios.
+
+  📖 EXPLICACIÓN DE REFERENCIA:
+  El primer paso es siempre analizar el query plan antes de modificar nada.
+  En PostgreSQL: EXPLAIN (ANALYZE, BUFFERS) revela seq scans, heap fetches y
+  tiempo real. Un índice compuesto en las columnas del WHERE + ORDER BY
+  permite index-only scans. Para tablas de pagos históricas muy grandes,
+  considerar table partitioning por rango de fecha (PARTITION BY RANGE) que
+  reduce el espacio de búsqueda a nivel de partición. En SQL Server: clustered
+  index en la clave de búsqueda principal + covering index con INCLUDE para
+  columnas del SELECT.
+
+  ⭐ RESPUESTA DESTACADA:
+  Menciona partial indexes (sólo sobre registros activos o del año en curso),
+  query caching a nivel de aplicación con Redis para consultas frecuentes, y
+  read replicas para queries de reporting que no deben competir con las
+  escrituras transaccionales.
+
+  🔴 RED FLAGS:
+  - "Agrego un índice sin revisar el query plan" — solución ciega.
+  - No sabe qué es un seq scan.
+  - Propone cachear todo sin entender la consistencia eventual en datos
+    financieros.
+
+  PUNTUACIÓN:
+  | Nivel      | Criterio                                                        |
+  |------------|---------------------------------------------------------------|
+  | 0 - No apto| No sabe diagnosticar; propone soluciones sin análisis           |
+  | 1 - Básico | Menciona índices pero sin query plan analysis                   |
+  | 2 - Competente | Explica EXPLAIN ANALYZE + índice compuesto correcto       |
+  | 3 - Destacado  | Partitioning, partial indexes, read replicas             |
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECCIÓN 3 — APLICACIÓN PRÁCTICA (20 min)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+────────────────────────────────────────
+Tecnología: AdonisJS 6 + Node.js
+────────────────────────────────────────
+
+PREGUNTA AP-1: Arquitectura de un módulo de remuneraciones en AdonisJS 6
+
+  ENUNCIADO:
+  Debes diseñar el módulo de "Pago de Remuneraciones" en un backend AdonisJS 6.
+  El módulo debe: recibir un archivo Excel con sueldos del mes, validarlo,
+  procesar cada pago y emitir un comprobante por correo. ¿Cómo estructurarías
+  el código? Describe controladores, servicios, jobs y modelos que usarías.
+
+  🟢 RESPUESTA MÍNIMA ESPERADA (must-mention):
+  - Separar responsabilidades: Controller (recibe el request), Service (lógica
+    de negocio), Repository/Model (acceso a datos).
+  - Usar AdonisJS Jobs/Queue (Adonis Queue o BullMQ) para procesar pagos en
+    background y no bloquear el HTTP response.
+  - Validación con VineJS (validator nativo de AdonisJS 6) antes de persistir.
+
+  📖 EXPLICACIÓN DE REFERENCIA:
+  AdonisJS 6 sigue una arquitectura MVC con soporte nativo para IoC container.
+  Para este caso: el Controller recibe el upload (multipart/form-data),
+  llama al RemuneracionService.procesarArchivo() que parsea el Excel y encola
+  un Job por cada empleado usando @adonisjs/queue (o BullMQ). Cada Job valida
+  el pago con VineJS, persiste con Lucid ORM, y llama al MailService para
+  emitir el comprobante. El endpoint retorna inmediatamente con un jobId que
+  el cliente puede usar para consultar el estado. Esto garantiza resiliencia:
+  si falla el mail, el pago ya quedó registrado; se puede reintentar solo el
+  mail.
+
+  ⭐ RESPUESTA DESTACADA:
+  Menciona el patrón Outbox para garantizar que el evento "pago procesado" se
+  emite exactamente una vez aunque el proceso caiga. Habla de idempotency keys
+  en los endpoints para evitar doble procesamiento de un mismo archivo.
+
+  🔴 RED FLAGS:
+  - Procesa todo dentro del controller de forma síncrona.
+  - No valida el archivo antes de procesar.
+  - No conoce el sistema de Jobs/Queue de Adonis.
+  - Mezcla lógica de negocio en el modelo (Active Record abuse).
+
+  PUNTUACIÓN:
+  | Nivel      | Criterio                                                        |
+  |------------|---------------------------------------------------------------|
+  | 0 - No apto| Todo en el controller; sin async processing                    |
+  | 1 - Básico | Separa controller/service pero sin queue ni manejo de fallos    |
+  | 2 - Competente | Queue + validación + separación correcta de capas        |
+  | 3 - Destacado  | Outbox pattern, idempotency keys, reintentos selectivos   |
+
+────────────────────────────────────────
+Tecnología: React
+────────────────────────────────────────
+
+PREGUNTA AP-2: Estado global y performance en React
+
+  ENUNCIADO:
+  En el frontend de un portal de seguros, tienes un componente que muestra el
+  historial de pagos de un asegurado. Al navegar entre secciones, el componente
+  re-renderiza y vuelve a pedir los datos al servidor cada vez. ¿Cómo
+  resolverías esto? ¿Qué herramientas de estado/caching usarías?
+
+  🟢 RESPUESTA MÍNIMA ESPERADA (must-mention):
+  - Implementar caching de datos del servidor con TanStack Query (React Query)
+    o SWR: los datos se cachean por queryKey y solo se refrescan cuando el
+    staleTime expira o se invalida manualmente.
+  - Evitar re-renders innecesarios con React.memo, useMemo o useCallback en
+    componentes costosos.
+  - Separar estado del servidor (TanStack Query) del estado de UI local
+    (useState / Zustand).
+
+  📖 EXPLICACIÓN DE REFERENCIA:
+  La práctica moderna en React es no usar useState para datos del servidor.
+  TanStack Query maneja fetching, caching, background refetch y estados
+  (loading/error/success) de forma declarativa. Para el historial de pagos:
+  `useQuery({ queryKey: ['pagos', aseguradoId], queryFn: fetchPagos,
+  staleTime: 5 * 60 * 1000 })` evita refetches innecesarios en 5 minutos.
+  Para performance de render: useMemo en cálculos de totales, React.memo en
+  rows de tabla. Si el historial es muy largo, virtualización con
+  @tanstack/react-virtual elimina el DOM de filas fuera del viewport.
+
+  ⭐ RESPUESTA DESTACADA:
+  Menciona Suspense + lazy loading para cargar la sección de historial solo
+  cuando el usuario la visita. Habla de optimistic updates en TanStack Query
+  para UX fluida al confirmar un pago.
+
+  🔴 RED FLAGS:
+  - Usa useEffect + fetch directamente para cada re-render (fetching manual
+    sin caching).
+  - Propone Redux para todo el estado del servidor.
+  - No conoce el concepto de staleTime o cache invalidation.
+
+  PUNTUACIÓN:
+  | Nivel      | Criterio                                                        |
+  |------------|---------------------------------------------------------------|
+  | 0 - No apto| useEffect/fetch en cada render; sin estrategia de caching      |
+  | 1 - Básico | Conoce React Query pero no configura staleTime ni invalidación  |
+  | 2 - Competente | TanStack Query correctamente + memoización             |
+  | 3 - Destacado  | Suspense, virtualización, optimistic updates           |
+
+────────────────────────────────────────
+Prácticas de Calidad: TDD y Revisión Estática
+────────────────────────────────────────
+
+PREGUNTA AP-3: TDD en lógica financiera
+
+  ENUNCIADO:
+  Aplicas TDD para desarrollar una función que calcula el sueldo líquido de un
+  empleado a partir de su sueldo bruto, descuentos legales (AFP, salud) y
+  descuentos opcionales (préstamos). ¿Cómo organizarías los tests? Escribe en
+  pseudocódigo o TypeScript los primeros 3 test cases que crearías.
+
+  🟢 RESPUESTA MÍNIMA ESPERADA (must-mention):
+  - Test del caso base: sueldo bruto conocido → líquido esperado correcto.
+  - Test de borde: sueldo bruto 0 → resultado 0 sin errores.
+  - Test de error: sueldo bruto negativo → lanzar excepción o retornar error.
+  - Ciclo Red → Green → Refactor del TDD.
+
+  📖 EXPLICACIÓN DE REFERENCIA:
+  En TDD, primero se escribe el test que falla (Red), luego el código mínimo
+  para pasar el test (Green), y finalmente se refactoriza sin romper tests
+  (Refactor). Para lógica financiera esto es crítico: los tests documentan
+  las reglas del negocio (tasas AFP, tramos de salud). Ejemplo en TypeScript:
+
+    // Test 1 — caso base
+    it('calcula sueldo líquido correctamente', () => {
+      const result = calcularLiquido({ bruto: 1_000_000, afp: 0.10, salud: 0.07 });
+      expect(result.liquido).toBe(830_000);
+    });
+
+    // Test 2 — borde
+    it('retorna 0 si sueldo bruto es 0', () => {
+      expect(calcularLiquido({ bruto: 0, afp: 0.10, salud: 0.07 }).liquido).toBe(0);
+    });
+
+    // Test 3 — error
+    it('lanza error si sueldo bruto es negativo', () => {
+      expect(() => calcularLiquido({ bruto: -1, afp: 0.10, salud: 0.07 }))
+        .toThrow('SueldoBrutoInvalido');
+    });
+
+  ⭐ RESPUESTA DESTACADA:
+  Propone usar property-based testing (fast-check) para generar miles de
+  combinaciones de sueldos y validar invariantes matemáticas (liquido <=
+  bruto siempre). Menciona que los tests de cálculo financiero deben estar
+  revisados por el área legal/negocio, no solo por el equipo técnico.
+
+  🔴 RED FLAGS:
+  - No sabe qué es el ciclo Red/Green/Refactor.
+  - "Los tests se escriben al final" — no entiende TDD.
+  - Test solo del happy path, sin bordes ni errores.
+
+  PUNTUACIÓN:
+  | Nivel      | Criterio                                                        |
+  |------------|---------------------------------------------------------------|
+  | 0 - No apto| No sabe TDD; test solo descriptivo sin assert real             |
+  | 1 - Básico | Escribe test básico pero sin bordes ni manejo de errores       |
+  | 2 - Competente | Ciclo TDD correcto + 3 test cases bien planteados        |
+  | 3 - Destacado  | Property-based testing; tests validados con negocio      |
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECCIÓN 4 — PROFUNDIDAD TÉCNICA (10 min)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+PREGUNTA PT-1: Seguridad en APIs financieras
+
+  ENUNCIADO:
+  Tu API expone endpoints para consultar y transferir fondos de pensiones.
+  Un auditor de seguridad te pide listar las 5 principales medidas de seguridad
+  que implementarías en la capa de API y base de datos. Justifica cada una.
+
+  🟢 RESPUESTA MÍNIMA ESPERADA (must-mention):
+  - Autenticación con JWT (access token de corta duración) + refresh token
+    rotativo almacenado en httpOnly cookie.
+  - Autorización basada en roles (RBAC): no todos los usuarios pueden ver
+    todos los registros; validar ownership del recurso.
+  - Inputs sanitizados: consultas parametrizadas (nunca concatenar SQL),
+    validación con VineJS/Zod en cada endpoint.
+  - Rate limiting: limitar requests por IP/usuario para prevenir fuerza bruta.
+  - Logs de auditoría: toda operación sensible (consulta de saldo, transferencia)
+    debe quedar registrada con userId, timestamp, IP, resultado.
+
+  📖 EXPLICACIÓN DE REFERENCIA:
+  En APIs financieras el principio de menor privilegio es clave: un empleado
+  de RRHH puede ver su propia liquidación, no la de otros. Implementar
+  row-level security en PostgreSQL (RLS policies) o filtros en el ORM por
+  tenantId/userId refuerza esto a nivel de base de datos. Los JWTs deben tener
+  exp corto (15 min) con refresh tokens de rotación única. Para SonarQube: las
+  reglas de seguridad detectan SQL injection, hardcoded credentials y uso de
+  algoritmos débiles (MD5, SHA1 para contraseñas).
+
+  ⭐ RESPUESTA DESTACADA:
+  Menciona OWASP API Security Top 10 (especialmente BOLA — Broken Object Level
+  Authorization, el más frecuente en APIs financieras). Habla de field-level
+  encryption para datos PII (RUT, número de cuenta) en reposo.
+
+  🔴 RED FLAGS:
+  - No menciona autorización a nivel de objeto (solo autenticación global).
+  - "Usamos MD5 para las contraseñas" — inaceptable.
+  - No conoce SQL injection o cree que un ORM lo resuelve automáticamente sin
+    validación previa.
+
+  PUNTUACIÓN:
+  | Nivel      | Criterio                                                        |
+  |------------|---------------------------------------------------------------|
+  | 0 - No apto| Menciona solo HTTPS como medida de seguridad                   |
+  | 1 - Básico | JWT + validación inputs, sin RBAC ni auditoría                 |
+  | 2 - Competente | Las 5 medidas con justificación correcta                 |
+  | 3 - Destacado  | OWASP BOLA, RLS PostgreSQL, field-level encryption       |
+
+────────────────────────────────────────
+
+PREGUNTA PT-2: Calidad de código y herramientas de análisis estático
+
+  ENUNCIADO:
+  Tu equipo integra SonarQube al pipeline CI/CD. En el último análisis aparecen
+  15 "Code Smells" y 3 "Security Hotspots". ¿Cómo priorizarías cuáles resolver
+  primero? ¿Qué métricas de SonarQube considera más importantes para un
+  proyecto financiero? ¿Qué reglas de linting configurarías en ESLint/TypeScript?
+
+  🟢 RESPUESTA MÍNIMA ESPERADA (must-mention):
+  - Priorizar Security Hotspots sobre Code Smells: los hotspots pueden ser
+    vulnerabilidades activas (inyección, exposición de datos).
+  - Métricas clave: Coverage (mínimo 80% en lógica de negocio), Reliability
+    Rating (A), Security Rating (A), Duplications (<3%).
+  - ESLint: @typescript-eslint/no-explicit-any, no-unused-vars,
+    @typescript-eslint/explicit-function-return-type en módulos públicos.
+
+  📖 EXPLICACIÓN DE REFERENCIA:
+  En SonarQube, la jerarquía es: Blocker > Critical > Major > Minor. Para
+  proyectos financieros, cualquier Security Hotspot marcado como "High"
+  debe resolverse antes de mergear a main (Quality Gate). Los Code Smells
+  de tipo "Cognitive Complexity" son los más relevantes en lógica de cálculo:
+  una función con complejidad >15 es difícil de testear y propensa a bugs.
+  ESLint estricto con @typescript-eslint/recommended + reglas de seguridad
+  (eslint-plugin-security) captura expresiones regulares catastroficas y uso
+  de eval. Prettier asegura consistencia de formato sin debates de estilo.
+
+  ⭐ RESPUESTA DESTACADA:
+  Configura Quality Gate personalizado que bloquea el PR si Coverage baja
+  respecto a la rama base (coverage differential). Menciona SonarLint en el
+  IDE (VS Code / Cursor) para detectar issues antes del push, reduciendo el
+  costo de corrección.
+
+  🔴 RED FLAGS:
+  - "SonarQube es responsabilidad del DevOps, yo solo codifico."
+  - No sabe qué es un Security Hotspot vs Code Smell.
+  - Desactiva reglas de ESLint por conveniencia sin entender el riesgo.
+
+  PUNTUACIÓN:
+  | Nivel      | Criterio                                                        |
+  |------------|---------------------------------------------------------------|
+  | 0 - No apto| No conoce SonarQube o no usa linting                           |
+  | 1 - Básico | Conoce SonarQube pero no prioriza ni configura Quality Gates   |
+  | 2 - Competente | Priorización correcta + métricas + ESLint configurado    |
+  | 3 - Destacado  | Quality Gate diferencial, SonarLint en IDE, cobertura mínima|
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECCIÓN 5 — CODE CHALLENGE (15 min)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+ENUNCIADO:
+Implementa en TypeScript (puedes usar pseudocódigo si el tiempo no alcanza)
+la función `procesarLoteRemuneraciones` que recibe un arreglo de empleados
+y retorna un resumen del lote.
+
+  TIPOS DE ENTRADA:
+  ┌─────────────────────────────────────────────────────────────────────────┐
+  │  interface Empleado {                                                   │
+  │    id: string;                                                          │
+  │    nombre: string;                                                      │
+  │    sueldoBruto: number;   // en pesos CLP                              │
+  │    porcentajeAFP: number; // ej. 0.10 para 10%                         │
+  │    porcentajeSalud: number;                                             │
+  │    descuentosExtra: number; // descuentos opcionales                   │
+  │  }                                                                      │
+  │                                                                         │
+  │  interface ResultadoLote {                                              │
+  │    procesados: number;                                                  │
+  │    fallidos: number;                                                    │
+  │    totalPagado: number;                                                 │
+  │    errores: { empleadoId: string; motivo: string }[];                  │
+  │  }                                                                      │
+  └─────────────────────────────────────────────────────────────────────────┘
+
+  REGLAS DE NEGOCIO:
+  1. sueldoBruto debe ser > 0. Si no, agregar a errores con motivo
+     "SueldoBrutoInvalido".
+  2. porcentajeAFP + porcentajeSalud no puede superar 0.30 (30%). Si supera,
+     agregar a errores con motivo "DescuentosExcesivos".
+  3. descuentosExtra no puede ser negativo. Si lo es, agregar a errores con
+     motivo "DescuentoExtraInvalido".
+  4. sueldoLiquido = sueldoBruto - (sueldoBruto * afp) - (sueldoBruto * salud)
+     - descuentosExtra
+  5. sueldoLiquido no puede ser negativo. Si lo es, agregar a errores con
+     motivo "LiquidoNegativo".
+  6. totalPagado = suma de sueldoLiquido de los empleados procesados
+     correctamente.
+
+  INPUT DE PRUEBA:
+  [
+    { id: "E001", nombre: "Ana Torres",   sueldoBruto: 800_000, porcentajeAFP: 0.10, porcentajeSalud: 0.07, descuentosExtra: 50_000 },
+    { id: "E002", nombre: "Luis Mora",    sueldoBruto: -1,      porcentajeAFP: 0.10, porcentajeSalud: 0.07, descuentosExtra: 0     },
+    { id: "E003", nombre: "Pedro Soto",   sueldoBruto: 500_000, porcentajeAFP: 0.20, porcentajeSalud: 0.15, descuentosExtra: 0     },
+    { id: "E004", nombre: "María Paz",    sueldoBruto: 600_000, porcentajeAFP: 0.10, porcentajeSalud: 0.07, descuentosExtra: -100  },
+    { id: "E005", nombre: "Carlos Díaz",  sueldoBruto: 400_000, porcentajeAFP: 0.10, porcentajeSalud: 0.07, descuentosExtra: 0     },
+  ]
+
+  OUTPUT ESPERADO:
+  {
+    procesados: 2,
+    fallidos: 3,
+    totalPagado: 1_324_000,  // E001: 662_000 + E005: 332_000 (?? — candidato debe calcular)
+    errores: [
+      { empleadoId: "E002", motivo: "SueldoBrutoInvalido"   },
+      { empleadoId: "E003", motivo: "DescuentosExcesivos"   },
+      { empleadoId: "E004", motivo: "DescuentoExtraInvalido"},
+    ]
+  }
+
+  NOTA PARA ENTREVISTADOR:
+  Cálculo correcto:
+    E001: 800_000 - 80_000 (AFP) - 56_000 (Salud) - 50_000 = 614_000
+    E005: 400_000 - 40_000 (AFP) - 28_000 (Salud) - 0       = 332_000
+    totalPagado = 614_000 + 332_000 = 946_000
+  (El output esperado arriba es aproximado; el candidato debe calcular y
+   el entrevistador valida el proceso, no solo el número.)
+
+  CRITERIOS DE EVALUACIÓN DEL CODE CHALLENGE:
+  | Criterio                                  | Peso |
+  |-------------------------------------------|------|
+  | Tipado TypeScript correcto (sin any)      | 20%  |
+  | Manejo de todos los casos de error        | 30%  |
+  | Cálculo correcto del líquido              | 20%  |
+  | Código limpio (funciones pequeñas, nombres descriptivos) | 20% |
+  | Tests o comentarios de test mencionados   | 10%  |
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECCIÓN 6 — SCORECARD RESUMEN
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Candidato: ___________________________________
+Fecha:      ___________________________________
+Entrevistador: ________________________________
+
+┌────────────────────────────────────────────────────────────────────────────┐
+│ PREGUNTA          │ ÁREA                    │ PESO │ PUNTAJE (0-3) │ NOTA  │
+├───────────────────┼─────────────────────────┼──────┼───────────────┼───────┤
+│ F-1               │ TypeScript — Tipos       │ 10%  │               │       │
+│ F-2               │ Node.js — Async          │ 15%  │               │       │
+│ F-3               │ PostgreSQL — Performance │ 15%  │               │       │
+│ AP-1              │ AdonisJS 6 — Arquitectura│ 15%  │               │       │
+│ AP-2              │ React — Caching/Estado   │ 10%  │               │       │
+│ AP-3              │ TDD — Lógica financiera  │ 10%  │               │       │
+│ PT-1              │ Seguridad API            │ 10%  │               │       │
+│ PT-2              │ SonarQube / Calidad      │ 5%   │               │       │
+│ CODE CHALLENGE    │ TypeScript — Algoritmo   │ 10%  │               │       │
+├───────────────────┼─────────────────────────┼──────┼───────────────┼───────┤
+│                   │ TOTAL PONDERADO          │ 100% │               │       │
+└────────────────────────────────────────────────────────────────────────────┘
+
+CÁLCULO DEL PUNTAJE PONDERADO:
+  Para cada pregunta: (puntaje_obtenido / 3) * peso
+  Sumar todos los valores → resultado entre 0% y 100%
+
+UMBRALES DE APROBACIÓN — SEMI SENIOR:
+  ✅ APROBADO PARA AVANZAR:   ≥ 65%
+  ⚠️  CONDICIONAL (2da ronda): 50% - 64%
+  ❌ NO APTO:                  < 50%
+
+NOTA ADICIONAL — Requisito excluyente:
+  TypeScript (F-1 + Code Challenge): Si el candidato obtiene 0 en ambas
+  preguntas de TypeScript, es NO APTO independiente del puntaje total.
+
+OBSERVACIONES GENERALES DEL ENTREVISTADOR:
+_______________________________________________________________________________
+_______________________________________________________________________________
+_______________________________________________________________________________
+
+RECOMENDACIÓN FINAL:
+  □ Avanzar al siguiente proceso
+  □ Segunda ronda técnica
+  □ No continuar
+
+================================================================================
+FIN DEL CHALLENGE
+Generado por TechChallenge Architect — ACL Chile
+Fecha: 2026-03-26
+================================================================================
