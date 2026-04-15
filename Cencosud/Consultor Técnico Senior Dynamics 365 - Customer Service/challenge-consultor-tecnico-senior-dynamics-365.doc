@@ -1,0 +1,762 @@
+═══════════════════════════════════════════════════════════════════
+                    CHALLENGE TÉCNICO — ENTREVISTA IT
+═══════════════════════════════════════════════════════════════════
+
+Puesto:         Consultor Técnico Senior de Dynamics 365 — Customer Service
+Cliente:        Cencosud
+Nivel:          Senior
+Stack:          Microsoft Dynamics 365 Customer Service, Omnichannel, Dataverse, Plugins en C#, Custom Workflows, Power Platform, Power Automate, APIs REST/SOAP, ALM / CI-CD, GDPR
+Duración:       60 minutos
+Enfoque:        Experiencial aplicado (validación de experiencia real + excluyentes del puesto)
+Fecha:          2026-04-15
+Jefatura:       Gianna Fulgeri (complejidad media)
+KAM:            Miguel Flores
+Reclutador:     Gonzalo Ponce
+Código:         0000C
+
+═══════════════════════════════════════════════════════════════════
+INSTRUCCIONES PARA EL ENTREVISTADOR
+═══════════════════════════════════════════════════════════════════
+
+Este challenge está diseñado para VALIDAR EXPERIENCIA REAL. Las preguntas
+están construidas de forma que no se pueden resolver consultando internet
+en caliente: todas exigen narrar proyectos concretos, decisiones tomadas,
+nombres de componentes que el candidato haya tocado, trade-offs reales y
+anécdotas de debugging. Un candidato que solo "estudió la documentación"
+no podrá sostener la conversación más allá de las primeras 2 preguntas.
+
+Reglas del entrevistador:
+ 1. NO aceptar respuestas enciclopédicas sin ejemplo. Si el candidato
+    responde en términos teóricos, repreguntar: "Dame un caso concreto
+    que hayas implementado tú en un proyecto productivo."
+ 2. Anotar nombres propios que el candidato mencione (componentes, clases,
+    eventos, tablas del Dataverse, flujos). Son trazables y detectan fraude.
+ 3. Si el candidato duda o cambia de tema en preguntas de plugins en C# o
+    de Dataverse, marcar red flag — son excluyentes.
+ 4. Pedir certificaciones oficiales al cierre (MB-230, PL-200, PL-400,
+    PL-600). Si no las tiene, es red flag del excluyente #12.
+
+═══════════════════════════════════════════════════════════════════
+1. WARM-UP (5 min) — No evaluable
+═══════════════════════════════════════════════════════════════════
+
+Pregunta W1: Trayectoria
+
+> Contame en 2–3 minutos tu trayectoria con Dynamics 365. ¿Hace cuánto
+  trabajás con la plataforma, en cuántos proyectos de Customer Service
+  has participado y cuál fue el rol que ocupaste en cada uno?
+
+(No se evalúa — sirve para calibrar la profundidad de las preguntas
+siguientes y confirmar la seniority declarada en el CV.)
+
+---
+
+Pregunta W2: Proyecto representativo
+
+> Elegí el proyecto de Customer Service / Omnichannel que consideres más
+  representativo de tu experiencia. Describime en 2 minutos: cliente,
+  volumetría (usuarios, casos/mes), módulos implementados y qué parte
+  tocaste vos directamente.
+
+(No se evalúa — pero este proyecto es el ANCLA conversacional: todas las
+preguntas posteriores pueden referenciarlo. Si el candidato cambia de
+proyecto en cada respuesta, es red flag.)
+
+
+═══════════════════════════════════════════════════════════════════
+2. EXPERIENCIA Y TRAYECTORIA (10 min) — Excluyentes #1 y #10
+═══════════════════════════════════════════════════════════════════
+
+---------------------------------------------------------------
+Bloque: Consultor Técnico Senior bajo arquitectura definida
+---------------------------------------------------------------
+
+Pregunta 1: Arquitectura recibida vs. decisiones propias
+
+> Enunciado: En tu último proyecto de Dynamics 365, ¿qué decisiones de
+  arquitectura ya venían definidas cuando entraste y cuáles tomaste vos?
+  Dame un ejemplo concreto de una decisión técnica que hayas tenido que
+  sostener frente al Technical Lead o al Arquitecto, y cómo la
+  fundamentaste.
+
+🟢 Respuesta mínima esperada (must-mention):
+- Distingue claramente "lo que venía definido" (modelo de datos base,
+  estrategia de ambientes, patrones de integración) de "lo que él decidió"
+  (implementación de un plugin, diseño de un flujo, extensión de una entidad).
+- Menciona al menos un trade-off concreto que discutió con el Technical
+  Lead o Arquitecto (ej. sync vs async plugin, Power Automate vs plugin,
+  Custom API vs Action).
+- Explica cómo documentó la decisión (ADR, wiki, ticket, mail de cierre).
+
+📖 Explicación de referencia (buenas prácticas):
+Un Consultor Técnico Senior trabajando bajo arquitectura definida debe
+respetar los guardrails del Arquitecto (nomenclatura, prefijos de solución,
+estrategia de ambientes, patrón de integración) pero también debe tener
+criterio para decidir la implementación fina. El candidato debería
+reconocer que NO todo es configuración: hay puntos donde el diseño fino
+(elección del evento del plugin, uso de ExecuteMultiple vs loop, elección
+entre workflow clásico, flujo moderno o plugin) queda a su criterio. La
+buena práctica es dejar evidencia escrita de cada decisión con impacto
+(ADR ligero o página de Confluence/DevOps Wiki).
+
+⭐ Respuesta destacada (diferenciador senior):
+Menciona haber propuesto cambios a la arquitectura recibida cuando
+detectó un anti-patrón (p. ej., lógica de negocio duplicada entre
+Power Automate y un plugin, o uso de JS en formulario para algo que
+debía ser business rule/plugin). Explica cómo lo planteó sin romper la
+relación con el Arquitecto (escalamiento técnico respetuoso).
+
+🔴 Red flags:
+- "Todo lo decidía el arquitecto, yo solo implementaba" → no cumple
+  seniority Senior.
+- No distingue entre configuración y desarrollo.
+- No puede dar ejemplo concreto de una decisión propia.
+- Habla en genérico de "buenas prácticas" sin aterrizar a un caso.
+
+Puntuación:
+| Nivel | Criterio |
+|-------|----------|
+| 0 — No apto | No distingue arquitectura recibida vs. decisión propia; solo describe tareas |
+| 1 — Básico | Da ejemplos pero son de configuración trivial; no sostiene decisiones técnicas |
+| 2 — Competente | Da un ejemplo claro de decisión propia con trade-off razonado y documentación |
+| 3 — Destacado | Ha desafiado la arquitectura recibida con fundamento y propuesto cambios aceptados |
+
+---
+
+Pregunta 2: Resolución de problema complejo en producción
+
+> Enunciado: Contame el peor incidente técnico que te haya tocado
+  resolver en un ambiente productivo de Dynamics 365 Customer Service.
+  Quiero saber: (a) cómo lo detectaste, (b) cómo diagnosticaste, (c)
+  qué herramientas usaste (Plugin Trace Log, Solution Checker, FetchXML
+  Builder, etc.), y (d) qué hiciste para que no vuelva a pasar.
+
+🟢 Respuesta mínima esperada (must-mention):
+- Narrativa clara de detección → diagnóstico → fix → post-mortem.
+- Menciona al menos dos herramientas específicas de diagnóstico
+  (Plugin Trace Log, Job System, Application Insights, Solution
+  Checker, XrmToolBox, Plugin Registration Tool, Monitor de Power
+  Automate, Telemetría de Omnichannel).
+- Explica la acción correctiva (test, alerting, refactor, cambio de
+  modo sync→async, manejo de InvalidPluginExecutionException).
+
+📖 Explicación de referencia (buenas prácticas):
+El diagnóstico en Dynamics 365 pasa por Plugin Trace Log para código
+custom, Application Insights para telemetría, Monitor de flujos para
+Power Automate, y el System Job viewer para jobs async. Un Senior
+distingue claramente los síntomas (timeout 2 minutos en plugin sync,
+SQL timeout en consultas FetchXML mal armadas, límites de API del
+Dataverse, throttling de servicio) y aplica fix respetando ALM
+(solución de hotfix, no cambio directo en producción).
+
+⭐ Respuesta destacada (diferenciador senior):
+Menciona haber instrumentado Application Insights en plugins, usar
+correlation IDs entre Omnichannel y Dynamics, haber escrito un
+runbook post-incidente. Habla del límite de 2 minutos en sandbox
+sync, del throttling del Dataverse Web API (6000 requests / 5 min
+por usuario) y cómo lo evitó con ExecuteMultipleRequest.
+
+🔴 Red flags:
+- No recuerda un incidente concreto (un Senior los tiene).
+- No sabe qué es Plugin Trace Log.
+- "Lo resolvió otro del equipo" → no cumple el rol.
+- Cambia código directamente en producción.
+- No aplica RCA ni deja acción preventiva.
+
+Puntuación:
+| Nivel | Criterio |
+|-------|----------|
+| 0 — No apto | No puede narrar ningún incidente o el que narra es trivial (un bug de UI) |
+| 1 — Básico | Narra un incidente pero salta pasos clave del diagnóstico |
+| 2 — Competente | Narrativa completa detección→diagnóstico→fix→prevención con herramientas correctas |
+| 3 — Destacado | Muestra madurez: correlation IDs, Application Insights, runbook, post-mortem |
+
+
+═══════════════════════════════════════════════════════════════════
+3. CUSTOMER SERVICE Y OMNICHANNEL APLICADO (10 min) — Excluyente #1
+═══════════════════════════════════════════════════════════════════
+
+Pregunta 3: Routing de casos en Omnichannel
+
+> Enunciado: En un proyecto real que hayas hecho, ¿cómo configuraste
+  el ruteo de conversaciones entrantes en Omnichannel for Customer
+  Service? Quiero que me lleves por: (a) qué canales integraste (chat,
+  WhatsApp, voice, email, Teams), (b) cómo definiste las colas y las
+  reglas de asignación, (c) qué criterios usaste para el unified
+  routing vs el routing clásico, y (d) cómo manejaste el skill-based
+  routing.
+
+🟢 Respuesta mínima esperada (must-mention):
+- Al menos 2 canales integrados con nombre.
+- Distingue "basic routing" (record routing) vs "unified routing"
+  (diversion + assignment rule-based, con ML de capacity).
+- Menciona Work Streams, Queues, Routing Rules, Assignment Methods
+  (Highest Capacity / Round Robin / Most Idle).
+- Explica skills, skill matching (Exact / Closest Match) y cómo
+  cargó el catálogo de skills.
+
+📖 Explicación de referencia (buenas prácticas):
+Omnichannel distribuye trabajo mediante Work Streams (definen canal +
+modo de trabajo), Queues (agrupan agentes), Routing Rules (clasifican
+la conversación en base a condiciones o modelo ML) y Assignment
+Methods. El unified routing es recomendado sobre el clásico desde
+2022 porque soporta diversion, classification con ML y asignación por
+capacidad. Las skills se modelan como una entidad del Dataverse y se
+asocian tanto al agente como al modelo de la conversación. Buena
+práctica: catálogo de skills versionado, reglas simples y test de
+scenarios en un entorno UAT con agentes sintéticos.
+
+⭐ Respuesta destacada:
+Menciona el uso de Context Variables en las reglas, integración con
+IVR de un proveedor de voz (NICE CXone, Genesys), overflow rules para
+SLAs, y el impacto de la configuración de capacity profiles sobre la
+distribución. Habla de haber usado Copilot for Customer Service o
+Agent Desktop Productivity Pane.
+
+🔴 Red flags:
+- No distingue basic vs unified routing.
+- Confunde Queue con Work Stream.
+- "Nunca configuré skills" — es excluyente para Omnichannel Senior.
+- Menciona solo canales que no existen en Omnichannel (Slack, Messenger
+  sin SDK oficial, etc.) sin aclarar integración custom.
+
+Puntuación:
+| Nivel | Criterio |
+|-------|----------|
+| 0 — No apto | No distingue los componentes del modelo de routing o nunca implementó uno |
+| 1 — Básico | Conoce las piezas pero mezcla conceptos de basic/unified |
+| 2 — Competente | Explica configuración real con 2+ canales, colas, skills y assignment method |
+| 3 — Destacado | Agrega context variables, overflow, integración con IVR externo, capacity profiles |
+
+---
+
+Pregunta 4: SLA, Entitlements y KB Articles
+
+> Enunciado: En Customer Service, ¿cómo modelaste la relación entre
+  Entitlements, SLAs y los casos? Dame un ejemplo de una configuración
+  de SLA que hayas hecho: qué Warning/Failure times definiste, cómo
+  manejaste la pausa del reloj, y cómo aplicaste las horas laborales
+  del cliente (calendar). Bonus: ¿cómo integraste la base de
+  conocimientos (Knowledge Base) al flujo del agente?
+
+🟢 Respuesta mínima esperada (must-mention):
+- Define Entitlement como el contrato que habilita al cliente a recibir
+  servicio, y SLA como la promesa de tiempos de respuesta/resolución.
+- Menciona Enhanced SLA (recomendado) vs Standard SLA.
+- Explica Warning time, Failure time, KPI Instances, Pause/Resume con
+  estados que pausan el reloj.
+- Habla de Business Closure / Customer Service Schedule para horas
+  laborales.
+
+📖 Explicación de referencia (buenas prácticas):
+Los SLA modernos (Enhanced) trabajan sobre KPI Instances, lo que permite
+múltiples métricas por caso (First Response, Resolution By). La pausa
+del reloj se configura en la entidad SLA (On Hold Times) y debe estar
+consistente con los estados del caso. El calendar de horas laborales
+se define en Customer Service Schedule y se asocia al SLA; los feriados
+se manejan como Business Closure. Un KB Article se asocia al caso vía
+Case → Related Knowledge o se sugiere automáticamente con el modelo de
+Case Suggestions.
+
+⭐ Respuesta destacada:
+Menciona Case Topic + Suggestion Model entrenado para sugerir KB,
+federación con SharePoint / ServiceNow como fuentes externas de KB,
+scoring de relevancia, y cómo se mide el deflection rate. Integración
+con Copilot for Customer Service para draft de respuesta basado en KB.
+
+🔴 Red flags:
+- Confunde Entitlement con Contract (obsoleto desde v9).
+- Usa Standard SLA sin razón (es legacy).
+- No conoce la pausa de reloj.
+- "La KB no la implementé yo" → gap serio para un Senior de Customer
+  Service.
+
+Puntuación:
+| Nivel | Criterio |
+|-------|----------|
+| 0 — No apto | No distingue Entitlement, SLA y KPI; usa terminología obsoleta |
+| 1 — Básico | Configura SLA simple sin pausas ni calendar |
+| 2 — Competente | Configura Enhanced SLA completo, KB articles asociados, calendar |
+| 3 — Destacado | Integra suggestions con ML, federación de KB, métricas de deflection, Copilot |
+
+
+═══════════════════════════════════════════════════════════════════
+4. DESARROLLO TÉCNICO — DATAVERSE + PLUGINS EN C# (15 min)
+          Excluyentes #2, #3, #11
+═══════════════════════════════════════════════════════════════════
+
+Pregunta 5: Anatomía de un plugin real escrito por vos
+
+> Enunciado: Elegí UN plugin en C# que hayas escrito y puesto en
+  producción. Contame: (a) qué evento (Message + Stage + Mode) registraste
+  y por qué, (b) qué extraíste del IPluginExecutionContext (Target,
+  PreImage, PostImage, SharedVariables), (c) cómo obtuviste el
+  IOrganizationService y si usaste ServiceFactory o impersonación, (d)
+  cómo manejaste errores y transaccionalidad, (e) cómo lo probaste
+  unitariamente.
+
+🟢 Respuesta mínima esperada (must-mention):
+- Nombre real del mensaje (Create/Update/Delete/Retrieve/Custom) + Stage
+  (PreValidation / PreOperation / PostOperation) + Mode (Sync/Async).
+- Uso de PreImage para comparar valores anteriores en Update.
+- IOrganizationServiceFactory con userId (null, caller, SYSTEM).
+- InvalidPluginExecutionException para abortar transacción, distinto
+  de Exception genérica.
+- Testing con FakeXrmEasy, XrmUnitTest o mocks sobre IOrganizationService.
+
+📖 Explicación de referencia (buenas prácticas):
+Un plugin se registra contra un mensaje del Dataverse con un stage que
+determina el orden de ejecución. PreValidation corre fuera de la
+transacción (útil para validar permisos antes de lock); PreOperation
+modifica el Target antes de persistir; PostOperation ejecuta después,
+útil para side-effects. La imagen PreImage se configura explícitamente
+en el Plugin Registration Tool indicando qué atributos capturar. La
+buena práctica es evitar Retrieve masivos dentro del plugin (cada
+roundtrip cuenta contra el límite de 2 min sync) y favorecer
+ExecuteMultipleRequest cuando hay operaciones bulk. Para testing se
+usa FakeXrmEasy que permite mockear el IOrganizationService y simular
+el contexto.
+
+⭐ Respuesta destacada:
+Menciona uso de Early-bound (crmsvcutil / pac modelbuilder) vs
+Late-bound según el caso, ejecución en modo async cuando la operación
+no es crítica para la respuesta al usuario, uso de SharedVariables para
+pasar datos entre plugins del mismo pipeline, manejo de loops infinitos
+con Depth del contexto, y logging estructurado con ITracingService.
+Habla del sandbox isolation (Sandbox vs None) y por qué en producción
+SIEMPRE se usa Sandbox.
+
+🔴 Red flags (excluyente si aparecen):
+- No puede nombrar IPlugin, IPluginExecutionContext, IOrganizationService.
+- No conoce la diferencia entre PreImage y PostImage.
+- Dice que "los plugins se ejecutan siempre en sync" o "siempre en async".
+- Usa Exception genérica y no InvalidPluginExecutionException.
+- Nunca escribió un test unitario para un plugin.
+- Usa Thread.Sleep, llamadas HTTP sin ConfigureAwait, o accede a disco.
+
+Puntuación:
+| Nivel | Criterio |
+|-------|----------|
+| 0 — No apto | No puede describir la anatomía de un plugin; confunde terminología |
+| 1 — Básico | Describe un plugin simple de Update sin imágenes, sin tests |
+| 2 — Competente | Maneja Stages, Images, ServiceFactory, InvalidPluginExecutionException y tests |
+| 3 — Destacado | Domina ExecuteMultiple, Depth, SharedVariables, sandbox isolation y ITracingService |
+
+---
+
+Pregunta 6: Dataverse — modelo, relaciones y límites
+
+> Enunciado: Quiero que me dibujes mentalmente (o en papel) un caso real
+  que hayas modelado en Dataverse: 3–5 tablas, sus columnas principales y
+  las relaciones entre ellas. Después respondeme: ¿qué tipo de relación
+  usaste entre cada par (1:N, N:N nativa, N:N manual con entidad
+  intersection) y por qué? ¿Cuándo preferís una calculated column vs una
+  rollup vs un plugin para derivar datos?
+
+🟢 Respuesta mínima esperada (must-mention):
+- Al menos 3 tablas con nombres plausibles (prefijo de publisher incluído:
+  cen_ejemplo, crXXX_tabla).
+- Distingue 1:N, N:N nativa, N:N manual (entidad intermedia cuando hay
+  atributos en la relación).
+- Calculated column: recalcula on-demand, sin historial.
+- Rollup: se calcula por job asíncrono cada hora (default).
+- Plugin: para lógica compleja o inmediata.
+
+📖 Explicación de referencia (buenas prácticas):
+El modelo de datos del Dataverse se diseña con tablas (tables), columnas
+(columns) y relaciones. Una relación 1:N crea una lookup en el lado N;
+una N:N nativa crea una tabla intersection administrada; una N:N manual
+se usa cuando la relación tiene atributos propios (ej. fecha desde, rol).
+Las calculated columns son fórmulas evaluadas on-the-fly y no disparan
+workflows; las rollup columns son agregaciones (sum/count/min/max)
+recalculadas por job async y con un retraso. Un plugin es preferible
+cuando la lógica debe ser inmediata y transaccional.
+
+⭐ Respuesta destacada:
+Habla de Elastic Tables (para datos no transaccionales de alto volumen),
+uso de Alternate Keys para integraciones idempotentes, impacto de las
+N:N nativas en el performance (no se pueden consultar con filtros
+complejos en FetchXML), y por qué se desaconsejan más de 3 niveles de
+lookup anidadas en una vista. Menciona el límite de 1 MB por registro
+y 10k columnas por tabla.
+
+🔴 Red flags:
+- Llama "entidades" y "atributos" sin saber que se renombraron a tables
+  y columns (OK si usa ambos, red flag si no conoce el término moderno).
+- No sabe cuándo usar N:N manual.
+- "Los rollups son inmediatos" (falso).
+- Diseña todo con plugins, ignorando calculated/rollup.
+
+Puntuación:
+| Nivel | Criterio |
+|-------|----------|
+| 0 — No apto | No diferencia tipos de relación o de columna derivada |
+| 1 — Básico | Modela 1:N y N:N pero no sabe cuándo usar manual vs nativa |
+| 2 — Competente | Modela correctamente, elige entre calculated/rollup/plugin con criterio |
+| 3 — Destacado | Conoce Elastic Tables, Alternate Keys, límites y optimiza por performance |
+
+---
+
+Pregunta 7: Custom Workflows vs Modern Flows vs Custom APIs
+
+> Enunciado: Tenés un requerimiento de negocio: cuando se cierra un caso
+  con un código de resolución específico, hay que (1) notificar por
+  email al cliente, (2) crear un registro en una tabla de auditoría
+  custom, (3) invocar una API externa REST para avisar al CRM legado.
+  ¿Implementás esto con un Plugin, un Custom Workflow Activity, un flujo
+  de Power Automate, una Custom API, o una combinación? Justificá.
+
+🟢 Respuesta mínima esperada (must-mention):
+- Reconoce que no hay una respuesta única: depende de criticidad,
+  necesidad de reintento, SLA.
+- Menciona que Custom Workflow Activities están en vía de
+  deprecación (recomendación Microsoft: migrar a plugins o flows).
+- Propone una combinación razonable: plugin para la auditoría
+  (transaccional), flow para el email y la llamada externa
+  (retry + manejo de fallos), o Custom API como contrato
+  reutilizable.
+
+📖 Explicación de referencia (buenas prácticas):
+Para un caso así la mejor práctica actual es:
+  • Plugin PostOperation sync para la auditoría (garantiza consistencia).
+  • Power Automate flow disparado por el plugin (o por el cambio de
+    estado del caso) para email y llamada REST; aprovecha retries y
+    manejo de errores nativo.
+  • Si la lógica va a reutilizarse desde múltiples orígenes, encapsularla
+    en una Custom API con su propio contrato.
+Esta arquitectura aísla responsabilidades y respeta que las llamadas
+HTTP externas NO deben ir dentro del plugin sync (bloquean 2 min y
+consumen el timeout).
+
+⭐ Respuesta destacada:
+Menciona idempotencia de la llamada externa (qué pasa si Power Automate
+reintenta), uso de Dataverse connector con tablas elastic para la
+auditoría, custom connector con OpenAPI para el CRM legado, y
+estrategia de manejo de fallos (dead-letter via Service Bus o tabla
+de outbox pattern).
+
+🔴 Red flags:
+- Propone "hacer todo en un plugin sync" con llamada HTTP externa.
+- Propone Custom Workflow Activity como primera opción (legacy).
+- No menciona retries ni idempotencia.
+- No distingue Custom API de Action (Custom API es el sucesor moderno).
+
+Puntuación:
+| Nivel | Criterio |
+|-------|----------|
+| 0 — No apto | Mete todo en un plugin sync con HTTP, o no sabe qué opciones existen |
+| 1 — Básico | Separa responsabilidades pero no justifica por qué |
+| 2 — Competente | Combina plugin + flow con justificación de sync/async y reintentos |
+| 3 — Destacado | Aplica outbox pattern, idempotencia, Custom API como contrato y Service Bus |
+
+
+═══════════════════════════════════════════════════════════════════
+5. INTEGRACIONES — APIs REST/SOAP + POWER AUTOMATE (10 min)
+          Excluyente #9
+═══════════════════════════════════════════════════════════════════
+
+Pregunta 8: Integración real consumida o expuesta
+
+> Enunciado: Contame una integración real que hayas hecho desde Dynamics
+  365 hacia un sistema externo (o viceversa). Incluí: (a) protocolo
+  (REST/SOAP), (b) autenticación (OAuth 2.0 client credentials, certificate
+  based, API key), (c) mapeo de datos y manejo de errores, (d) cómo
+  manejaste throttling del Dataverse Web API, (e) si usaste custom
+  connector, Azure Function, Logic App, o Power Automate.
+
+🟢 Respuesta mínima esperada (must-mention):
+- Nombre real del sistema integrado (SAP, Salesforce, ERP, pasarela de
+  pagos, core bancario, etc.).
+- Autenticación OAuth 2.0 con App Registration en Entra ID (antes Azure
+  AD) usando client credentials, y Application User en el Dataverse.
+- Conoce el límite de 6000 requests / 5 min por usuario en Dataverse
+  Web API y cómo evitarlo (ExecuteMultipleRequest, batching con $batch,
+  Service Protection API limits).
+- Manejo de errores: dead-letter queue, reintento exponencial,
+  correlation ID.
+
+📖 Explicación de referencia (buenas prácticas):
+La integración moderna con Dataverse usa Web API OData v4 con OAuth 2.0.
+Para llamadas server-to-server se registra una App en Entra ID con los
+permisos adecuados y se crea un Application User asociado en el
+Dataverse con un rol de seguridad mínimo. El throttling se evita con
+batching y ExecuteMultiple. Para flujos complejos, la herramienta
+correcta suele ser Logic App (B2B con conectores enterprise) o Azure
+Function (control total). Power Automate es mejor para flujos con
+usuarios finales, no para integraciones de alto throughput.
+
+⭐ Respuesta destacada:
+Menciona Service Protection API Limits (3 dimensiones: requests,
+execution time, concurrent connections), uso de Change Tracking para
+sincronización delta, uso de Webhooks del Dataverse en vez de polling,
+manejo de schemas con MessageContract para SOAP y DataContract para
+contratos WCF legacy. Estrategia de versionado de APIs (URI vs header).
+
+🔴 Red flags:
+- "Usé un usuario normal con su clave guardada en config" (antipatrón).
+- Desconoce el throttling del Dataverse.
+- No sabe qué es un Application User.
+- Usa Power Automate para sincronizar 10k registros / hora.
+
+Puntuación:
+| Nivel | Criterio |
+|-------|----------|
+| 0 — No apto | Usa credenciales de usuario, no conoce throttling |
+| 1 — Básico | OAuth básico sin Application User; no maneja errores |
+| 2 — Competente | Application User, OAuth client credentials, batching, manejo de errores |
+| 3 — Destacado | Webhooks, Change Tracking, outbox, versionado y Service Protection API limits |
+
+---
+
+Pregunta 9: Power Automate — gobernanza y diseño
+
+> Enunciado: En tu experiencia, ¿cuándo usás Power Automate Cloud Flows
+  vs Desktop Flows vs un plugin? Contame un flujo cloud que hayas hecho
+  en un entorno empresarial: (a) conectores usados, (b) manejo de errores
+  y parallel branches, (c) cómo lo promoviste entre ambientes (solution
+  vs export ZIP), (d) cómo gestionás las connection references y los
+  environment variables.
+
+🟢 Respuesta mínima esperada (must-mention):
+- Cloud Flows para integración/automatización API-first; Desktop para
+  RPA de apps legadas sin API; Plugin para lógica transaccional in-proc
+  del Dataverse.
+- Scope + Configure Run After para manejo de errores ("Has failed",
+  "Timed out").
+- Movimiento por solución (managed/unmanaged), connection references y
+  environment variables como mecanismo de parametrización.
+- Pipeline de Power Platform (ALM Accelerator o Pipelines nativo).
+
+📖 Explicación de referencia (buenas prácticas):
+La disciplina ALM en Power Platform exige que los flows vivan dentro
+de una Solution, que los conectores se referencien vía Connection
+Reference (no conexiones directas) y que las URLs/IDs sensibles se
+parametrizen con Environment Variables. El deploy entre DEV → UAT →
+PROD se hace con soluciones managed + pipelines. El manejo de errores
+se basa en Scope + Run After; un patrón típico es try/catch/finally
+con Scopes. El flow owner debe ser una identidad de servicio, no un
+usuario humano (evita que se rompa al salir de la empresa).
+
+⭐ Respuesta destacada:
+Habla de Center of Excellence (CoE) Toolkit, DLP policies a nivel
+tenant/environment, uso de Child Flows para encapsular lógica
+reusable, costos (request-based vs per-user-per-flow license) y
+observabilidad con Monitor + Application Insights.
+
+🔴 Red flags:
+- No conoce Connection References.
+- Mueve flows con "export ZIP" en vez de solution.
+- El flow owner es un usuario humano.
+- No sabe qué es DLP en Power Platform.
+
+Puntuación:
+| Nivel | Criterio |
+|-------|----------|
+| 0 — No apto | Hace flows sin solution, sin connection references; no conoce ALM |
+| 1 — Básico | Conoce solution y export pero no usa environment variables |
+| 2 — Competente | ALM correcto: solution, connection references, env vars, pipelines |
+| 3 — Destacado | CoE, DLP, Child Flows, monitoreo con App Insights y control de costos |
+
+
+═══════════════════════════════════════════════════════════════════
+6. SEGURIDAD, GDPR Y ALM (10 min) — Excluyentes #5, #7, #8
+═══════════════════════════════════════════════════════════════════
+
+Pregunta 10: Modelo de seguridad — roles, BU, teams, field-level
+
+> Enunciado: En un proyecto real, ¿cómo diseñaste el modelo de seguridad
+  del Dataverse? Quiero que me expliques: (a) la estructura de Business
+  Units que definiste y por qué, (b) el uso de Teams (Owner Teams vs
+  Access Teams), (c) al menos una política de Field-Level Security que
+  hayas aplicado (en qué campo y por qué), y (d) cómo manejaste el
+  acceso entre BUs sin sobre-privilegiar.
+
+🟢 Respuesta mínima esperada (must-mention):
+- BUs jerárquicas reflejan la organización pero NO deberían ser
+  demasiado profundas (3 niveles máx como regla práctica).
+- Owner Team es dueño de registros; Access Team (autogestionado) se
+  usa para sharing granular.
+- Field-Level Security con Field Security Profile para campos
+  sensibles (DNI, salario, datos financieros).
+- Sharing explícito y reglas de herencia sobre la relación parent-child.
+
+📖 Explicación de referencia (buenas prácticas):
+El modelo de seguridad se basa en 4 pilares: roles (privilegios por
+tabla + nivel de acceso — User/BU/Parent:Child/Org), Business Units
+(contenedor lógico), Teams (owner o access) y sharing. La buena
+práctica es definir un rol base mínimo para todos, roles funcionales
+adicionales por módulo, y usar Access Teams cuando se necesita
+compartir registros ad-hoc sin crear Owner Teams por combinación.
+Field-Level Security se activa sobre columnas marcadas como
+"Field Security = True" y se controla con Field Security Profiles.
+
+⭐ Respuesta destacada:
+Menciona el impacto en performance de las cascadas y el ownership
+share table, uso de Business Units modernas (no jerárquicas, feature
+reciente), Privilege Inheritance en roles, y auditoría activada con
+retention policy. Habla de rol de Environment Maker vs System
+Customizer vs System Administrator y qué significa cada uno a nivel
+Power Platform.
+
+🔴 Red flags:
+- "Le di System Administrator a todos los agentes" (antipatrón).
+- No distingue Owner Team de Access Team.
+- No sabe qué es Field-Level Security.
+- Modela 7+ niveles de BU.
+
+Puntuación:
+| Nivel | Criterio |
+|-------|----------|
+| 0 — No apto | No distingue roles / BU / teams o sobre-privilegia |
+| 1 — Básico | Diseña BUs y roles pero no usa Access Teams ni Field-Level Security |
+| 2 — Competente | Modelo completo con roles funcionales, Access Teams y Field-Level |
+| 3 — Destacado | BUs modernas, Privilege Inheritance, auditoría, y control de customizer |
+
+---
+
+Pregunta 11: GDPR / privacidad y ALM entre ambientes
+
+> Enunciado: Dos preguntas en una. (A) ¿Qué mecanismos de la plataforma
+  usaste para cumplir con GDPR (o equivalente local, Ley 19.628 en Chile)?
+  Pensá en DSAR (Data Subject Access Request), right to be forgotten,
+  anonimización, consent tracking y auditoría. (B) Explicame tu estrategia
+  de ALM: cuántos ambientes, cómo promovías cambios, cómo manejabas
+  hotfixes en producción sin romper la traza hacia Dev.
+
+🟢 Respuesta mínima esperada (must-mention):
+- GDPR: Auditoría del Dataverse, Data Export / DSAR, borrado lógico vs
+  físico, Customer-managed keys (BYOK) si aplica, Data Loss Prevention
+  (DLP) policies.
+- ALM: mínimo 3 ambientes (DEV, UAT, PROD), soluciones managed en UAT
+  y PROD, unmanaged solo en DEV.
+- Hotfix: patch de solución o clon + import en PROD, luego
+  sincronizar en DEV (NO tocar directo en PROD sin traza).
+- Uso de Pipelines Power Platform o Azure DevOps con Power Platform
+  Build Tools.
+
+📖 Explicación de referencia (buenas prácticas):
+Para GDPR / privacidad la plataforma ofrece: (1) auditoría configurable
+por tabla/columna con retention, (2) Data Export / Data Loss Prevention
+policies, (3) eliminación mediante Bulk Delete jobs con retention
+window, (4) Azure Purview para etiquetado y lineage, (5) Customer Lockbox
+para aprobación explícita del soporte Microsoft. El ALM moderno usa
+soluciones managed en todos los ambientes aguas abajo de DEV; el
+control de versiones es sobre el source export de la solución (pac cli).
+Un hotfix se implementa como patch de la solución, se prueba en UAT y
+se promueve a PROD con el pipeline; al mismo tiempo, se sincroniza el
+cambio en DEV para no perder la traza.
+
+⭐ Respuesta destacada:
+Menciona Customer-managed keys (BYOK), Conditional Access en Entra ID
+para el acceso a Power Platform, redacción de datos sensibles con
+Dataverse Mask, políticas de retención por tabla, integración con
+Microsoft Purview para DLP, uso de Managed Environments (feature
+premium) para gobernanza. En ALM: unpack/pack con pac cli, pipelines
+YAML con aprobaciones, y source tree versionado en Git.
+
+🔴 Red flags:
+- No activa auditoría en producción.
+- "En mi proyecto importábamos el ZIP directo en prod" (sin managed).
+- Borra datos con SQL directo (no existe, pero algunos lo intentan
+  con el TDS endpoint).
+- No sabe qué es Customer Lockbox ni DSAR.
+- No menciona Ley 19.628 ni GDPR (puede aceptarse regional si nombra
+  otro marco equivalente).
+
+Puntuación:
+| Nivel | Criterio |
+|-------|----------|
+| 0 — No apto | Sin auditoría, sin soluciones managed, sin estrategia de borrado |
+| 1 — Básico | Conoce auditoría y managed solutions pero sin hotfix path ni DSAR |
+| 2 — Competente | ALM completo (3+ ambientes, managed, pipelines) y GDPR con auditoría + DSAR + retention |
+| 3 — Destacado | Agrega BYOK, Managed Environments, Purview, Customer Lockbox y Conditional Access |
+
+
+═══════════════════════════════════════════════════════════════════
+7. CIERRE — Certificaciones y auto-evaluación (2 min) — Excluyente #12
+═══════════════════════════════════════════════════════════════════
+
+Pregunta 12: Certificaciones oficiales
+
+> Enunciado: ¿Qué certificaciones oficiales de Microsoft tenés vigentes?
+  Indicá fecha de obtención y fecha de renovación. ¿Cuál estás
+  preparando actualmente?
+
+Mapa de certificaciones esperadas para el rol:
+
+| Certificación          | Qué valida                                         | Prioridad |
+|------------------------|----------------------------------------------------|-----------|
+| MB-230                 | Customer Service Functional Consultant             | ALTA      |
+| PL-200                 | Power Platform Functional Consultant               | ALTA      |
+| PL-400                 | Power Platform Developer (plugins, C#, APIs)       | ALTA      |
+| PL-600                 | Power Platform Solution Architect                  | DESEABLE  |
+| MB-280                 | Customer Experience Analyst / Configuration        | DESEABLE  |
+
+Red flag: Ningún certificado vigente + declara "Senior" → es
+excluyente del requisito #12.
+
+---
+
+Pregunta 13: Auto-evaluación
+
+> Enunciado: Si tuvieras que calificarte de 1 a 5 en: (a) Plugins y
+  desarrollo C#, (b) Configuración de Customer Service / Omnichannel,
+  (c) Integraciones, (d) ALM y seguridad — ¿qué puntaje te darías y por
+  qué? ¿Dónde necesitarías mentoría si entraras a este rol?
+
+Sirve para detectar auto-conocimiento y madurez profesional. Un Senior
+real identifica gaps; un falso Senior se califica 5 en todo.
+
+
+═══════════════════════════════════════════════════════════════════
+8. SCORECARD RESUMEN
+═══════════════════════════════════════════════════════════════════
+
+Cada pregunta evaluable (1 a 11) se puntúa 0 a 3. Máximo: 33 puntos.
+
+| # | Área                                        | Puntaje (0–3) | Excluyente |
+|---|---------------------------------------------|---------------|------------|
+| 1 | Arquitectura recibida vs decisión propia    |               | #1, #10    |
+| 2 | Resolución de incidente en producción       |               | #11        |
+| 3 | Routing en Omnichannel                      |               | #1         |
+| 4 | SLA, Entitlements y KB                      |               | #1         |
+| 5 | Anatomía de plugin en C#                    |               | #3, #11    |
+| 6 | Modelo de datos en Dataverse                |               | #2         |
+| 7 | Plugin vs Flow vs Custom API                |               | #3, #11    |
+| 8 | Integración real (REST/SOAP)                |               | #9         |
+| 9 | Power Automate y gobernanza                 |               | #9         |
+|10 | Modelo de seguridad Dataverse               |               | #5, #7     |
+|11 | GDPR + ALM                                  |               | #5, #8     |
+|   | TOTAL                                       |               |            |
+
+Umbrales de aprobación para Senior:
+  - APTO SENIOR:          ≥ 24 puntos (72%) y SIN 0 en preguntas 5, 6, 10 u 11.
+  - APTO SEMI-SENIOR:     18 – 23 puntos — evaluar recolocación.
+  - NO APTO:              < 18 puntos, o cualquier 0 en preguntas 5, 6, 7, 10, 11.
+
+Excluyentes absolutos (rechazo automático independiente del puntaje):
+  1. Respuesta 0 en pregunta 5 (plugins en C#) — excluyente #3.
+  2. Respuesta 0 en pregunta 6 (Dataverse) — excluyente #2.
+  3. No tiene ninguna certificación Microsoft Dynamics 365 / Power Platform
+     vigente o en curso — excluyente #12.
+  4. No puede nombrar ningún proyecto productivo real de Customer Service
+     / Omnichannel — excluyente #1.
+
+═══════════════════════════════════════════════════════════════════
+NOTAS DEL ENTREVISTADOR (completar durante la sesión)
+═══════════════════════════════════════════════════════════════════
+
+Proyecto ancla mencionado en W2: ____________________________________
+
+Componentes y nombres propios citados (trazables):
+  • _________________________________________________________________
+  • _________________________________________________________________
+  • _________________________________________________________________
+
+Dudas o contradicciones detectadas:
+  ___________________________________________________________________
+  ___________________________________________________________________
+
+Recomendación final: [ ] APTO   [ ] APTO C/RESERVAS   [ ] NO APTO
+
+Firma entrevistador: ____________________    Fecha: _____________
