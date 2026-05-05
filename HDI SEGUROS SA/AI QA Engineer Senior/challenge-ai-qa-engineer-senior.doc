@@ -1,0 +1,752 @@
+================================================================================
+  CHALLENGE TÉCNICO — AI QA ENGINEER SENIOR
+  HDI SEGUROS SA
+================================================================================
+
+Puesto            : AI QA Engineer Senior
+Cliente           : HDI SEGUROS SA
+Nivel             : Senior
+Stack principal   : Python · BDD/TDD · Cucumber/Gherkin · Pytest · Playwright ·
+                    Jenkins · SonarQube · XRay · LangChain · LLMs
+Duración estimada : 60 minutos
+Enfoque           : Mixto (teórico + situacional + práctico)
+Fecha             : 2026-05-05
+Generado por      : TechChallenge Architect — ACL Chile
+
+Entrevistador : ___________________________________
+Candidato     : ___________________________________
+
+================================================================================
+  NOTA PARA EL ENTREVISTADOR — ANTI-IA
+================================================================================
+
+Todas las preguntas están diseñadas para que NO puedan responderse con IA en
+tiempo real. Cada pregunta exige una o más de las siguientes condiciones:
+
+  • Ejemplo concreto de un proyecto real del candidato (experiencia vivida)
+  • Diagnóstico en vivo sobre un escenario presentado verbalmente
+  • Justificación de decisiones técnicas con constraints específicos del sector
+  • Enumeración rápida en el acto (sin tiempo para búsqueda)
+  • Conocimiento del contexto regulatorio chileno (CMF / Ley 19.628)
+
+SEÑAL DE ALERTA: Si el candidato responde TODAS las preguntas en términos
+genéricos y abstractos, sin ningún ejemplo propio ni dato específico de un
+proyecto anterior, es probable que esté usando IA como apoyo durante la
+entrevista.
+
+================================================================================
+  1. WARM-UP (5 min) — Romper el hielo
+================================================================================
+
+Estas preguntas NO se evalúan con puntaje. Su objetivo es calibrar el nivel de
+comunicación técnica y entrar en confianza.
+
+  W1. Cuéntame del proyecto de automatización de QA del que más orgulloso
+      estás. ¿Qué tecnologías usaste, qué equipo tenías y cuál fue el impacto
+      concreto y medible que lograste?
+
+  W2. Llevas trabajando con IA aplicada a testing. ¿Cuándo fue tu primer
+      contacto real con esto y qué te llevó a apostar por este camino?
+
+================================================================================
+  2. BLOQUE 1 — QA & AUTOMATIZACIÓN (15 min)
+================================================================================
+
+────────────────────────────────────────────────────────────────────────────────
+PREGUNTA 1: Estrategia de cobertura de regresión al 70%
+────────────────────────────────────────────────────────────────────────────────
+
+  ENUNCIADO
+  En este proyecto debes alcanzar al menos el 70% de cobertura de regresión
+  automatizada. Desde tu experiencia en proyectos reales, ¿cómo priorizarías
+  qué casos automatizar primero para llegar a ese umbral de forma eficiente?
+  ¿Qué criterios usarías y qué métricas te dirían que estás en el camino
+  correcto?
+
+  [ANTI-IA] Esta pregunta requiere metodología vivida. Si el candidato no
+  puede mencionar métricas concretas de un proyecto propio, es señal de alerta.
+
+  RESPUESTA MÍNIMA ESPERADA (must-mention)
+  □ Priorización basada en criticidad de negocio: smoke tests, happy path,
+    flujos de mayor riesgo.
+  □ Distinción clara entre code coverage y cobertura de regresión funcional.
+  □ Métricas: pass rate, flakiness rate, tiempo de ejecución de la suite,
+    defects escapados a producción.
+
+  EXPLICACIÓN DE REFERENCIA
+  La cobertura de regresión no equivale a code coverage. Para priorizar en un
+  contexto asegurador: flujos críticos de negocio (emisión de pólizas,
+  siniestros, pagos), casos de alto riesgo por cambios frecuentes, y casos que
+  históricamente han fallado más. Un framework MoSCoW aplicado a casos de test,
+  combinado con Change Impact Analysis (CIA), permite alcanzar el 70% cubriendo
+  el 80% del riesgo real. Test Impact Analysis (TIA) permite ejecutar solo los
+  tests afectados por cada cambio específico.
+
+  RESPUESTA DESTACADA (diferenciador senior)
+  Menciona TIA integrado al pipeline, Test Risk Matrix, uso de cobertura de
+  código (Coverage.py, JaCoCo) como complemento — no como fin —, y da cifras
+  concretas de su empresa anterior (p. ej. "pasamos del 30% al 68% en 4 meses
+  automatizando primero los 50 flujos críticos de facturación").
+
+  RED FLAGS
+  ✗ Confunde cobertura de línea de código con cobertura de regresión funcional.
+  ✗ Respuesta demasiado genérica y copiable de documentación sin ejemplos reales.
+  ✗ No menciona criterios de priorización basados en riesgo.
+
+  PUNTUACIÓN
+  ┌──────────────┬─────────────────────────────────────────────────────────────┐
+  │  0 - No apto │ No distingue tipos de cobertura, sin ejemplos reales        │
+  │  1 - Básico  │ Automatizar los casos más importantes, sin metodología clara │
+  │  2 - Compete.│ Priorización por riesgo, métricas correctas, ejemplos propios│
+  │  3 - Destaca.│ TIA, risk matrix, datos concretos de proyectos anteriores    │
+  └──────────────┴─────────────────────────────────────────────────────────────┘
+
+────────────────────────────────────────────────────────────────────────────────
+PREGUNTA 2: Mantenimiento de suites — el problema de los flaky tests
+────────────────────────────────────────────────────────────────────────────────
+
+  ENUNCIADO
+  Los tests frágiles (flaky tests) son el peor enemigo de las suites de
+  automatización grandes. Desde tu experiencia, ¿cuál ha sido la causa más
+  frecuente de flaky tests que encontraste en proyectos reales, cómo los
+  detectaste y qué hiciste concretamente para resolverlos? No me interesa la
+  teoría — solo lo que realmente hiciste.
+
+  [ANTI-IA] La respuesta debe incluir un caso real con herramienta específica,
+  causa concreta y acción tomada. Una respuesta puramente teórica es señal de
+  alerta.
+
+  RESPUESTA MÍNIMA ESPERADA (must-mention)
+  □ Causas reales: estado compartido entre tests, race conditions / timing,
+    datos de prueba hardcodeados que cambian.
+  □ Detección: flakiness rate histórico, quarantine de tests inestables.
+  □ Soluciones aplicadas: test isolation, retry logic, esperas explícitas
+    (nunca sleep()), test data builders/factories.
+
+  EXPLICACIÓN DE REFERENCIA
+  Los flaky tests principales son: dependencias de BD compartida sin limpieza,
+  timeouts implícitos, datos de prueba que cambian en el entorno, y orden de
+  ejecución no determinista. La solución estructural: (1) test isolation estricta
+  — cada test crea y destruye su propio estado; (2) uso de fixtures con scope
+  adecuado (function > class > module > session en Pytest); (3) esperas
+  explícitas con condición (WebDriverWait, expect de Playwright), nunca time.sleep.
+  La detección proactiva registra el historial de resultados de cada test y marca
+  automáticamente los que superan un umbral de inestabilidad (p. ej. > 5%
+  de fallas en 100 ejecuciones).
+
+  RESPUESTA DESTACADA (diferenciador senior)
+  Estrategia de quarantine automática con notificación al equipo. Playwright
+  Retry + reporteo de intentos. Screenplay Pattern vs Page Object para reducir
+  fragilidad en UI. Caso real específico con impacto medible (p. ej. "reducimos
+  el flakiness rate del 18% al 2% en 6 semanas").
+
+  RED FLAGS
+  ✗ Responde con definición genérica sin experiencia concreta.
+  ✗ Propone solo aumentar timeouts como solución definitiva.
+  ✗ No puede describir un caso real que haya resuelto.
+
+  PUNTUACIÓN
+  ┌──────────────┬─────────────────────────────────────────────────────────────┐
+  │  0 - No apto │ Definición genérica, sin experiencia real                   │
+  │  1 - Básico  │ Identifica causas pero sin solución estructural              │
+  │  2 - Compete.│ Isolation, esperas explícitas, caso real propio              │
+  │  3 - Destaca.│ Quarantine automático, métricas de mejora, Screenplay Pattern│
+  └──────────────┴─────────────────────────────────────────────────────────────┘
+
+────────────────────────────────────────────────────────────────────────────────
+PREGUNTA 3: BDD en la práctica — más allá del Gherkin
+────────────────────────────────────────────────────────────────────────────────
+
+  ENUNCIADO
+  BDD es un requisito excluyente del puesto. Describe cómo has implementado BDD
+  en un equipo real, no la teoría: ¿Cómo involucraste al negocio en la escritura
+  de scenarios? ¿Qué herramienta usaste? ¿Cuáles fueron las principales
+  fricciones que encontraste y cómo las resolviste?
+
+  [ANTI-IA] Si el candidato no puede nombrar fricciones reales, es señal de
+  alerta — nadie implementa BDD en producción sin tropiezos.
+
+  RESPUESTA MÍNIMA ESPERADA (must-mention)
+  □ Participación real de PO o analista de negocio en Three Amigos meetings.
+  □ Diferencia entre BDD como práctica de colaboración vs herramienta de
+    automatización (este error es el más común).
+  □ Experiencia con Cucumber, Behave, SpecFlow o similar.
+  □ Problemas reales: scenarios demasiado técnicos, steps proliferation,
+    mantenimiento de step definitions, negocio que no participa.
+
+  EXPLICACIÓN DE REFERENCIA
+  BDD bien implementado es una práctica de comunicación antes que de
+  automatización. Los "Three Amigos" (negocio, dev, QA) definen ejemplos juntos
+  usando Gherkin. El error más común: usar Gherkin solo como wrapper de tests
+  técnicos sin involucrar al negocio. Para escalarlo: feature files versionados
+  en el repo, steps reutilizables con parámetros, hooks claros (Before/After),
+  y convención de nomenclatura que el negocio pueda validar. Example Mapping
+  (Event Storming liviano) ayuda a estructurar los scenarios antes de escribirlos.
+
+  RESPUESTA DESTACADA (diferenciador senior)
+  Distinción entre BDD estratégico (Example Mapping) y BDD táctico
+  (automatización). Screenplay Pattern como alternativa mantenible a Page Object
+  en BDD. Métricas de impacto en la comunicación equipo-negocio. Living
+  Documentation generada automáticamente desde los feature files.
+
+  RED FLAGS
+  ✗ Describe BDD como "escribir tests en Gherkin" sin mencionar colaboración.
+  ✗ No puede nombrar un proyecto real donde lo aplicó.
+  ✗ Solo respuestas positivas sin fricciones (= experiencia no real o teórica).
+
+  PUNTUACIÓN
+  ┌──────────────┬─────────────────────────────────────────────────────────────┐
+  │  0 - No apto │ BDD = Gherkin, sin mención de colaboración                  │
+  │  1 - Básico  │ Conoce la teoría, no puede dar fricciones reales            │
+  │  2 - Compete.│ Three Amigos, herramienta real, fricciones concretas        │
+  │  3 - Destaca.│ Example Mapping, Living Docs, métricas de impacto en equipo │
+  └──────────────┴─────────────────────────────────────────────────────────────┘
+
+================================================================================
+  3. BLOQUE 2 — IA APLICADA A QA (15 min)
+================================================================================
+
+────────────────────────────────────────────────────────────────────────────────
+PREGUNTA 4: Diseño del agente de generación de planes de prueba
+────────────────────────────────────────────────────────────────────────────────
+
+  ENUNCIADO
+  Una de tus primeras tareas será diseñar y construir un agente que genere
+  planes de prueba y casos de test automáticamente a partir de historias de
+  usuario. Describe el diseño específico: ¿qué componentes tendría el agente,
+  cómo procesaría una HU, qué salida generaría y cómo validarías que los casos
+  son útiles?
+
+  No respondas "usaría un LLM y RAG" — dame arquitectura concreta con
+  componentes nombrados y flujo de datos real.
+
+  [ANTI-IA] Esta pregunta requiere tomar decisiones de arquitectura y
+  justificarlas en el acto. Respuestas que describen el proceso correcto pero
+  sin justificación de las decisiones de diseño son señal de alerta.
+
+  RESPUESTA MÍNIMA ESPERADA (must-mention)
+  □ Pipeline: parseo de HU → extracción de criterios de aceptación → generación
+    de casos → validación / formato.
+  □ Decisión sobre prompt engineering vs fine-tuning y justificación.
+  □ Mecanismo de validación de calidad: human-in-the-loop o métricas automáticas.
+  □ Formato de salida estructurado compatible con XRay (JSON/Gherkin/tabular).
+
+  EXPLICACIÓN DE REFERENCIA
+  Un agente robusto necesita: (1) módulo de parsing de HU que extraiga
+  condiciones de aceptación (AC) y criterios Given/When/Then implícitos —
+  puede ser un prompt de extracción específico; (2) prompt de generación que
+  transforme cada AC en casos happy path, negative, edge y security; (3)
+  validación automática: ¿cada AC tiene al menos 1 caso?, ¿hay al menos 1 caso
+  negativo por flujo?, ¿los steps son ejecutables?; (4) formateador de salida
+  que genere el JSON de importación de XRay o el feature file de Cucumber.
+  RAG sobre documentación del sistema enriquece el contexto del agente.
+
+  RESPUESTA DESTACADA (diferenciador senior)
+  RAG sobre documentación existente y casos históricos. Guardrails para evitar
+  alucinaciones (casos inejecutables). Métricas del agente a lo largo del tiempo:
+  % de casos aprobados vs rechazados por QA humano. Manejo de HU ambiguas:
+  preguntar al agente que las devuelva para clarificación antes de generar.
+  Integración con Jira para leer las HU directamente via API.
+
+  RED FLAGS
+  ✗ "Usaría ChatGPT para generar los test cases" sin arquitectura de componentes.
+  ✗ No menciona validación de calidad de los casos generados.
+  ✗ No sabe cómo estructurar la salida para XRay / Jira.
+
+  PUNTUACIÓN
+  ┌──────────────┬─────────────────────────────────────────────────────────────┐
+  │  0 - No apto │ Propuesta vaga sin componentes ni flujo de datos            │
+  │  1 - Básico  │ Pipeline descrito pero sin validación ni formato de salida  │
+  │  2 - Compete.│ Pipeline completo, validación, output XRay-compatible       │
+  │  3 - Destaca.│ RAG, guardrails, métricas del agente, integración Jira API  │
+  └──────────────┴─────────────────────────────────────────────────────────────┘
+
+────────────────────────────────────────────────────────────────────────────────
+PREGUNTA 5: Riesgos de IA en QA para un sector regulado
+────────────────────────────────────────────────────────────────────────────────
+
+  ENUNCIADO
+  HDI opera en el sector asegurador chileno, regulado por la CMF. ¿Cuáles son
+  los riesgos concretos de usar un agente LLM para generar planes de prueba en
+  este contexto? No me des la lista estándar de riesgos de IA — dime los riesgos
+  específicos que enfrentarías en QA en seguros y cómo los mitigarías.
+
+  [ANTI-IA] Esta pregunta requiere conocimiento del sector asegurador chileno
+  y de la CMF. Un candidato que responde solo con riesgos genéricos de IA (sin
+  contexto de sector regulado) está improvisando sin experiencia real.
+
+  RESPUESTA MÍNIMA ESPERADA (must-mention)
+  □ Alucinaciones: casos que parecen válidos pero están incompletos o son
+    incorrectos para el dominio asegurador.
+  □ Cobertura de compliance: casos obligatorios por norma CMF que el agente
+    puede omitir si no tiene contexto regulatorio.
+  □ Confidencialidad: las HU pueden contener datos sensibles de pólizas /
+    siniestros que no deben enviarse a APIs externas.
+  □ Falsa sensación de cobertura: muchos casos generados pero no los correctos.
+
+  EXPLICACIÓN DE REFERENCIA
+  En un sector regulado, el QA tiene obligaciones más allá de la funcionalidad:
+  debe garantizar que se prueben los flujos de compliance (Circular CMF vigente,
+  normas de protección al asegurado), que los datos de prueba no sean datos
+  reales de clientes, y que exista trazabilidad audit-ready entre requerimientos
+  regulatorios y casos ejecutados. Mitigaciones: (1) knowledge base de
+  requerimientos CMF como contexto del agente; (2) checklist de compliance
+  validado contra cada épica; (3) anonimización de HU antes de enviarlas al LLM
+  si se usa API externa; (4) modelo on-premise o privado para datos sensibles.
+
+  RESPUESTA DESTACADA (diferenciador senior)
+  Experiencia previa en sector financiero o asegurador. Distinción entre casos
+  funcionales y casos de compliance (estos deben existir independientemente de
+  las HU). Propone LLM on-premise (Ollama, Azure OpenAI con data residency en
+  Chile) para datos sensibles. Mención de la Ley 19.628 y sus implicancias para
+  datos de prueba.
+
+  RED FLAGS
+  ✗ No identifica el riesgo de privacidad de datos en las HU (bloqueante).
+  ✗ No menciona el contexto regulatorio CMF.
+  ✗ Solo riesgos genéricos de IA sin aplicación a QA en seguros.
+
+  PUNTUACIÓN
+  ┌──────────────┬─────────────────────────────────────────────────────────────┐
+  │  0 - No apto │ Solo riesgos genéricos de IA sin contexto de sector         │
+  │  1 - Básico  │ Menciona alucinaciones, no el riesgo regulatorio/privacidad │
+  │  2 - Compete.│ Privacidad, CMF, falsa cobertura, mitigaciones concretas    │
+  │  3 - Destaca.│ LLM on-premise, knowledge base CMF, casos compliance vs HU │
+  └──────────────┴─────────────────────────────────────────────────────────────┘
+
+────────────────────────────────────────────────────────────────────────────────
+PREGUNTA 6: Degradación del agente — diagnóstico y solución
+────────────────────────────────────────────────────────────────────────────────
+
+  ENUNCIADO
+  Llevas 3 meses con el agente en producción y el equipo de QA te reporta que
+  la calidad de los casos generados bajó notablemente: hay muchos duplicados,
+  otros están incompletos y algunos son incoherentes. ¿Cuál sería tu proceso
+  de diagnóstico paso a paso? ¿Cómo determinarías la causa raíz?
+
+  [ANTI-IA] Esta pregunta requiere razonamiento en tiempo real sobre causas
+  de degradación. Si el candidato recita de memoria una lista de causas sin
+  poder priorizar o justificar cuál verificaría primero, es señal de alerta.
+
+  RESPUESTA MÍNIMA ESPERADA (must-mention)
+  □ Análisis de inputs: ¿cambió el formato o la calidad de las HU?
+  □ Model drift: ¿se actualizó silenciosamente el modelo base del proveedor?
+  □ Revisión de métricas: comparar outputs actuales vs baseline histórico.
+  □ Feedback loop: analizar patrones en los rechazos del equipo QA.
+  □ Versionado de prompts y evals para A/B testing.
+
+  EXPLICACIÓN DE REFERENCIA
+  La degradación puede venir de: (1) model drift por actualización silenciosa
+  del proveedor (OpenAI, Anthropic); (2) cambio en la calidad o formato de las
+  HU de entrada; (3) deuda de prompt acumulada (prompts que funcionaban con un
+  patrón de HU pero no con los nuevos); (4) cambio en el dominio de negocio
+  sin actualizar el contexto del agente. Diagnóstico sistemático: comparar
+  outputs actuales vs golden dataset histórico; identificar patrones en los
+  rechazos (¿son duplicados de un tipo específico?, ¿qué HUs los generan?);
+  A/B testing de versiones del prompt con el mismo conjunto de HUs de prueba.
+
+  RESPUESTA DESTACADA (diferenciador senior)
+  Framework de evals continuo con golden dataset. LLM-as-judge para automatizar
+  la evaluación de calidad de casos. Semantic versioning para prompts. Alertas
+  automáticas cuando el rejection rate supera un umbral. Pinning de versión del
+  modelo base para evitar drift silencioso.
+
+  RED FLAGS
+  ✗ No conoce el concepto de model drift o prompt degradation.
+  ✗ Propone solo "reescribir los prompts" sin diagnóstico sistemático previo.
+  ✗ No menciona versionado ni comparación con baseline histórico.
+
+  PUNTUACIÓN
+  ┌──────────────┬─────────────────────────────────────────────────────────────┐
+  │  0 - No apto │ No identifica causas de degradación, propuesta sin diagnóst.│
+  │  1 - Básico  │ Menciona el prompt como causa única, sin proceso sistemático │
+  │  2 - Compete.│ Model drift, análisis de inputs, comparación con baseline   │
+  │  3 - Destaca.│ Evals continuo, LLM-as-judge, version pinning, alertas auto │
+  └──────────────┴─────────────────────────────────────────────────────────────┘
+
+================================================================================
+  4. BLOQUE 3 — CI/CD & INTEGRACIÓN (10 min)
+================================================================================
+
+────────────────────────────────────────────────────────────────────────────────
+PREGUNTA 7: Pipeline QA con Jenkins, SonarQube y XRay
+────────────────────────────────────────────────────────────────────────────────
+
+  ENUNCIADO
+  Describe verbalmente (o en la pizarra si está disponible) el pipeline CI/CD
+  de QA que implementarías para este proyecto. Nombra cada stage, qué herramienta
+  actúa en él, qué sucede si falla un quality gate y cómo se traza la ejecución
+  de tests hasta XRay. Sé específico con Jenkins.
+
+  [ANTI-IA] Si el candidato no puede nombrar el mecanismo exacto de integración
+  XRay con Jenkins ni los quality gates de SonarQube, no tiene experiencia real
+  con estas herramientas en un pipeline.
+
+  RESPUESTA MÍNIMA ESPERADA (must-mention)
+  □ Stages mínimos: checkout → build → unit tests → SonarQube analysis →
+    integration tests → regression suite → publicación en XRay.
+  □ Quality gates SonarQube: qué métricas, qué umbrales y cómo falla el pipeline.
+  □ Integración XRay: uso de la API REST de XRay o del plugin oficial para
+    importar resultados JUnit/Cucumber desde Jenkins.
+  □ Credentials binding en Jenkins para secretos (no hardcodeados en Jenkinsfile).
+
+  EXPLICACIÓN DE REFERENCIA
+  Pipeline robusto (Jenkinsfile declarativo): (1) Checkout + Build;
+  (2) Unit & Integration tests con reporte JUnit; (3) SonarQube Analysis con
+  Quality Gate bloqueante — si la deuda técnica sube o la cobertura cae del
+  umbral, el pipeline falla con error; (4) Regression Suite en entorno staging;
+  (5) Publicación automática en XRay via API REST POST
+  /rest/raven/1.0/import/execution/cucumber con el JSON de resultados, asociando
+  la ejecución al Test Plan correspondiente en Jira. Los fallos de Quality Gate
+  son hard failures, no warnings.
+
+  RESPUESTA DESTACADA (diferenciador senior)
+  Stages paralelos para acelerar ejecución (unit + lint en paralelo). Entornos
+  dinámicos por branch. Notificaciones inteligentes al dueño del componente que
+  falló. Jenkinsfile versionado en el repo. Snippet exacto del curl/groovy para
+  llamar la API de XRay. Integración con Slack o Teams para el reporte de
+  ejecución.
+
+  RED FLAGS
+  ✗ No puede describir cómo conectar XRay con Jenkins (solo dice "se conectan").
+  ✗ No sabe qué son los Quality Gates de SonarQube.
+  ✗ Describe el pipeline sin separación clara de stages de testing.
+
+  PUNTUACIÓN
+  ┌──────────────┬─────────────────────────────────────────────────────────────┐
+  │  0 - No apto │ No puede describir el pipeline, menciona herramientas vago  │
+  │  1 - Básico  │ Stages básicos pero sin quality gates ni integración XRay   │
+  │  2 - Compete.│ Pipeline completo, quality gates bloqueantes, XRay via API  │
+  │  3 - Destaca.│ Paralelo, entornos dinámicos, snippet real, notificaciones  │
+  └──────────────┴─────────────────────────────────────────────────────────────┘
+
+================================================================================
+  5. BLOQUE 4 — PROFUNDIDAD TÉCNICA (15 min)
+================================================================================
+
+────────────────────────────────────────────────────────────────────────────────
+PREGUNTA 8: Estrategia de datos de prueba en entorno regulado
+────────────────────────────────────────────────────────────────────────────────
+
+  ENUNCIADO
+  Define la estrategia de datos de prueba que implementarías para HDI. Considera
+  que trabajan con datos de pólizas reales, siniestros y clientes (datos sensibles
+  bajo la Ley 19.628 de Chile). ¿Cómo generarías y gestionarías los datos de
+  prueba? ¿Qué técnicas aplicarías por ambiente?
+
+  [ANTI-IA] La mención de la Ley 19.628 es un filtro de conocimiento del
+  contexto legal chileno. Respuestas que ignoran por completo el marco legal
+  local son señal de alerta.
+
+  RESPUESTA MÍNIMA ESPERADA (must-mention)
+  □ Data masking / anonimización de datos de producción para uso en testing.
+  □ Generación sintética de datos (faker, factories) que respete reglas de
+    negocio (RUTs con dígito verificador correcto, montos realistas, etc.).
+  □ Segregación por ambiente: dev, QA, staging, producción — con criterios
+    distintos para cada uno.
+  □ Lifecycle de datos: creación antes del test, limpieza post-ejecución.
+
+  EXPLICACIÓN DE REFERENCIA
+  Bajo la Ley 19.628, usar datos reales de clientes en testing es riesgo legal.
+  La estrategia tiene tres pilares: (1) Data Masking: transformar datos reales
+  para que sean irreconocibles pero mantengan estructura y distribución — RUT
+  enmascarado, nombre falso con estructura chilena, monto en rango realista;
+  (2) Datos Sintéticos: Faker (Python) configurado para datos chilenos (RUT
+  válido, direcciones, nombres); (3) Test Data Management (TDM): repositorio
+  centralizado de datasets con versionado, reutilización entre casos y limpieza
+  automática post-ejecución via fixtures de Pytest (yield fixtures con teardown).
+
+  RESPUESTA DESTACADA (diferenciador senior)
+  Herramientas específicas: Faker para Python, Mimesis, validadores de RUT.
+  Golden dataset estable para regresión. Snapshot testing para performance.
+  Proceso de aprobación de datos de prueba por el responsable de privacidad.
+  Consideración de datos de prueba para escenarios de siniestros en proceso
+  judicial (caso específico del dominio asegurador).
+
+  RED FLAGS
+  ✗ Propone usar datos de producción directamente en testing (bloqueante legal).
+  ✗ No conoce la Ley 19.628 ni menciona implicancias de privacidad.
+  ✗ No menciona limpieza de datos post-prueba.
+
+  PUNTUACIÓN
+  ┌──────────────┬─────────────────────────────────────────────────────────────┐
+  │  0 - No apto │ Propone datos de producción directamente o ignora privacidad │
+  │  1 - Básico  │ Menciona datos sintéticos pero sin estrategia de gestión    │
+  │  2 - Compete.│ Masking, sintéticos, segregación por ambiente, Ley 19.628   │
+  │  3 - Destaca.│ TDM centralizado, golden dataset, dominio asegurador propio │
+  └──────────────┴─────────────────────────────────────────────────────────────┘
+
+────────────────────────────────────────────────────────────────────────────────
+PREGUNTA 9: Diagnóstico en vivo — el agente que no genera casos completos
+────────────────────────────────────────────────────────────────────────────────
+
+  ENUNCIADO (escenario presentado verbalmente por el entrevistador)
+
+  Te muestro esta historia de usuario y el output que generó el agente:
+
+    HU: "Como asegurado quiero ver el estado de mi siniestro para saber si fue
+    aprobado o rechazado."
+
+    Output del agente: generó 1 solo caso —
+    "Verificar que el asegurado puede ver el estado del siniestro.
+     Given: el asegurado está autenticado y tiene un siniestro con estado Aprobado.
+     When: navega a la sección Mis Siniestros.
+     Then: ve el estado Aprobado."
+
+  Sin buscar nada, en el acto: enumera todos los casos de prueba que deberían
+  existir para esta HU y que el agente NO generó. Agrúpalos como puedas.
+
+  [ANTI-IA] Esta pregunta es un test de razonamiento QA en tiempo real. El
+  candidato NO puede usar herramientas — debe pensar en voz alta. Un candidato
+  que necesita más de 2 minutos de silencio probablemente esté consultando IA.
+  Observar si agrupa por categorías (funcional / negativo / borde / seguridad /
+  UX) de forma espontánea.
+
+  RESPUESTA MÍNIMA ESPERADA (al menos 8 casos adicionales)
+
+  Funcionales (estados faltantes):
+  □ Estado "Rechazado" (solo se cubrió "Aprobado")
+  □ Estado "En revisión" / "Pendiente documentación" / "En evaluación"
+  □ Múltiples siniestros con estados distintos en la misma vista
+
+  Casos de error y borde:
+  □ Asegurado sin siniestros registrados (lista vacía)
+  □ Error de servicio backend / timeout al cargar el estado
+  □ Siniestro con datos incompletos en la base de datos
+  □ Paginación si hay muchos siniestros (más de X registros)
+
+  Seguridad:
+  □ Asegurado intenta ver el siniestro de otro asegurado (acceso no autorizado)
+  □ Token de sesión expirado durante la consulta
+
+  UX / Cross-plataforma:
+  □ Formato y legibilidad del estado en mobile vs desktop
+  □ Comportamiento con conexión lenta o intermitente
+
+  RESPUESTA DESTACADA (diferenciador senior)
+  Agrupa espontáneamente por categorías sin que el entrevistador lo pida.
+  Menciona el caso del siniestro en proceso judicial como estado específico
+  del dominio asegurador. Propone cómo mejoraría el prompt del agente para
+  cubrir estos casos automáticamente. Da más de 12 casos.
+
+  RED FLAGS
+  ✗ Menciona menos de 5 casos adicionales.
+  ✗ No identifica el caso de seguridad (acceso a datos de tercero) — bloqueante.
+  ✗ No puede razonar en tiempo real: largas pausas de silencio o pide consultar.
+
+  PUNTUACIÓN
+  ┌──────────────┬─────────────────────────────────────────────────────────────┐
+  │  0 - No apto │ Menos de 5 casos, no identifica caso de seguridad           │
+  │  1 - Básico  │ 5-7 casos, solo funcionales y algunos de error              │
+  │  2 - Compete.│ 8-10 casos, incluye seguridad, agrupa por categoría         │
+  │  3 - Destaca.│ 12+ casos, dominio asegurador, mejora del prompt del agente │
+  └──────────────┴─────────────────────────────────────────────────────────────┘
+
+================================================================================
+  6. CODE CHALLENGE (opcional, 15 min)
+================================================================================
+
+  ENUNCIADO
+  Escribe la función Python validate_test_case que recibe un caso de prueba como
+  dict y retorna una tupla (bool, list[str]): True si el caso es completo, o
+  False con la lista de errores encontrados.
+
+  Un caso es completo si cumple TODAS las siguientes reglas:
+    • title           : string no vacío
+    • given           : lista con al menos 1 elemento
+    • when            : lista con al menos 1 elemento
+    • then            : lista con al menos 1 elemento
+    • test_type       : uno de ["functional", "negative", "edge", "security",
+                        "performance"]
+    • priority        : uno de ["critical", "high", "medium", "low"]
+    • linked_story    : string no vacío (referencia a la HU en Jira)
+
+  INPUT DE EJEMPLO:
+  ───────────────────────────────────────────────
+  test_case = {
+      "title": "Verificar estado siniestro aprobado",
+      "given": ["El asegurado está autenticado"],
+      "when": ["Navega a Mis Siniestros"],
+      "then": [],                      # INVÁLIDO: lista vacía
+      "test_type": "functional",
+      "priority": "critical",
+      "linked_story": ""               # INVÁLIDO: vacío
+  }
+  ───────────────────────────────────────────────
+
+  SALIDA ESPERADA:
+  ───────────────────────────────────────────────
+  (False, [
+      "then: debe tener al menos 1 elemento",
+      "linked_story: no puede estar vacío"
+  ])
+  ───────────────────────────────────────────────
+
+  BONUS: Escribe 3 casos de test parametrizados con pytest para esta función.
+
+  ─── SOLUCIÓN DE REFERENCIA ──────────────────────────────────────────────────
+
+  VALID_TEST_TYPES = {"functional", "negative", "edge", "security", "performance"}
+  VALID_PRIORITIES = {"critical", "high", "medium", "low"}
+
+  def validate_test_case(test_case: dict) -> tuple[bool, list[str]]:
+      errors: list[str] = []
+
+      if not str(test_case.get("title", "")).strip():
+          errors.append("title: no puede estar vacío")
+
+      for field in ["given", "when", "then"]:
+          value = test_case.get(field)
+          if not isinstance(value, list) or len(value) == 0:
+              errors.append(f"{field}: debe tener al menos 1 elemento")
+
+      if test_case.get("test_type") not in VALID_TEST_TYPES:
+          errors.append(f"test_type: debe ser uno de {sorted(VALID_TEST_TYPES)}")
+
+      if test_case.get("priority") not in VALID_PRIORITIES:
+          errors.append(f"priority: debe ser uno de {sorted(VALID_PRIORITIES)}")
+
+      if not str(test_case.get("linked_story", "")).strip():
+          errors.append("linked_story: no puede estar vacío")
+
+      return (len(errors) == 0, errors)
+
+
+  ─── TESTS DE REFERENCIA (pytest) ────────────────────────────────────────────
+
+  import pytest
+
+  @pytest.mark.parametrize("test_case, expected_valid, expected_errors_contain", [
+      (
+          {   # caso completo y válido
+              "title": "Ver estado siniestro aprobado",
+              "given": ["Asegurado autenticado"],
+              "when": ["Navega a Mis Siniestros"],
+              "then": ["Ve el estado Aprobado"],
+              "test_type": "functional",
+              "priority": "critical",
+              "linked_story": "HDI-123",
+          },
+          True, [],
+      ),
+      (
+          {   # then vacío y linked_story ausente
+              "title": "Test incompleto",
+              "given": ["step"],
+              "when": ["action"],
+              "then": [],
+              "test_type": "negative",
+              "priority": "high",
+              "linked_story": "",
+          },
+          False, ["then", "linked_story"],
+      ),
+      (
+          {   # test_type inválido
+              "title": "Test con tipo inválido",
+              "given": ["step"],
+              "when": ["action"],
+              "then": ["assertion"],
+              "test_type": "regression",   # no permitido
+              "priority": "low",
+              "linked_story": "HDI-456",
+          },
+          False, ["test_type"],
+      ),
+  ])
+  def test_validate_test_case(test_case, expected_valid, expected_errors_contain):
+      valid, errors = validate_test_case(test_case)
+      assert valid == expected_valid
+      for keyword in expected_errors_contain:
+          assert any(keyword in e for e in errors), \
+              f"Esperaba error con '{keyword}' en: {errors}"
+
+  ─────────────────────────────────────────────────────────────────────────────
+
+  CRITERIOS DE EVALUACIÓN
+  ┌────────────────────────────────────────────────────────────┬────────┐
+  │ Criterio                                                   │ Puntos │
+  ├────────────────────────────────────────────────────────────┼────────┤
+  │ Función correcta y completa (todas las reglas)             │   3    │
+  │ Type hints y código limpio (sin magic strings dispersos)   │   1    │
+  │ Manejo de tipos inesperados (None, string en lugar de list)│   1    │
+  │ Tests pytest con @parametrize                              │   2    │
+  │ Bonus: validación con Pydantic (modelo tipado)             │   1    │
+  └────────────────────────────────────────────────────────────┴────────┘
+  Total code challenge: 8 puntos (7 + 1 bonus)
+
+================================================================================
+  7. SCORECARD RESUMEN
+================================================================================
+
+  ┌────────────────────────────────────┬──────────┬────────────┬──────────────┐
+  │ Bloque                             │ Preguntas│ Puntaje Max│ Puntaje Real │
+  ├────────────────────────────────────┼──────────┼────────────┼──────────────┤
+  │ Bloque 1 — QA & Automatización     │ P1,P2,P3 │     9      │              │
+  │ Bloque 2 — IA Aplicada a QA        │ P4,P5,P6 │     9      │              │
+  │ Bloque 3 — CI/CD & Integración     │    P7    │     3      │              │
+  │ Bloque 4 — Profundidad Técnica     │  P8, P9  │     6      │              │
+  ├────────────────────────────────────┼──────────┼────────────┼──────────────┤
+  │ TOTAL (sin code challenge)         │          │    27      │              │
+  ├────────────────────────────────────┼──────────┼────────────┼──────────────┤
+  │ Code Challenge (opcional)          │    C1    │     8      │              │
+  │ TOTAL (con code challenge)         │          │    35      │              │
+  └────────────────────────────────────┴──────────┴────────────┴──────────────┘
+
+  UMBRAL DE APROBACIÓN — NIVEL SENIOR
+  ┌──────────────────────────┬────────────────────┬──────────────────────────┐
+  │ Resultado                │ Sin code challenge │    Con code challenge    │
+  ├──────────────────────────┼────────────────────┼──────────────────────────┤
+  │ ✅ Apto para avanzar      │    20+ / 27        │       25+ / 35           │
+  │ ⚠️  Apto con reservas     │    14-19 / 27      │       18-24 / 35         │
+  │ ❌ No apto                │    < 14 / 27       │       < 18 / 35          │
+  └──────────────────────────┴────────────────────┴──────────────────────────┘
+
+  CONDICIONES BLOQUEANTES (independientes del puntaje)
+  Un candidato con CUALQUIERA de estas condiciones NO debe avanzar:
+
+  ❌ 1. No puede describir un proyecto real de automatización con detalles
+        específicos — señal de CV inflado o uso de IA para construir el perfil.
+
+  ❌ 2. No identifica el riesgo de privacidad de datos sensibles en las HU
+        — bloqueante regulatorio crítico para el sector asegurador.
+
+  ❌ 3. En la Pregunta 9, no identifica el caso de seguridad (acceso a datos
+        de tercero) — error fundamental de pensamiento QA.
+
+  ❌ 4. Responde TODAS las preguntas en términos genéricos y abstractos sin
+        ningún ejemplo propio — indicador de uso de IA durante la entrevista.
+
+  ❌ 5. Describe BDD solo como "herramienta de automatización" sin mencionar
+        su dimensión de colaboración — demuestra desconocimiento real de la
+        práctica.
+
+================================================================================
+  NOTAS DEL ENTREVISTADOR
+================================================================================
+
+  Candidato      : ___________________________________
+  Fecha          : ___________________________________
+  Entrevistador  : ___________________________________
+
+  Fortalezas observadas:
+  •
+  •
+
+  Debilidades observadas:
+  •
+  •
+
+  Señales de uso de IA durante la entrevista:
+  •
+
+  Recomendación: [ ] Avanzar   [ ] Avanzar con reservas   [ ] No avanzar
+
+  Justificación:
+  ___________________________________________________________________________
+  ___________________________________________________________________________
+
+================================================================================
+  FIN DEL CHALLENGE — HDI SEGUROS SA / AI QA ENGINEER SENIOR
+  Generado: 2026-05-05 | ACL Chile
+================================================================================
