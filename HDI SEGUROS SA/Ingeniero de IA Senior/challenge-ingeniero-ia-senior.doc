@@ -1,702 +1,628 @@
-================================================================================
+﻿================================================================================
   CHALLENGE TÉCNICO — INGENIERO DE IA SENIOR
-  HDI SEGUROS SA
+  Cliente: HDI SEGUROS SA
+  Nivel: Senior
+  Stack: Python · LLMs · RAG · LangChain/LangGraph · APIs REST · Gobierno IA · CMF / Ley 21.719
+  Duración: 60 minutos
+  Modalidad: Mixto (Teórico + Diseño + Código)
+  Fecha de generación: 2026-05-11
+  Generado para: Proceso de selección — Mariluz Rodríguez / Gonzalo Ponce
 ================================================================================
 
-Puesto            : Ingeniero de IA Senior — Pipeline de Desarrollo
-Cliente           : HDI SEGUROS SA
-Nivel             : Senior
-Stack principal   : Python · LangChain / LangGraph · LLMs (OpenAI / Azure OpenAI
-                    / Anthropic) · RAG · LlamaIndex · Embeddings · Vector Stores
-                    · Confluence API · Jira API · CI/CD · REST APIs
-Duración estimada : 60 minutos
-Enfoque           : Mixto (teórico + situacional + práctico)
-Fecha             : 2026-05-06
-Generado por      : TechChallenge Architect — ACL Chile
-
-Entrevistador : ___________________________________
-Candidato     : ___________________________________
-
-================================================================================
-  NOTA PARA EL ENTREVISTADOR — ANTI-IA
-================================================================================
-
-Todas las preguntas están diseñadas para que NO puedan responderse con IA en
-tiempo real. Cada pregunta exige una o más de las siguientes condiciones:
-
-  • Ejemplo concreto de un sistema de IA que el candidato haya llevado a
-    producción (no un demo, no un POC abandonado)
-  • Diagnóstico en vivo de un escenario presentado verbalmente sin tiempo de
-    consulta
-  • Justificación de decisiones de arquitectura bajo constraints regulatorios
-    específicos de Chile (CMF, Ley 21.719)
-  • Conocimiento profundo del dominio: chunking de documentos Confluence/Jira,
-    degradación de retrieval, multi-agent orchestration
-  • Preguntas de liderazgo técnico que requieren experiencia real de mentoring
-
-SEÑAL DE ALERTA: Si el candidato responde TODAS las preguntas con términos
-abstractos, sin nombrar ningún proyecto real, sin datos concretos de un sistema
-propio, es muy probable que esté usando IA como apoyo durante la entrevista.
-Observe también si el candidato "necesita un momento" antes de responder
-preguntas de diagnóstico en vivo — eso puede indicar que está consultando.
-
-================================================================================
-  1. WARM-UP (5 min) — Romper el hielo
-================================================================================
-
-Estas preguntas NO se evalúan con puntaje. Su objetivo es calibrar el nivel de
-comunicación técnica y entrar en confianza.
-
-  W1. Cuéntame del sistema de IA que has llevado a producción del que más
-      orgulloso estás. ¿Qué problema resolvía, qué arquitectura usaste, cuántos
-      usuarios lo usaban y cuál fue el impacto medible?
-
-  W2. ¿Cuál ha sido el mayor fracaso técnico que has tenido construyendo un
-      agente o pipeline RAG en producción, y qué aprendiste de eso?
-
-  [El entrevistador debe escuchar detalles ESPECÍFICOS en W1 y W2: nombres de
-  herramientas, números concretos, decisiones de diseño. Si el candidato
-  responde en términos generales ambas preguntas de warm-up, elevar el nivel de
-  escrutinio en el resto de la entrevista.]
-
-================================================================================
-  2. BLOQUE 1 — AGENTES IA (15 min)
-================================================================================
-
-────────────────────────────────────────────────────────────────────────────────
-PREGUNTA 1: Diseño del pipeline de agentes IA para desarrollo de software
-────────────────────────────────────────────────────────────────────────────────
-
-  ENUNCIADO
-  Una de tus primeras tareas será diseñar el pipeline de agentes IA para el
-  ciclo de desarrollo de software de HDI: desde la evaluación de requerimientos
-  hasta el despliegue CI/CD. Describe la arquitectura concreta de ese pipeline:
-  ¿cuántos agentes necesitarías, cuál sería la responsabilidad de cada uno,
-  cómo se coordinarían entre sí, y qué herramientas usarías para implementarlo?
-
-  No me respondas con "usaría LangChain para todo" — dame el diseño específico:
-  agentes nombrados, flujo de datos entre ellos y justificación de cada decisión
-  de diseño.
-
-  [ANTI-IA] Esta pregunta requiere tomar decisiones de arquitectura multi-agent
-  y justificarlas en el acto. El candidato debe poder dibujarla verbalmente sin
-  titubear. Si necesita tiempo prolongado para "pensar" cada agente, es señal
-  de que no tiene experiencia real diseñando estos sistemas.
-
-  RESPUESTA MÍNIMA ESPERADA (must-mention)
-  □ Al menos 3 agentes diferenciados con responsabilidades claras: p. ej.
-    Requirements Analyst Agent, Tech Spec Agent, Code Generator Agent,
-    CI/CD Agent, Review/Validation Agent.
-  □ Mecanismo de orquestación: cómo los agentes se pasan el contexto entre sí
-    (LangGraph state machine, CrewAI, Autogen, o diseño propio).
-  □ Human-in-the-loop: dónde necesita aprobación humana en el pipeline y por qué.
-  □ Manejo de fallos: qué pasa si un agente produce output de baja calidad.
-
-  EXPLICACIÓN DE REFERENCIA
-  Un pipeline multi-agent para desarrollo necesita: (1) Requirements Agent:
-  recibe una HU y extrae criterios técnicos, riesgos y dependencias — con RAG
-  sobre el contexto de Confluence/Jira para enriquecer el análisis; (2) Tech
-  Spec Agent: genera especificación técnica (APIs, modelos de datos, diagramas
-  en texto) a partir de los criterios; (3) Code Agent: genera código a partir
-  de la especificación, con acceso al repositorio para evitar duplicaciones;
-  (4) CI/CD Agent: prepara el pipeline de despliegue y la configuración de
-  infraestructura. La orquestación con LangGraph (grafo de estado) es más
-  predecible que CrewAI para flujos críticos en producción. Los puntos de
-  human-in-the-loop deben estar al menos en: validación de spec técnica y
-  revisión de código generado antes del merge.
-
-  RESPUESTA DESTACADA (diferenciador senior)
-  Propone un agente de Reflection/Critique que evalúa los outputs de los
-  demás agentes antes de avanzar al siguiente paso. Habla de state persistence
-  entre agentes (cómo se guarda el estado de una HU a través del pipeline).
-  Menciona los trade-offs de LangGraph vs CrewAI vs Autogen para este caso
-  específico. Propone métricas de calidad por agente (p. ej. % de specs
-  aprobadas sin revisión manual).
-
-  RED FLAGS
-  ✗ Diseña un solo agente monolítico que hace todo ("un agente que lee la HU
-    y genera el código final directamente").
-  ✗ No menciona human-in-the-loop en ningún punto del pipeline.
-  ✗ No puede explicar cómo los agentes se pasan el contexto entre sí.
-
-  PUNTUACIÓN
-  ┌──────────────┬─────────────────────────────────────────────────────────────┐
-  │  0 - No apto │ Agente monolítico, sin orquestación ni manejo de fallos     │
-  │  1 - Básico  │ 2-3 agentes pero sin mecanismo de orquestación claro        │
-  │  2 - Compete.│ Pipeline completo, orquestación, human-in-the-loop, fallos  │
-  │  3 - Destaca.│ Reflection agent, state persistence, trade-offs de framework│
-  └──────────────┴─────────────────────────────────────────────────────────────┘
-
-────────────────────────────────────────────────────────────────────────────────
-PREGUNTA 2: Un agente que en producción toma decisiones incorrectas
-────────────────────────────────────────────────────────────────────────────────
-
-  ENUNCIADO
-  Llevas 2 meses con el pipeline de agentes en producción. El equipo de
-  desarrollo te reporta que el Requirements Agent empezó a generar
-  especificaciones técnicas que contradicen la arquitectura existente de HDI —
-  propone nuevas tablas que ya existen, sugiere APIs que ya están construidas, y
-  omite dependencias críticas. ¿Cuál es tu proceso de diagnóstico y qué harías
-  para corregirlo? Describe los pasos en el orden en que los ejecutarías.
-
-  [ANTI-IA] El orden de los pasos de diagnóstico revela experiencia real. Un
-  candidato que nunca tuvo un agente en producción con este problema dará los
-  pasos en el orden "correcto de manual" pero sin poder justificar la prioridad
-  de cada uno.
-
-  RESPUESTA MÍNIMA ESPERADA (must-mention)
-  □ Primer paso: revisar si cambió el contexto del agente — ¿se actualizó el
-    knowledge base (Confluence/Jira), el prompt, o el modelo base?
-  □ Verificar si el RAG está retornando los documentos correctos: inspeccionar
-    qué chunks está recuperando el retriever para los últimos casos fallidos.
-  □ Analizar si el problema es de retrieval (trae contexto incorrecto) o de
-    generación (tiene el contexto correcto pero lo ignora).
-  □ Estrategia de remediación: re-indexar, ajustar chunking, enriquecer el
-    prompt con restricciones explícitas o refinar los embeddings.
-
-  EXPLICACIÓN DE REFERENCIA
-  Este es un problema clásico de "context drift" en RAG + agentes. El
-  diagnóstico debe ser sistemático: (1) Inspección del retriever — usar logging
-  de los chunks recuperados para ver si el contexto relevante (arquitectura
-  existente) está siendo retornado; (2) Evaluar si el problema es de indexación
-  — documentos de arquitectura desactualizados en Confluence que el agente
-  toma como verdad; (3) Evaluar si es problema de prompt — el agente no tiene
-  instrucción explícita de priorizar la arquitectura existente sobre la
-  generación; (4) Evaluar model drift — si el LLM base se actualizó, su
-  comportamiento de following del contexto puede haber cambiado. Soluciones:
-  actualizar el índice, agregar metadatos de fecha a los documentos, añadir
-  guardrails de "no proponer componentes que ya existen en el contexto".
-
-  RESPUESTA DESTACADA (diferenciador senior)
-  Propone un golden eval set de casos de HUs reales con las respuestas
-  esperadas, para detectar regresiones automáticamente. Menciona inspección
-  del reranker si lo hay. Propone un agente de validación que compare el output
-  contra el mapa de arquitectura actual antes de entregarlo. Habla de pinning
-  de versión del modelo base para evitar drift silencioso.
-
-  RED FLAGS
-  ✗ El primer paso es "reescribir el prompt" sin diagnóstico previo.
-  ✗ No menciona inspeccionar qué está retornando el retriever.
-  ✗ No distingue entre fallo de retrieval vs fallo de generación.
-
-  PUNTUACIÓN
-  ┌──────────────┬─────────────────────────────────────────────────────────────┐
-  │  0 - No apto │ Propone reescribir el prompt sin diagnóstico sistemático    │
-  │  1 - Básico  │ Revisa el prompt y el knowledge base pero sin método claro  │
-  │  2 - Compete.│ Distingue retrieval vs generación, inspecciona chunks, logs │
-  │  3 - Destaca.│ Eval set, reranker, validation agent, version pinning       │
-  └──────────────┴─────────────────────────────────────────────────────────────┘
-
-================================================================================
-  3. BLOQUE 2 — INFRAESTRUCTURA RAG (15 min)
-================================================================================
-
-────────────────────────────────────────────────────────────────────────────────
-PREGUNTA 3: Diseño del RAG sobre Confluence y Jira de HDI
-────────────────────────────────────────────────────────────────────────────────
-
-  ENUNCIADO
-  Debes implementar y mantener la infraestructura RAG conectada al repositorio
-  de conocimiento de HDI: Confluence y Jira. Describe la arquitectura completa:
-  ¿cómo indexarías estos documentos, qué estrategia de chunking usarías para
-  cada tipo de contenido, qué vector store elegirías y por qué, y cómo
-  mantendrías el índice actualizado cuando el contenido de Confluence o Jira
-  cambia?
-
-  [ANTI-IA] Confluence y Jira tienen estructuras de contenido muy específicas
-  (páginas con jerarquía, tickets con campos estructurados). Un candidato que
-  no tiene experiencia real con RAG sobre estas herramientas no podrá dar una
-  estrategia de chunking específica para cada tipo de contenido.
-
-  RESPUESTA MÍNIMA ESPERADA (must-mention)
-  □ Estrategia de chunking diferenciada para Confluence (páginas con jerarquía,
-    tablas, secciones) vs Jira (tickets estructurados con campos fijos).
-  □ Manejo de metadata: enriquecer cada chunk con space, page_id, author,
-    last_modified, issue_type para filtrado y reranking.
-  □ Mecanismo de sincronización incremental: webhooks de Confluence/Jira o
-    polling periódico para detectar cambios y re-indexar solo los documentos
-    modificados.
-  □ Justificación de la elección del vector store para el contexto de HDI
-    (on-premise vs managed, latencia, escala).
-
-  EXPLICACIÓN DE REFERENCIA
-  Para Confluence: chunking por sección (heading H2/H3), no por número fijo de
-  tokens — respetar los límites semánticos naturales de las páginas. Incluir
-  el breadcrumb (Space > Página padre > Página actual) como prefijo de cada
-  chunk para preservar el contexto jerárquico. Para Jira: cada ticket es una
-  unidad semántica — combinar título + descripción + comentarios clave en un
-  solo chunk enriquecido con metadatos (project, issue_type, status, labels).
-  Sincronización: Confluence tiene webhooks REST para notificar cambios; Jira
-  también. Lo ideal es un proceso de re-indexado incremental que solo actualiza
-  los chunks correspondientes al documento modificado. Para el vector store en
-  un contexto asegurador regulado: PostgreSQL con pgvector (on-premise, sin
-  datos saliendo de la infraestructura) o Azure AI Search (si ya tienen Azure).
-  Evitar Pinecone/Weaviate SaaS si las políticas de datos de HDI no permiten
-  almacenamiento externo.
-
-  RESPUESTA DESTACADA (diferenciador senior)
-  Propone chunking jerárquico (parent-child chunks) para Confluence: chunks
-  pequeños para retrieval preciso + chunk padre para contexto ampliado. Habla
-  de hybrid search (BM25 + dense retrieval) para mejorar el recall. Menciona
-  reranking con un cross-encoder antes de enviar al LLM. Propone un proceso
-  de evaluación de calidad del RAG con métricas RAGAS (faithfulness, context
-  recall, answer relevance).
-
-  RED FLAGS
-  ✗ Propone el mismo chunking fijo de N tokens para Confluence y Jira sin
-    considerar la estructura específica de cada herramienta.
-  ✗ No menciona la sincronización incremental — propone re-indexar todo
-    periódicamente (señal de experiencia solo en POC, no en producción).
-  ✗ No considera dónde se almacenan los embeddings en un contexto regulado
-    (riesgo de proponer SaaS con datos sensibles).
-
-  PUNTUACIÓN
-  ┌──────────────┬─────────────────────────────────────────────────────────────┐
-  │  0 - No apto │ Chunking fijo sin distinción, sin sincronización incremental │
-  │  1 - Básico  │ Distingue Confluence vs Jira pero sin estrategia de sync    │
-  │  2 - Compete.│ Chunking semántico, metadata, sync incremental, vector store│
-  │  3 - Destaca.│ Hierárquico, hybrid search, reranking, RAGAS metrics        │
-  └──────────────┴─────────────────────────────────────────────────────────────┘
-
-────────────────────────────────────────────────────────────────────────────────
-PREGUNTA 4: Diagnóstico en vivo — el RAG que devuelve respuestas incorrectas
-────────────────────────────────────────────────────────────────────────────────
-
-  ENUNCIADO (escenario presentado verbalmente — sin tiempo de consulta)
-
-  El equipo de desarrollo pregunta al sistema RAG: "¿Cuál es el proceso de
-  aprobación de cambios en producción en HDI?" El sistema responde describiendo
-  un proceso que existía hace 18 meses y fue reemplazado. La versión actualizada
-  del proceso está en Confluence, publicada hace 3 meses.
-
-  Sin buscar nada — en el acto — enumera todas las causas posibles de este
-  problema y, para cada una, di cómo la descartarías o confirmarías.
-
-  [ANTI-IA] Esta es una prueba de razonamiento en tiempo real sobre un sistema
-  RAG. El candidato debe poder enumerar causas y métodos de verificación sin
-  pausa larga. Observar si agrupa por categoría espontáneamente (indexación,
-  retrieval, generación).
-
-  RESPUESTA MÍNIMA ESPERADA (al menos 4 causas con método de verificación)
-
-  INDEXACIÓN:
-  □ El documento actualizado nunca fue re-indexado — el índice tiene solo la
-    versión antigua.
-    Verificación: consultar el vector store por el chunk del documento nuevo y
-    ver si existe con timestamp posterior a los 3 meses.
-
-  □ El webhook/sync falló silenciosamente y el documento actualizado no disparó
-    re-indexado.
-    Verificación: revisar logs del proceso de sync para la fecha de publicación
-    de la página.
-
-  RETRIEVAL:
-  □ El chunk del documento viejo tiene mayor similitud semántica con la query
-    que el nuevo, porque el nuevo usa terminología diferente.
-    Verificación: ejecutar la query directamente contra el retriever e inspeccionar
-    qué documentos devuelve con su score de similitud.
-
-  □ El documento actualizado está en un Space de Confluence distinto que no
-    está indexado.
-    Verificación: revisar la configuración de qué Spaces están incluidos en el
-    índice.
-
-  GENERACIÓN:
-  □ El LLM tiene en su contexto de entrenamiento el proceso antiguo y lo
-    prefiere sobre los chunks recuperados.
-    Verificación: forzar al LLM a responder SOLO con el contexto proporcionado
-    (sin conocimiento previo) y ver si el problema persiste.
-
-  RESPUESTA DESTACADA (diferenciador senior)
-  Agrupa causas por capa (indexación / retrieval / generación) espontáneamente.
-  Propone una query de diagnóstico específica al vector store. Menciona el
-  problema de "temporal context" — los LLMs tienen dificultad para preferir
-  información reciente sobre su training data cuando hay ambigüedad. Propone
-  añadir metadatos de fecha como campo de filtro con boost para documentos
-  recientes.
-
-  RED FLAGS
-  ✗ Solo menciona "el índice está desactualizado" sin profundizar en causas.
-  ✗ No puede proponer cómo verificar cada causa (solo las enumera).
-  ✗ Largas pausas de silencio durante la pregunta.
-
-  PUNTUACIÓN
-  ┌──────────────┬─────────────────────────────────────────────────────────────┐
-  │  0 - No apto │ Solo menciona "el índice desactualizado" como única causa   │
-  │  1 - Básico  │ 2-3 causas sin método de verificación                      │
-  │  2 - Compete.│ 4+ causas agrupadas con método de verificación concreto    │
-  │  3 - Destaca.│ Agrupa por capa, temporal context, boost por fecha          │
-  └──────────────┴─────────────────────────────────────────────────────────────┘
-
-================================================================================
-  4. BLOQUE 3 — GOBIERNO IA Y REGULACIÓN (10 min)
-================================================================================
-
-────────────────────────────────────────────────────────────────────────────────
-PREGUNTA 5: Gobierno IA, trazabilidad regulatoria y Ley 21.719
-────────────────────────────────────────────────────────────────────────────────
-
-  ENUNCIADO
-  Deberás colaborar con el PO IA en la definición de estándares de gobierno IA
-  y trazabilidad regulatoria bajo la CMF y la Ley 21.719. Describe concretamente
-  qué significa "trazabilidad regulatoria" para un sistema de agentes IA en HDI
-  y qué artefactos o mecanismos técnicos implementarías para garantizarla.
-
-  [ANTI-IA] La Ley 21.719 es específica de Chile y entró en vigencia
-  recientemente. Un candidato que realmente trabajó en sector financiero/
-  asegurador en Chile debería conocerla o al menos sus implicancias generales.
-  Respuestas basadas en marcos internacionales (GDPR, NIST AI RMF) sin mencionar
-  el contexto local chileno son señal de generalización sin experiencia real.
-
-  RESPUESTA MÍNIMA ESPERADA (must-mention)
-  □ Trazabilidad de decisiones del agente: loggear qué input recibió, qué
-    contexto recuperó el RAG, qué output generó, y qué acción tomó — con
-    timestamp y identificador del usuario/sistema que lo invocó.
-  □ Derecho de explicación: en el contexto de la Ley 21.719, las decisiones
-    automatizadas que afectan a personas deben poder explicarse — para HDI
-    esto aplica en evaluación de siniestros, pólizas o créditos.
-  □ Gestión de datos personales en el pipeline: las HU y tickets de Jira
-    pueden contener datos de asegurados (RUT, nombre, siniestro) — el pipeline
-    de agentes no debe procesar ni almacenar esos datos sin base legal.
-  □ Audit trail: registro inmutable de las acciones de los agentes, con
-    retención definida conforme a los plazos de la CMF.
-
-  EXPLICACIÓN DE REFERENCIA
-  La Ley 21.719 (Ley de Protección de Datos Personales, Chile, 2024) establece
-  entre sus principios: finalidad, proporcionalidad, y el derecho de los
-  titulares a no ser objeto de decisiones automatizadas sin supervisión humana.
-  Para un Ingeniero de IA esto implica: (1) diseñar el sistema con el principio
-  de privacy-by-design — no procesar datos personales a menos que sea necesario;
-  (2) implementar logs de auditoría que permitan demostrar ante la CMF qué
-  decisión tomó el sistema, cuándo y con qué base; (3) establecer mecanismos
-  de revisión humana para decisiones que afecten a clientes (siniestros,
-  coberturas); (4) definir políticas de retención y eliminación de los datos
-  procesados por los agentes. Técnicamente: usar IDs anónimos en lugar de datos
-  personales en los pipelines de IA, con resolución solo cuando sea necesario.
-
-  RESPUESTA DESTACADA (diferenciador senior)
-  Menciona explícitamente la Ley 21.719 y sus principios de decisión
-  automatizada. Propone un modelo de logging estructurado (JSON con campos
-  estandarizados) que pueda consultarse en una auditoría. Habla de PII
-  detection antes de que los datos entren al pipeline de agentes (scrubbing).
-  Diferencia entre trazabilidad técnica (logs) y trazabilidad de negocio
-  (qué decisión y por qué) y propone artefactos para ambas.
-
-  RED FLAGS
-  ✗ No conoce la Ley 21.719 ni puede explicar sus implicancias básicas para
-    sistemas de IA.
-  ✗ Responde solo con marcos internacionales (GDPR, NIST) sin contexto chileno.
-  ✗ No menciona el derecho de explicación ni las decisiones automatizadas.
-
-  PUNTUACIÓN
-  ┌──────────────┬─────────────────────────────────────────────────────────────┐
-  │  0 - No apto │ Sin conocimiento de Ley 21.719, solo marcos genéricos       │
-  │  1 - Básico  │ Menciona logs de auditoría, sin contexto regulatorio local  │
-  │  2 - Compete.│ Ley 21.719, trazabilidad técnica y de negocio, audit trail  │
-  │  3 - Destaca.│ PII scrubbing, logging estructurado, decisión automatizada  │
-  └──────────────┴─────────────────────────────────────────────────────────────┘
-
-================================================================================
-  5. BLOQUE 4 — LIDERAZGO TÉCNICO Y PROFUNDIDAD (15 min)
-================================================================================
-
-────────────────────────────────────────────────────────────────────────────────
-PREGUNTA 6: Integración de agentes IA con el ecosistema de herramientas de HDI
-────────────────────────────────────────────────────────────────────────────────
-
-  ENUNCIADO
-  Debes definir los patrones de integración entre los agentes IA y las
-  herramientas del ecosistema HDI: Confluence, Jira, repositorios de código,
-  pipelines CI/CD. Describe los patrones de integración que implementarías,
-  qué riesgos tiene cada uno y cuáles evitarías en un contexto de producción
-  crítico en el sector asegurador.
-
-  [ANTI-IA] Esta pregunta evalúa criterio de ingeniería: no hay una sola
-  respuesta correcta, pero hay decisiones que revelan experiencia real versus
-  teórica. Un candidato sin experiencia real tenderá a proponer el patrón más
-  simple (integración directa vía API) sin considerar los riesgos de producción.
-
-  RESPUESTA MÍNIMA ESPERADA (must-mention)
-  □ Patrón de Tool Use / Function Calling: el agente invoca APIs de Jira y
-    Confluence como tools — ventaja: simple; riesgo: el agente puede hacer
-    llamadas no deseadas si el prompt no es estricto (p. ej. crear tickets
-    accidentalmente).
-  □ Human-approval gate para acciones destructivas o visibles: el agente
-    propone la acción (crear ticket, hacer commit) y un humano aprueba antes
-    de ejecutarla.
-  □ Idempotencia en las integraciones: si el agente falla y se reintenta, no
-    debe crear duplicados en Jira ni commits duplicados en el repositorio.
-  □ Rate limiting y throttling: los agentes en un loop pueden saturar las
-    APIs de Confluence/Jira si no hay control de velocidad.
-
-  EXPLICACIÓN DE REFERENCIA
-  Los patrones más seguros para agentes en producción son: (1) Read-only by
-  default — el agente solo lee hasta que una acción de escritura es
-  explícitamente aprobada; (2) Tool scoping estricto — el agente solo tiene
-  acceso a las herramientas que necesita para su tarea específica, no a todo
-  el ecosistema; (3) Dry-run antes de execute — el agente genera el plan de
-  acciones y lo presenta para aprobación antes de ejecutar; (4) Rollback
-  capability — cada acción debe poder deshacerse si el resultado no es el
-  esperado. Para CI/CD en específico: el agente solo puede crear branches y
-  PRs, nunca hacer merge directo a main — el merge requiere aprobación humana
-  y pasaje de todos los quality gates.
-
-  RESPUESTA DESTACADA (diferenciador senior)
-  Propone un modelo de permisos por agente (cada agente tiene un service
-  account con los mínimos privilegios necesarios). Habla de circuit breaker
-  para las integraciones externas. Menciona el patrón de "staging" de acciones
-  — todas las acciones del agente se escriben primero en una cola de revisión.
-  Da un ejemplo real de una integración que salió mal en un proyecto anterior
-  y cómo la resolvió.
-
-  RED FLAGS
-  ✗ No menciona ningún riesgo de las integraciones — solo las ventajas.
-  ✗ Propone que el agente tenga acceso directo a todas las herramientas sin
-    restricción de permisos.
-  ✗ No considera el problema de idempotencia en las acciones de escritura.
-
-  PUNTUACIÓN
-  ┌──────────────┬─────────────────────────────────────────────────────────────┐
-  │  0 - No apto │ Sin mención de riesgos, permisos o human-approval           │
-  │  1 - Básico  │ Tool use mencionado, sin idempotencia ni rate limiting      │
-  │  2 - Compete.│ Human-approval, idempotencia, rate limiting, tool scoping   │
-  │  3 - Destaca.│ Min privileges, circuit breaker, staging queue, caso real   │
-  └──────────────┴─────────────────────────────────────────────────────────────┘
-
-────────────────────────────────────────────────────────────────────────────────
-PREGUNTA 7: Liderazgo técnico — transferencia de conocimiento al perfil interno
-────────────────────────────────────────────────────────────────────────────────
-
-  ENUNCIADO
-  A los 10 meses deberás liderar la transferencia de conocimiento al perfil
-  interno que asumirá tu rol. Describe cómo estructurarías ese proceso de
-  transferencia. ¿Qué artefactos técnicos generarías? ¿Cómo evaluarías que la
-  transferencia fue exitosa? ¿Qué es lo más difícil de transferir en un sistema
-  de IA y cómo lo abordarías?
-
-  [ANTI-IA] Esta pregunta evalúa experiencia real de mentoring técnico. Un
-  candidato que nunca hizo transferencia de un sistema de IA a un colega
-  responderá con el proceso estándar de documentación, sin poder nombrar qué
-  es lo MÁS DIFÍCIL de transferir — que no es el código ni la arquitectura,
-  sino el conocimiento tácito de por qué se tomaron ciertas decisiones.
-
-  RESPUESTA MÍNIMA ESPERADA (must-mention)
-  □ Documentación técnica viva: ADRs (Architecture Decision Records) para
-    capturar el "por qué" de cada decisión de diseño — no solo el "qué".
-  □ Proceso de shadowing gradual: el interno primero observa, luego co-pilotea,
-    luego opera con supervisión, finalmente opera solo.
-  □ Lo más difícil de transferir: el conocimiento de cuándo NO usar IA, las
-    excepciones conocidas del sistema, y el contexto de negocio de HDI que
-    hace que ciertas decisiones sean las correctas.
-  □ Criterios de éxito medibles: el interno puede diagnosticar y resolver los
-    tipos de fallos más frecuentes del sistema sin consultar al consultor.
-
-  EXPLICACIÓN DE REFERENCIA
-  La transferencia de conocimiento de un sistema de IA tiene capas: (1) El qué:
-  arquitectura, código, configuración — fácil de documentar; (2) El cómo:
-  cómo operar, monitorear, deployar — se transfiere con runbooks y shadowing;
-  (3) El por qué: por qué se eligió LangGraph sobre CrewAI, por qué se usa
-  este chunking y no otro, qué trade-offs se evaluaron — esto requiere ADRs
-  y conversaciones explícitas; (4) El cuándo: cuándo escalar, cuándo hacer
-  rollback, cuándo el sistema está en un estado que no se puede auto-corregir
-  — esto solo se transfiere con incidentes reales o simulados. El plan debe
-  incluir un período de co-operación donde el interno toma el liderazgo y el
-  consultor actúa como respaldo, no al revés.
-
-  RESPUESTA DESTACADA (diferenciador senior)
-  Describe un caso real de transferencia que haya liderado. Propone un
-  "incident playbook" de los fallos más frecuentes del sistema con su diagnóstico
-  y solución. Menciona la importancia de que el interno participe en el diseño
-  de los últimos componentes, no solo en la operación, para que entienda el
-  razonamiento de diseño. Propone un período de "reverse shadowing" donde el
-  consultor opera y el interno propone qué haría diferente.
-
-  RED FLAGS
-  ✗ Propone solo "documentar todo bien" sin mencionar el conocimiento tácito.
-  ✗ No puede identificar qué es lo más difícil de transferir.
-  ✗ No tiene ningún criterio de éxito para evaluar si la transferencia funcionó.
-
-  PUNTUACIÓN
-  ┌──────────────┬─────────────────────────────────────────────────────────────┐
-  │  0 - No apto │ Solo propone documentación, sin proceso ni criterios        │
-  │  1 - Básico  │ Shadowing mencionado, sin ADRs ni conocimiento tácito       │
-  │  2 - Compete.│ ADRs, shadowing gradual, conocimiento tácito, criterios OK  │
-  │  3 - Destaca.│ Caso real, incident playbook, reverse shadowing, co-diseño  │
-  └──────────────┴─────────────────────────────────────────────────────────────┘
-
-================================================================================
-  6. CODE CHALLENGE (opcional, 15 min)
-================================================================================
-
-  ENUNCIADO
-  Se te da un fragmento de un pipeline RAG en Python que tiene 3 bugs
-  deliberados. El candidato debe identificarlos y corregirlos en vivo.
-
-  Contexto: este código es parte del Requirements Agent. Recibe una historia
-  de usuario (user_story) y retorna los 3 chunks más relevantes del índice
-  de Confluence de HDI.
-
-  ─── CÓDIGO CON BUGS ─────────────────────────────────────────────────────────
-
-  from langchain_openai import OpenAIEmbeddings
-  from langchain_community.vectorstores import PGVector
-  from langchain_core.documents import Document
-
-  CONNECTION_STRING = "postgresql://user:password@localhost:5432/hdi_rag"
-  COLLECTION_NAME   = "confluence_chunks"
-
-  def retrieve_context(user_story: str, k: int = 3) -> list[Document]:
-      embeddings = OpenAIEmbeddings(model="text-embedding-3-small")
-
-      store = PGVector(
-          connection_string=CONNECTION_STRING,
-          embedding_function=embeddings,
-          collection_name=COLLECTION_NAME,
+
+⚠️  INSTRUCCIÓN PARA EL ENTREVISTADOR — DISEÑO ANTI-IA
+════════════════════════════════════════════════════════
+Este challenge está diseñado para que NO sea posible responder correctamente
+usando un asistente de IA en tiempo real. Estrategias aplicadas:
+
+1. PREGUNTAS BASADAS EN EXPERIENCIA PROPIA
+   Todas las preguntas de aplicación práctica exigen que el candidato cite
+   proyectos reales con detalles específicos: empresa, volumen de datos,
+   errores encontrados. Un LLM genera respuestas genéricas; el entrevistador
+   debe presionar con follow-ups que expongan si la experiencia es auténtica.
+
+2. FOLLOW-UP TÉCNICO EN TIEMPO REAL
+   Cada pregunta incluye follow-ups sorpresa marcados con 🎯 que el
+   entrevistador hace VERBALMENTE, imposibles de anticipar.
+
+3. CÓDIGO CON BUG DELIBERADO
+   El code challenge contiene errores intencionales que el candidato debe
+   detectar y corregir explicando su razonamiento paso a paso.
+   No puede usar herramientas externas durante este ejercicio.
+
+4. CONTEXTO REGULATORIO ESPECÍFICO
+   Las preguntas de gobierno IA usan el contexto real de Ley 21.719 y CMF,
+   requiriendo aplicación práctica que va más allá de definiciones
+   memorizables.
+
+5. DISEÑO EN VIVO
+   El candidato describe/dibuja arquitecturas respondiendo preguntas del
+   entrevistador en tiempo real mientras habla.
+
+
+════════════════════════════════════════════════════════════════════════════════
+  SECCIÓN 1 — WARM-UP  (5 min)  ·  No evaluado con puntaje
+════════════════════════════════════════════════════════════════════════════════
+
+Objetivo: romper el hielo y entender el contexto real del candidato.
+Señal positiva: respuestas concretas con fricción, errores propios, decisiones.
+Señal negativa: respuestas genéricas aplicables a cualquier proyecto.
+
+WU-1: "Cuéntame brevemente tu trayectoria en proyectos de IA en los últimos
+       2 años. ¿Cuál fue el proyecto del que más aprendes al mirarlo
+       en retrospectiva?"
+
+WU-2: "¿Qué herramienta o técnica del ecosistema LLM adoptaste este año que
+       no usabas antes? ¿Por qué la adoptaste y qué problema resolviste
+       con ella?"
+
+
+════════════════════════════════════════════════════════════════════════════════
+  SECCIÓN 2 — FUNDAMENTOS  (12 min)
+════════════════════════════════════════════════════════════════════════════════
+
+──────────────────────────────────────────────────────────────────────────────
+  Tecnología: RAG (Retrieval-Augmented Generation)
+──────────────────────────────────────────────────────────────────────────────
+
+  Pregunta F-1: Aislamiento de datos en RAG para entorno asegurador
+  ─────────────────────────────────────────────────────────────────
+
+  ENUNCIADO:
+  Diseñaste un sistema RAG para una compañía de seguros que indexa pólizas,
+  contratos y documentos regulatorios internos. El equipo de compliance te
+  pide garantizar que un agente nunca devuelva información de la póliza del
+  cliente A a una consulta del cliente B. ¿Cómo arquitecturas el sistema de
+  recuperación para cumplir ese requerimiento?
+
+  🟢 RESPUESTA MÍNIMA ESPERADA (must-mention):
+  - Filtrado por metadatos en el vector store (tenant isolation / namespace
+    por cliente).
+  - No mezclar embeddings de distintos clientes en el mismo índice, o usar
+    filtros estrictos pre-retrieval.
+  - Validación post-retrieval: verificar que los chunks recuperados pertenecen
+    al usuario autenticado antes de pasarlos al LLM.
+
+  📖 EXPLICACIÓN DE REFERENCIA:
+  La estrategia correcta combina aislamiento en el índice (namespace por
+  cliente en Pinecone/Weaviate, o colecciones separadas en ChromaDB/Qdrant)
+  con filtros por metadatos en cada query. La identidad del usuario debe
+  propagarse como filtro obligatorio en el vector store, NUNCA como
+  instrucción en el prompt del LLM (que puede ignorarse con prompt injection).
+  Post-retrieval, validar que todos los chunks tienen el client_id correcto
+  antes de pasarlos al modelo. En contextos regulados (CMF), este control
+  debe ser auditable con logs trazables e inmutables.
+
+  ⭐ RESPUESTA DESTACADA (diferenciador senior):
+  Menciona el riesgo de prompt injection que burle las instrucciones del
+  sistema. Propone un layer de autorización independiente del LLM. Habla de
+  RBAC aplicado al nivel del retriever. Menciona evaluación con frameworks de
+  adversarial testing (Garak, PyRIT).
+
+  🔴 RED FLAGS:
+  - "Le digo al prompt que solo responda con información del cliente actual"
+    — esto NO es suficiente como única barrera de seguridad.
+  - No considera el caso de un índice compartido sin filtros.
+  - No distingue entre aislamiento real y aislamiento basado solo en
+    instrucciones al modelo.
+
+  🎯 FOLLOW-UP SORPRESA (hacer verbalmente):
+  "En un proyecto que hayas hecho, ¿cómo manejaste la actualización de
+   documentos cuando vencía o se modificaba un contrato? ¿Tenías mecanismos
+   de invalidación de embeddings?"
+
+  PUNTUACIÓN:
+  +----------------+----------------------------------------------------------+
+  | 0 - No apto    | No sabe qué es RAG o no entiende el requerimiento        |
+  | 1 - Básico     | Propone solo instrucciones en el prompt como barrera      |
+  | 2 - Competente | Filtros por metadatos + validación post-retrieval         |
+  | 3 - Destacado  | Namespace + RBAC + audit logs + menciona prompt injection |
+  +----------------+----------------------------------------------------------+
+
+──────────────────────────────────────────────────────────────────────────────
+
+  Pregunta F-2: Chunking y calidad de retrieval
+  ──────────────────────────────────────────────
+
+  ENUNCIADO:
+  Tu sistema RAG responde correctamente el 70% de las preguntas en testing
+  pero falla en preguntas que cruzan información de varias secciones del
+  mismo documento. ¿Cuál es tu diagnóstico y cómo lo atacas?
+
+  🟢 RESPUESTA MÍNIMA ESPERADA (must-mention):
+  - El chunking estático por tamaño fijo pierde contexto que cruza límites
+    de chunk.
+  - Estrategias: recursive chunking, semantic chunking, o chunking jerárquico
+    (parent-child retrieval).
+  - Evaluar la calidad del retrieval con métricas (recall@k) antes de evaluar
+    el modelo generador.
+
+  📖 EXPLICACIÓN DE REFERENCIA:
+  El problema clásico es un chunking por tokens fijo que corta el documento
+  sin respetar límites semánticos. Las estrategias más efectivas son:
+  (1) semantic chunking que divide por similitud de embeddings entre oraciones
+  consecutivas; (2) parent-child retrieval donde se almacenan chunks pequeños
+  para recuperación precisa pero se pasa el chunk padre (más grande) como
+  contexto al LLM; (3) HyDE (Hypothetical Document Embeddings) para mejorar
+  la query antes del retrieval. La evaluación debe separarse en dos capas:
+  calidad del retriever (¿recuperó los chunks correctos?) y calidad del
+  generador (¿respondió bien dado ese contexto?).
+
+  ⭐ RESPUESTA DESTACADA:
+  Habla de RAGAS framework para evaluación sistemática. Propone un pipeline
+  de evaluación con ground truth dataset. Menciona re-ranking con
+  cross-encoders (Cohere Rerank, BGE-Reranker). Habla de fine-tuning del
+  modelo de embeddings con datos del dominio asegurador.
+
+  🔴 RED FLAGS:
+  - Propone aumentar el tamaño del contexto del LLM sin atacar el retrieval.
+  - No distingue entre problema de retrieval y problema de generación.
+  - Nunca usó métricas de evaluación en proyectos RAG reales.
+
+  🎯 FOLLOW-UP SORPRESA:
+  "¿Qué herramienta o pipeline de evaluación RAG usaste en un proyecto real?
+   ¿Qué métricas te importaban más y por qué priorizaste esas sobre otras?"
+
+  PUNTUACIÓN:
+  +----------------+------------------------------------------------------------+
+  | 0 - No apto    | Solo propone cambiar el modelo o aumentar el contexto       |
+  | 1 - Básico     | Identifica el chunking pero solo menciona soluciones básicas |
+  | 2 - Competente | Semantic/hierarchical chunking + eval separada ret./gen.     |
+  | 3 - Destacado  | Agrega re-ranking + RAGAS + fine-tuning de embeddings        |
+  +----------------+------------------------------------------------------------+
+
+──────────────────────────────────────────────────────────────────────────────
+  Tecnología: Agentes IA
+──────────────────────────────────────────────────────────────────────────────
+
+  Pregunta F-3: Diseño de agente con herramientas externas
+  ─────────────────────────────────────────────────────────
+
+  ENUNCIADO:
+  HDI necesita un agente que pueda responder preguntas de un desarrollador
+  interno sobre el estado de sus Jiras abiertas, documentación en Confluence
+  y últimos pipelines de Jenkins. El agente debe elegir qué herramienta usar
+  según la pregunta. Describe en 3 minutos cómo diseñarías este agente.
+  (El entrevistador puede interrumpir con preguntas mientras el candidato
+  habla.)
+
+  🟢 RESPUESTA MÍNIMA ESPERADA (must-mention):
+  - Tool use / function calling con herramientas mapeadas a cada API.
+  - Mecanismo de selección de herramienta: LLM elige según descripción de
+    la herramienta o mediante ReAct/tool-calling nativo.
+  - Manejo de errores de herramientas y reintentos con backoff.
+
+  📖 EXPLICACIÓN DE REFERENCIA:
+  El diseño más robusto usa LangChain/LangGraph o el tool-calling nativo de
+  modelos como Claude o GPT-4o. Se define un ToolNode por API con descripción
+  precisa de cuándo usarla. El grafo de ejecución en LangGraph permite loops
+  condicionales: el agente llama una herramienta, observa el resultado, y
+  decide si necesita otra. El estado del agente debe persistir entre llamadas
+  (memoria de conversación). Para producción: credenciales gestionadas con
+  secrets manager; timeouts y rate limits con retry exponencial y circuit
+  breakers. El agente debe tener un límite de iteraciones configurado para
+  evitar loops infinitos.
+
+  ⭐ RESPUESTA DESTACADA:
+  Propone logging que registre cada tool call con input/output para
+  trazabilidad. Habla de evaluación del agente con trayectorias sintéticas.
+  Menciona límite de iteraciones para evitar loops. Propone validación de
+  outputs antes de mostrarlos al usuario.
+
+  🔴 RED FLAGS:
+  - Diseña el agente como cadena lineal sin selección dinámica de herramientas.
+  - No considera el fallo de las APIs externas.
+  - Hardcodea credenciales en el código del agente.
+
+  🎯 FOLLOW-UP SORPRESA:
+  "Si el agente llama a Jira y la API devuelve un 429 (rate limit), ¿cómo
+   lo manejas sin que el usuario vea un error crudo? ¿Cómo se lo comunicarías
+   al LLM para que reformule su estrategia?"
+
+  PUNTUACIÓN:
+  +----------------+-------------------------------------------------------------+
+  | 0 - No apto    | No sabe integrar herramientas externas a un agente           |
+  | 1 - Básico     | Conoce tool calling pero no maneja errores ni estado         |
+  | 2 - Competente | Tool calling + manejo de errores + persistencia de estado    |
+  | 3 - Destacado  | Agrega logging, límite iter., validación outputs, resilencia |
+  +----------------+-------------------------------------------------------------+
+
+
+════════════════════════════════════════════════════════════════════════════════
+  SECCIÓN 3 — APLICACIÓN PRÁCTICA  (15 min)
+════════════════════════════════════════════════════════════════════════════════
+
+  Pregunta AP-1: Repositorio de conocimiento RAG en Confluence
+  ─────────────────────────────────────────────────────────────
+
+  ENUNCIADO:
+  Te encargan diseñar el repositorio de conocimiento RAG de HDI en
+  Confluence: ADRs, estándares de desarrollo, plantillas y decisiones
+  técnicas. Describe la estrategia de indexación, actualización y gobierno
+  del repositorio. ¿Cómo garantizas que el agente no responda con
+  información obsoleta?
+
+  🟢 RESPUESTA MÍNIMA ESPERADA (must-mention):
+  - Pipeline de sincronización entre Confluence y el vector store
+    (webhook o polling programado).
+  - Versionado o timestamp de documentos para invalidar embeddings
+    desactualizados.
+  - Proceso de revisión/aprobación antes de indexar (no indexar borradores).
+
+  📖 EXPLICACIÓN DE REFERENCIA:
+  La estrategia de gobierno requiere tres capas:
+  (1) INGESTIÓN CONTROLADA: solo se indexan páginas en estado "Published"
+  con label específico (rag-indexed). Un webhook de Confluence dispara la
+  reingestión cuando una página cambia.
+  (2) GESTIÓN DE VERSIONES EN EL ÍNDICE: cada chunk almacena page_id,
+  version, y last_updated. Antes de cada query, se puede verificar si la
+  versión en el índice es la actual.
+  (3) TTL O INVALIDACIÓN ACTIVA: documentos sin actualizar en X días se
+  marcan como "potentially stale" y el agente lo indica al usuario.
+  Para ADRs, el estado (Propuesto/Aceptado/Deprecado) debe ser un metadato
+  en el chunk y usarse como filtro obligatorio.
+
+  ⭐ RESPUESTA DESTACADA:
+  Propone un pipeline con Airflow o Prefect para sincronización programada.
+  Habla de evaluación continua de la calidad del repositorio (preguntas de
+  golden set contra el RAG). Menciona RBAC aplicado al vector store: qué
+  usuarios pueden querear qué secciones del repositorio.
+
+  🔴 RED FLAGS:
+  - Indexa todo Confluence sin distinción de estado o relevancia.
+  - No tiene estrategia para documentos que cambian frecuentemente.
+  - No considera el acceso diferenciado por rol de usuario.
+
+  🎯 FOLLOW-UP SORPRESA:
+  "¿Cómo detectarías que el agente está respondiendo con un ADR que fue
+   deprecado hace 3 meses pero el vector store todavía lo tiene indexado?
+   ¿Cómo lo evitas y cómo alertas si igual ocurre?"
+
+  PUNTUACIÓN:
+  +----------------+------------------------------------------------------------+
+  | 0 - No apto    | No considera la desactualización del índice                 |
+  | 1 - Básico     | Menciona sincronización pero sin estrategia de invalidación  |
+  | 2 - Competente | Sync + invalidación por versión + filtros por estado doc     |
+  | 3 - Destacado  | + eval. continua + RBAC + alertas por datos obsoletos        |
+  +----------------+------------------------------------------------------------+
+
+──────────────────────────────────────────────────────────────────────────────
+
+  Pregunta AP-2: Gobierno IA y trazabilidad regulatoria (CMF / Ley 21.719)
+  ──────────────────────────────────────────────────────────────────────────
+
+  ENUNCIADO:
+  HDI opera en un entorno regulado por la CMF y la Ley 21.719 (protección de
+  datos personales en Chile). Un auditor te pregunta: "¿Cómo demuestras que
+  el agente IA que apoya el proceso de siniestros no discrimina por riesgo
+  demográfico y que cumple con el tratamiento de datos personales?"
+  ¿Qué infraestructura de gobierno tienes en producción para responder esa
+  pregunta?
+
+  🟢 RESPUESTA MÍNIMA ESPERADA (must-mention):
+  - Logging completo de cada invocación: input, herramientas usadas, output,
+    modelo, versión de prompt (trazabilidad auditable).
+  - Minimización de datos: el agente solo accede a los datos necesarios
+    para la tarea específica.
+  - Derecho de acceso y eliminación: mecanismo para borrar datos personales
+    del vector store si el titular lo solicita (Ley 21.719, Art. 16).
+
+  📖 EXPLICACIÓN DE REFERENCIA:
+  La infraestructura de gobierno mínima para CMF incluye:
+  (1) AUDIT LOG INMUTABLE: de cada invocación del agente: timestamp, user_id,
+  input anonimizado, herramientas invocadas, output, model_id, prompt_version.
+  Almacenado en sistema de solo-append (S3 + Athena, BigQuery, o similar).
+  (2) DETECCIÓN DE SESGOS: evaluación periódica sobre datasets de referencia
+  con atributos protegidos (edad, sexo, región). Reportes automáticos de
+  equidad.
+  (3) GESTIÓN DE DATOS PERSONALES: el vector store debe permitir eliminar
+  embeddings asociados a un cliente. El "derecho al olvido" de la Ley 21.719
+  aplica a datos derivados (embeddings incluidos).
+  (4) MODEL CARD Y VERSIONADO DE PROMPTS: cada cambio de prompt o modelo
+  pasa por un proceso de aprobación documentado antes de ir a producción.
+
+  ⭐ RESPUESTA DESTACADA:
+  Menciona frameworks de referencia: AI Act de la UE como guía de buenas
+  prácticas. Propone un AI Impact Assessment. Habla de cuándo un agente LLM
+  NO debería tomar decisiones autónomas en procesos de alto impacto (como
+  liquidación de siniestros) sin revisión humana. Distingue entre datos de
+  entrenamiento y datos en tiempo de inferencia.
+
+  🔴 RED FLAGS:
+  - No conoce la Ley 21.719 ni su aplicación a sistemas IA.
+  - Cree que el logging del proveedor LLM (OpenAI, Anthropic) es suficiente
+    para cumplir regulación.
+  - No distingue entre datos de entrenamiento y datos en inferencia.
+
+  🎯 FOLLOW-UP SORPRESA:
+  "Si hoy Anthropic (proveedor del LLM) cambia su política de retención de
+   datos de la API, ¿qué proceso tienes para evaluar si eso impacta el
+   cumplimiento de Ley 21.719 en HDI? ¿Quién en la organización debe ser
+   notificado y cuál es el proceso de decisión?"
+
+  PUNTUACIÓN:
+  +----------------+--------------------------------------------------------------+
+  | 0 - No apto    | No tiene concepto de gobierno IA ni conoce regulación local   |
+  | 1 - Básico     | Menciona logging pero no tiene estrategia integral             |
+  | 2 - Competente | Audit log + derecho olvido + versionado prompts + eval sesgos |
+  | 3 - Destacado  | + AI Impact Assessment + distinción inferencia/entrenamiento   |
+  +----------------+--------------------------------------------------------------+
+
+
+════════════════════════════════════════════════════════════════════════════════
+  SECCIÓN 4 — PROFUNDIDAD TÉCNICA  (12 min)
+════════════════════════════════════════════════════════════════════════════════
+
+  Pregunta PT-1: Debugging de un agente en producción
+  ────────────────────────────────────────────────────
+
+  ENUNCIADO:
+  Tu agente de integración con Jira/Confluence está en producción hace
+  2 semanas. Operaciones reporta que ocasionalmente el agente entra en un
+  loop de 15+ llamadas a herramientas antes de responder o agotar el timeout.
+  Los logs muestran que el agente llama repetidamente a search_confluence con
+  queries muy similares. ¿Cómo diagnosticas y corriges este comportamiento?
+
+  🟢 RESPUESTA MÍNIMA ESPERADA (must-mention):
+  - Identificar los inputs que desencadenan el loop (¿qué tipo de preguntas
+    siempre falla?).
+  - Límite máximo de iteraciones (max_iterations / recursion_limit)
+    configurado en el grafo del agente.
+  - La herramienta no está devolviendo una señal clara de "no hay resultados"
+    o la descripción de la herramienta es ambigua para el LLM.
+
+  📖 EXPLICACIÓN DE REFERENCIA:
+  El loop en agentes LLM tiene tres causas típicas:
+  (1) HERRAMIENTA QUE DEVUELVE RESULTADOS VACÍOS O AMBIGUOS: el agente
+  reformula y reintenta indefinidamente porque no tiene señal de "no hay
+  información disponible". Solución: la herramienta retorna mensaje explícito
+  de "no se encontraron resultados" que el agente pueda interpretar como
+  señal de parar.
+  (2) DESCRIPCIÓN DE HERRAMIENTA CONFUSA: si dos herramientas tienen
+  descripciones similares, el agente oscila entre ambas. Solución: redefinir
+  descripciones con ejemplos explícitos de cuándo usar cada una.
+  (3) NO HAY CONDICIÓN DE EXIT CLARA EN EL GRAFO: en LangGraph, el nodo END
+  debe alcanzarse cuando el agente tiene suficiente información. Añadir
+  recursion_limit como guardia. Para diagnóstico: analizar traces de
+  LangSmith u OpenTelemetry para ver el razonamiento interno del agente
+  en cada iteración.
+
+  ⭐ RESPUESTA DESTACADA:
+  Propone instrumentar el agente con OpenTelemetry para spans por tool call.
+  Habla de evaluar el agente con trayectorias sintéticas que repliquen las
+  preguntas problemáticas antes de deployar el fix. Menciona feature flags
+  para deshabilitar el agente en producción y redirigir al usuario a un
+  fallback manual mientras se corrige.
+
+  🔴 RED FLAGS:
+  - Solo propone aumentar el timeout como solución.
+  - No tiene estrategia de observabilidad del agente.
+  - Nunca configuró recursion_limit o equivalente en un proyecto real.
+
+  🎯 FOLLOW-UP SORPRESA:
+  "¿Cómo haces para que el agente 'sepa' que debe parar aunque no haya
+   encontrado la información? ¿Cómo le comunicas eso en el diseño del grafo
+   o en el prompt del sistema?"
+
+  PUNTUACIÓN:
+  +----------------+--------------------------------------------------------------+
+  | 0 - No apto    | No sabe diagnosticar comportamiento de un agente              |
+  | 1 - Básico     | Solo menciona aumentar timeout o el límite de iteraciones     |
+  | 2 - Competente | Diagnostica las 3 causas y propone soluciones específicas     |
+  | 3 - Destacado  | + observabilidad (LangSmith/OTel) + trayectorias + rollback   |
+  +----------------+--------------------------------------------------------------+
+
+──────────────────────────────────────────────────────────────────────────────
+
+  Pregunta PT-2: Transferencia de conocimiento técnico
+  ──────────────────────────────────────────────────────
+
+  ENUNCIADO:
+  Tienes 12 meses para que un AI Engineer interno asuma completamente el rol.
+  ¿Cómo estructuras esa transferencia para que no dependa de ti?
+  ¿Qué documentarías vs. qué harías que el AI Engineer construya desde cero?
+
+  🟢 RESPUESTA MÍNIMA ESPERADA (must-mention):
+  - Documentación de decisiones arquitectónicas (ADRs) con el contexto de
+    por qué se tomaron, no solo qué se decidió.
+  - El AI Engineer debe participar en el diseño y construcción desde el
+    inicio, no solo al final de los 12 meses.
+  - Runbooks operacionales: cómo responder a los incidentes más frecuentes.
+
+  📖 EXPLICACIÓN DE REFERENCIA:
+  Una transferencia efectiva tiene tres fases:
+  MESES 1-4: el AI Engineer observa y hace code review de todo. El
+  conocimiento tácito se convierte en decisiones explícitas en ADRs.
+  MESES 5-8: inversión de roles — el AI Engineer lidera el desarrollo, tú
+  revisas. Esto expone las brechas reales de conocimiento.
+  MESES 9-12: tú eres consultor, el AI Engineer opera autónomamente. Se
+  documenta lo que queda por transferir.
+  Lo que NO documentas sino que haces que el AI Engineer construya: los
+  módulos futuros del roadmap (construir es la mejor forma de aprender).
+  Lo que sí documentas exhaustivamente: decisiones de diseño, criterios de
+  seguridad y regulación, y el "por qué no" de las alternativas descartadas.
+
+  ⭐ RESPUESTA DESTACADA:
+  Habla del conocimiento tácito vs. explícito (Nonaka). Propone un "bus
+  factor assessment": qué pasaría si mañana no pudiera ir a trabajar.
+  Menciona usar el propio repositorio RAG de Confluence como herramienta
+  de transferencia (el AI Engineer consulta el agente para entender el
+  sistema).
+
+  🔴 RED FLAGS:
+  - La transferencia consiste solo en "entregar documentación al final".
+  - No distingue entre documentación y transferencia de conocimiento
+    experiencial.
+  - No tiene métricas para saber si la transferencia fue exitosa.
+
+  🎯 FOLLOW-UP SORPRESA:
+  "Dame un ejemplo concreto de algo que aprendiste en un proyecto anterior
+   que NUNCA lograste documentar bien para quien te siguió. ¿Qué harías
+   diferente acá en HDI?"
+
+  PUNTUACIÓN:
+  +----------------+--------------------------------------------------------------+
+  | 0 - No apto    | No tiene estrategia de transferencia                          |
+  | 1 - Básico     | Solo documenta, sin estructura temporal                       |
+  | 2 - Competente | Fases claras + inversión de roles + ADRs + runbooks           |
+  | 3 - Destacado  | + conocimiento tácito + bus factor + RAG como herramienta     |
+  +----------------+--------------------------------------------------------------+
+
+
+════════════════════════════════════════════════════════════════════════════════
+  SECCIÓN 5 — CODE CHALLENGE  (15 min)
+════════════════════════════════════════════════════════════════════════════════
+
+  ⚠️  INSTRUCCIÓN AL ENTREVISTADOR:
+  Entregar el código al candidato (impreso o compartido por pantalla).
+  Pedir que lo lea en silencio 2 minutos y luego:
+  1. Explique qué hace el código.
+  2. Identifique los errores que encuentra.
+  3. Explique cómo los corregiría y por qué.
+  NO puede usar buscadores, documentación externa ni herramientas de IA
+  durante este ejercicio. El entrevistador puede hacer preguntas mientras
+  el candidato explica.
+
+──────────────────────────────────────────────────────────────────────────────
+  CÓDIGO A ENTREGAR AL CANDIDATO (imprimir o mostrar por pantalla):
+──────────────────────────────────────────────────────────────────────────────
+
+  from langchain.text_splitter import RecursiveCharacterTextSplitter
+  from langchain_community.vectorstores import Chroma
+  from langchain_openai import OpenAIEmbeddings, ChatOpenAI
+  from langchain.chains import RetrievalQA
+
+  def build_rag_pipeline(documents: list[str], query: str) -> str:
+      # Paso 1: Chunking
+      splitter = RecursiveCharacterTextSplitter(
+          chunk_size=1000,
+          chunk_overlap=0            # <-- (A)
+      )
+      chunks = splitter.create_documents(documents)
+
+      # Paso 2: Embeddings y vector store
+      embeddings = OpenAIEmbeddings()
+      vectorstore = Chroma.from_documents(chunks, embeddings)
+
+      # Paso 3: Retriever
+      retriever = vectorstore.as_retriever(
+          search_type="similarity",
+          search_kwargs={"k": 2}     # <-- (B)
       )
 
-      # BUG 1: similarity_search devuelve Document, no str
-      results: list[str] = store.similarity_search(user_story, k=k)
+      # Paso 4: Chain
+      llm = ChatOpenAI(temperature=1.0)   # <-- (C)
+      chain = RetrievalQA.from_chain_type(
+          llm=llm,
+          retriever=retriever,
+          return_source_documents=False   # <-- (D)
+      )
 
-      # BUG 2: se retorna solo el primer resultado en lugar de todos
-      return results[0]
+      result = chain.invoke({"query": query})
+      return result["result"]
 
-  def build_prompt(user_story: str) -> str:
-      context_docs = retrieve_context(user_story)
+──────────────────────────────────────────────────────────────────────────────
+  BUGS A IDENTIFICAR (solo para el entrevistador — NO mostrar al candidato):
+──────────────────────────────────────────────────────────────────────────────
 
-      # BUG 3: page_content puede no existir si el Document no tiene metadata
-      # correctamente cargada — falta manejo defensivo
-      context_text = "\n\n".join([doc.page_content for doc in context_docs])
+  BUG A — chunk_overlap=0
+  Problema:    Sin solapamiento, el contexto que cruza límites de chunk se
+               pierde. Preguntas que involucran información al final de un
+               chunk y al inicio del siguiente siempre fallarán.
+  Corrección:  chunk_overlap=200 (aprox. 20% del chunk_size)
+  Impacto prod: Degradación silenciosa de calidad de respuestas.
 
-      return f"""Eres un analista técnico senior de HDI.
-  Basándote SOLO en el siguiente contexto de Confluence, analiza esta historia
-  de usuario y extrae los criterios técnicos relevantes.
+  BUG B — k=2
+  Problema:    Recuperar solo 2 chunks es insuficiente para preguntas
+               complejas. Recall@k muy bajo para documentos extensos.
+  Corrección:  k=4 o k=5 como mínimo; idealmente configurable por caso de uso.
+  Impacto prod: Respuestas incompletas sin error visible, difícil de detectar
+               sin evaluación sistemática.
 
-  CONTEXTO:
-  {context_text}
+  BUG C — temperature=1.0
+  Problema:    Para Q&A factual sobre documentos, temperatura alta introduce
+               variabilidad y alucinaciones.
+  Corrección:  temperature=0.0 o máximo temperature=0.1
+  Impacto prod: RIESGO REGULATORIO CRÍTICO en HDI: el agente puede inventar
+               datos sobre pólizas o siniestros.
 
-  HISTORIA DE USUARIO:
-  {user_story}
+  BUG D — return_source_documents=False
+  Problema:    En entorno regulado (CMF, Ley 21.719), no devolver las fuentes
+               imposibilita la trazabilidad y la auditoría.
+  Corrección:  return_source_documents=True
+  Impacto prod: Imposible cumplir requerimientos de auditoría de la CMF
+               ni el principio de transparencia de la Ley 21.719.
 
-  CRITERIOS TÉCNICOS:"""
+  PUNTUACIÓN DEL CODE CHALLENGE:
+  +----------------+-------------------------------------------------------------+
+  | 0 - No apto    | No identifica ningún bug o confunde síntomas con causas      |
+  | 1 - Básico     | Identifica 1-2 bugs con explicación superficial              |
+  | 2 - Competente | Identifica 3-4 bugs con justificación técnica correcta       |
+  | 3 - Destacado  | Todos los bugs + mejoras adicionales (logging, async, LCEL)  |
+  |                | + explica el impacto regulatorio de cada uno                  |
+  +----------------+-------------------------------------------------------------+
 
-  ─── FIN DEL CÓDIGO ──────────────────────────────────────────────────────────
+  PREGUNTAS DE SEGUIMIENTO para quien termina rápido:
+  - "¿Cómo harías este pipeline asíncrono para múltiples usuarios concurrentes?"
+  - "¿Qué ventajas tendría reemplazar RetrievalQA por LCEL?"
+  - "¿Cómo agregarías observabilidad a este pipeline con LangSmith u OTel?"
 
-  BUGS A IDENTIFICAR Y CORREGIR:
 
-  BUG 1 (línea del type hint):
-    results: list[str] = ...
-    ERROR: similarity_search retorna list[Document], no list[str].
-    CORRECCIÓN: results: list[Document] = store.similarity_search(user_story, k=k)
+════════════════════════════════════════════════════════════════════════════════
+  SECCIÓN 6 — SCORECARD RESUMEN
+════════════════════════════════════════════════════════════════════════════════
 
-  BUG 2 (línea del return):
-    return results[0]
-    ERROR: retorna solo el primer Document en lugar de la lista completa.
-    CORRECCIÓN: return results
+  TABLA DE PUNTUACIÓN (cada pregunta: 0-3 puntos)
 
-  BUG 3 (en build_prompt):
-    context_text = "\n\n".join([doc.page_content for doc in context_docs])
-    ERROR: si retrieve_context falla o retorna lista vacía, el join falla;
-           además, doc.page_content puede ser None en documentos mal indexados.
-    CORRECCIÓN:
-      if not context_docs:
-          return ""   # o raise ValueError con mensaje claro
-      context_text = "\n\n".join([
-          doc.page_content for doc in context_docs
-          if doc.page_content
-      ])
+  +-----------------+------------------------------------------+-------+-------+
+  | Sección         | Pregunta                                 | Peso  | Score |
+  +-----------------+------------------------------------------+-------+-------+
+  | Fundamentos     | F-1: RAG con aislamiento de datos        |  15%  |  /3   |
+  | Fundamentos     | F-2: Chunking y calidad de retrieval     |  10%  |  /3   |
+  | Fundamentos     | F-3: Diseño de agente con herramientas   |  15%  |  /3   |
+  | Aplicación      | AP-1: Repositorio RAG en Confluence      |  15%  |  /3   |
+  | Aplicación      | AP-2: Gobierno IA — CMF / Ley 21.719 *  |  20%  |  /3   |
+  | Profundidad     | PT-1: Debugging agente en producción     |  10%  |  /3   |
+  | Profundidad     | PT-2: Transferencia de conocimiento      |   5%  |  /3   |
+  | Código          | CC: Bugs en RAG pipeline                 |  10%  |  /3   |
+  +-----------------+------------------------------------------+-------+-------+
 
-  BONUS: ¿Qué otro problema de seguridad tiene este código que no es un bug
-         funcional pero sí un riesgo en producción?
-    RESPUESTA: La CONNECTION_STRING tiene credenciales hardcodeadas. Debe leer
-               de variable de entorno: os.environ["PG_CONNECTION_STRING"].
+  * AP-2 tiene requisito mínimo de aprobación independiente del score total.
 
-  CRITERIOS DE EVALUACIÓN
-  ┌────────────────────────────────────────────────────────────┬────────┐
-  │ Criterio                                                   │ Puntos │
-  ├────────────────────────────────────────────────────────────┼────────┤
-  │ Identifica y corrige Bug 1 (type hint)                     │   1    │
-  │ Identifica y corrige Bug 2 (return incorrecto)             │   2    │
-  │ Identifica y corrige Bug 3 (manejo defensivo)              │   2    │
-  │ Explica por qué cada bug es problemático en producción     │   1    │
-  │ Bonus: identifica el hardcoded credential como riesgo      │   1    │
-  └────────────────────────────────────────────────────────────┴────────┘
-  Total code challenge: 7 puntos (6 + 1 bonus)
+  FÓRMULA:
+  Score_final (%) = Suma(puntaje_i x peso_i) / 3 x 100
 
-================================================================================
-  7. SCORECARD RESUMEN
-================================================================================
+  UMBRALES DE APROBACIÓN:
+  +--------------------------------------+--------+-------------------------------+
+  | Resultado                            | Score  | Condición adicional           |
+  +--------------------------------------+--------+-------------------------------+
+  | RECOMENDADO                          | >= 75% | AP-2 >= 2 obligatorio         |
+  | A EVALUAR CON JEFATURA               | 60-74% | Sin red flags en datos/segur. |
+  | NO APTO                              | < 60%  | O cualquier red flag crítico   |
+  +--------------------------------------+--------+-------------------------------+
 
-  ┌──────────────────────────────────────┬──────────┬────────────┬────────────┐
-  │ Bloque                               │ Preguntas│ Puntaje Max│ Puntaje OK │
-  ├──────────────────────────────────────┼──────────┼────────────┼────────────┤
-  │ Bloque 1 — Agentes IA                │  P1, P2  │     6      │            │
-  │ Bloque 2 — Infraestructura RAG       │  P3, P4  │     6      │            │
-  │ Bloque 3 — Gobierno IA y Regulación  │    P5    │     3      │            │
-  │ Bloque 4 — Liderazgo Técnico         │  P6, P7  │     6      │            │
-  ├──────────────────────────────────────┼──────────┼────────────┼────────────┤
-  │ TOTAL (sin code challenge)           │          │    21      │            │
-  ├──────────────────────────────────────┼──────────┼────────────┼────────────┤
-  │ Code Challenge (opcional)            │    C1    │     7      │            │
-  │ TOTAL (con code challenge)           │          │    28      │            │
-  └──────────────────────────────────────┴──────────┴────────────┴────────────┘
+  RED FLAGS QUE RECHAZAN AUTOMÁTICAMENTE (independiente del score):
+  X Propone prompt instructions como única barrera de seguridad en RAG.
+  X Hardcodea credenciales o tokens de API en el código.
+  X No tiene concepto de gobierno IA ni trazabilidad de invocaciones.
+  X Desconoce completamente Ley 21.719 o CMF en contexto de datos personales.
+  X No sabe qué es un vector store ni cómo funciona el retrieval semántico.
+  X Afirma que temperature=1.0 es correcto para respuestas factuales.
 
-  UMBRAL DE APROBACIÓN — NIVEL SENIOR
-  ┌──────────────────────────┬────────────────────┬──────────────────────────┐
-  │ Resultado                │ Sin code challenge │    Con code challenge    │
-  ├──────────────────────────┼────────────────────┼──────────────────────────┤
-  │ ✅ Apto para avanzar      │    15+ / 21        │       20+ / 28           │
-  │ ⚠️  Apto con reservas     │    10-14 / 21      │       14-19 / 28         │
-  │ ❌ No apto                │    < 10 / 21       │       < 14 / 28          │
-  └──────────────────────────┴────────────────────┴──────────────────────────┘
+──────────────────────────────────────────────────────────────────────────────
 
-  CONDICIONES BLOQUEANTES (independientes del puntaje)
-  Un candidato con CUALQUIERA de estas condiciones NO debe avanzar:
-
-  ❌ 1. No puede describir un sistema de IA propio que haya llevado a producción
-        con detalles específicos (tecnología, escala, impacto) — señal de que
-        el CV refleja experiencia teórica o de POC, no producción real.
-
-  ❌ 2. No distingue entre fallo de retrieval y fallo de generación en un sistema
-        RAG — conocimiento fundamental para operar estos sistemas.
-
-  ❌ 3. Propone almacenar o procesar datos sensibles de clientes (pólizas,
-        siniestros) en servicios LLM externos sin mencionar implicancias de
-        privacidad — riesgo legal para HDI.
-
-  ❌ 4. No puede identificar en la Pregunta 4 al menos 3 causas del fallo del
-        RAG en tiempo real — señal de que no tiene experiencia operando estos
-        sistemas en producción.
-
-  ❌ 5. Responde TODAS las preguntas de liderazgo (P7) en términos genéricos
-        sin poder dar un caso real — indicador de uso de IA durante la
-        entrevista o perfil puramente técnico sin experiencia de mentoring.
-
-================================================================================
-  NOTAS DEL ENTREVISTADOR
-================================================================================
-
-  Candidato      : ___________________________________
-  Fecha          : ___________________________________
-  Entrevistador  : ___________________________________
-
-  Fortalezas observadas:
-  •
-  •
-
-  Debilidades observadas:
-  •
-  •
-
-  Señales de uso de IA durante la entrevista:
-  •
-
-  Recomendación: [ ] Avanzar   [ ] Avanzar con reservas   [ ] No avanzar
-
-  Justificación:
+  NOTAS DEL ENTREVISTADOR:
+  ___________________________________________________________________________
+  ___________________________________________________________________________
   ___________________________________________________________________________
   ___________________________________________________________________________
 
-================================================================================
-  FIN DEL CHALLENGE — HDI SEGUROS SA / INGENIERO DE IA SENIOR
-  Generado: 2026-05-06 | ACL Chile
+  DECISIÓN FINAL:  [ ] Recomendado   [ ] A evaluar   [ ] No apto
+
+  Entrevistador: ________________________________  Fecha: ___________________
+
+──────────────────────────────────────────────────────────────────────────────
+  Challenge generado: 2026-05-11 — TechChallenge Architect | ACL Chile
+  Diseño anti-IA: follow-ups sorpresa · contexto regulatorio CMF/Ley 21.719
+                  código con bugs deliberados · preguntas de experiencia real
 ================================================================================
