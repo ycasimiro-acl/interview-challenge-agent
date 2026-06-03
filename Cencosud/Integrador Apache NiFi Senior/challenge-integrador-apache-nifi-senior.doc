@@ -1,0 +1,436 @@
+# 🎯 CHALLENGE TÉCNICO — Integrador Apache NiFi Senior
+## Cliente: Cencosud | Fecha: 03/06/2026
+
+---
+
+## HEADER
+
+| Campo | Detalle |
+|---|---|
+| **Puesto** | Integrador Apache NiFi Senior |
+| **Cliente** | Cencosud |
+| **Stack** | Apache NiFi, JSON/XML/CSV, REST/SOAP APIs, SQL (PostgreSQL/relacional), Linux, scripting |
+| **Nivel** | Senior (2+ años en NiFi) |
+| **Duración estimada** | 60 min |
+| **Enfoque** | Mixto (Conceptual + Diagnóstico situacional + Práctico) |
+| **Fecha de generación** | 03/06/2026 |
+| **Contexto del proyecto** | Regularización de datos personales — normativa de seguridad interna Cencosud |
+
+> ⚠️ **NOTA AL ENTREVISTADOR — DISEÑO ANTI-IA**
+>
+> Este challenge está construido para que las preguntas **no puedan ser respondidas correctamente con IA generativa ni búsqueda en internet**.
+> Las preguntas de diagnóstico (P1, P2, P6) requieren haber operado NiFi en producción y cometido errores reales.
+> Las preguntas P3, P4 y P8 requieren razonamiento aplicado al contexto de datos personales que solo emerge de experiencia real en proyectos de privacidad.
+> La pregunta P7 contiene un bug sutil en Expression Language que solo un practicante frecuente reconoce.
+> **Señal de alerta**: respuestas perfectamente estructuradas pero genéricas en P2, P6, P7 sugieren preparación con IA sin experiencia vivida.
+
+---
+
+## SECCIÓN 1 — WARM-UP (5 min)
+
+> Sin puntuación formal. Objetivo: establecer rapport, calibrar el nivel real antes de las preguntas técnicas, y detectar tempranamente si la experiencia declarada es superficial.
+
+**W1.** Cuéntame de un flujo NiFi que hayas construido o mantenido en producción en el último año. ¿Qué volumen manejaba (registros/hora o MB/hora)? ¿Cuántos procesadores tenía aproximadamente? ¿Estaba en cluster o standalone?
+
+> 🔎 *Señal de alerta*: No puede dar números concretos. Un candidato con experiencia real siempre recuerda el volumen y tiene una anécdota de algo que falló.
+
+**W2.** ¿Cuál ha sido la integración técnicamente más interesante o compleja que has construido con NiFi, y qué fue lo que la hizo difícil?
+
+> 🔎 *Señal de alerta*: Describe solo el "camino feliz". Un Senior real siempre habla de la complejidad — no de la funcionalidad ideal.
+
+---
+
+## SECCIÓN 2 — FUNDAMENTOS APLICADOS (15 min)
+
+> Evalúa dominio conceptual con respaldo en experiencia práctica. Las preguntas son situacionales, no definicionales.
+
+---
+
+### Apache NiFi
+
+---
+
+#### Pregunta 1: Gestión de estado — QueryDatabaseTable después de un TRUNCATE
+
+> **Enunciado:** Tienes un procesador `QueryDatabaseTable` configurado para leer registros nuevos de una tabla de clientes usando la columna `updated_at` como campo de estado incremental. El lunes funciona perfecto. El martes el equipo de DBA hace un `TRUNCATE TABLE` de esa tabla para una migración de datos. El miércoles el procesador no levanta ningún registro nuevo aunque la tabla tiene 200.000 filas. No hay errores en el Bulletin Board. ¿Por qué ocurre esto y cómo lo resuelves sin reiniciar el flujo completo ni perder configuración?
+
+**🟢 Respuesta mínima esperada (must-mention):**
+- `QueryDatabaseTable` persiste el valor máximo del campo incremental en el **State Manager** de NiFi, no en la base de datos.
+- Tras el `TRUNCATE`, la tabla vuelve desde cero pero el estado guardado apunta a un timestamp posterior al cual no existen filas → el procesador filtra por `updated_at > [estado_guardado]` y no retorna nada.
+- La solución es limpiar el estado del procesador desde la UI: clic derecho → **View State** → **Clear State**, o vía API REST: `DELETE /nifi-api/processors/{id}/state`.
+- Esto no requiere reiniciar NiFi ni el procesador — el estado se limpia en caliente.
+
+**📖 Explicación de referencia (buenas prácticas):**
+El State Management de NiFi es una capa de persistencia distribuida (backed por ZooKeeper en cluster, archivo local en standalone) que los procesadores usan para recordar su posición entre ejecuciones. `QueryDatabaseTable` guarda el valor máximo visto del campo incremental. Este estado sobrevive reinicios del servidor. Cuando la tabla se trunca y se repuebla con datos más antiguos, el estado queda "adelantado" y el procesador no encuentra filas que superen ese valor. La operación de Clear State restablece el estado a cero, haciendo que el procesador relrea desde el principio.
+
+**⭐ Respuesta destacada (diferenciador senior):**
+Menciona que `QueryDatabaseTable` no es apropiado para tablas con valores no monotónicos o con riesgo de truncate/replay. Propone migrar a `GenerateTableFetch` + `ExecuteSQL` para mayor control explícito del estado. Habla de CDC (Change Data Capture) con Debezium como arquitectura más resiliente para capturar cambios sin depender del campo `updated_at`. Menciona el riesgo de re-procesar todos los registros si se hace Clear State en producción sin coordinar con el equipo.
+
+**🔴 Red flags:**
+- Propone reiniciar el servicio NiFi para "limpiar el estado".
+- No conoce el concepto de State Manager y confunde el estado del procesador con variables del Process Group.
+- Propone modificar la query SQL del procesador para filtrar manualmente por fechas.
+- No puede explicar por qué no hay errores en el Bulletin Board (porque no hay error — simplemente no hay filas que cumplan el filtro).
+
+**Puntuación:**
+| Nivel | Criterio |
+|---|---|
+| 0 - No apto | No identifica el State Manager. Propone reiniciar NiFi. |
+| 1 - Básico | Entiende que hay un estado persistido pero no sabe cómo limpiarlo sin reiniciar. |
+| 2 - Competente | Explica State Manager, identifica View State → Clear State, entiende el impacto. |
+| 3 - Destacado | Propone alternativas más resilientes (GenerateTableFetch, CDC) con justificación técnica. |
+
+---
+
+#### Pregunta 2: Backpressure — Diagnóstico bajo presión
+
+> **Enunciado:** En un flujo productivo tienes una cola entre `InvokeHTTP` y `PutDatabaseRecord` que normalmente tiene ~200 FlowFiles. Un día, sin previo aviso y sin cambios de deployment, la cola escala a 10.000 FlowFiles y NiFi activa el backpressure deteniendo el `InvokeHTTP`. No hay errores visibles en el Bulletin Board.
+>
+> **Nombra los 4 primeros indicadores o lugares que revisas, en orden, y justifica por qué ese orden específico.**
+
+**🟢 Respuesta mínima esperada (must-mention):**
+1. **Estado del `PutDatabaseRecord`**: verificar si está en estado activo o si está consumiendo FlowFiles (comparar el counter "Tasks/5min" con el histórico).
+2. **Bulletin Board con nivel WARNING/INFO** (no solo ERROR): algunos problemas de conectividad logean a nivel INFO.
+3. **Logs de NiFi** (`nifi-app.log`): buscar excepciones de JDBC, timeout de conexión, `Connection pool exhausted`.
+4. **Estado de la base de datos destino**: verificar si el pool JDBC está saturado, si hay queries lentas activas, o si el host PostgreSQL/SQL Server está bajo carga.
+
+**📖 Explicación de referencia (buenas prácticas):**
+El backpressure en NiFi se activa cuando una cola supera el umbral configurado (por defecto 10.000 FlowFiles o 1GB de datos). Esto detiene todos los procesadores upstream que alimentan esa cola. El síntoma de "cola creciente sin errores en Bulletin Board" generalmente indica que el procesador downstream está corriendo pero muy lento (no bloqueado, solo lento), o que está en un ciclo de reintentos silencioso. Las causas más frecuentes en producción son: 1) Timeout de conexión JDBC que hace retry indefinido, 2) Lock contention en la base de datos destino, 3) GC pause del JVM de NiFi, 4) Thread starvation si hay otros procesadores consumiendo todos los threads.
+
+**⭐ Respuesta destacada (diferenciador senior):**
+Menciona la diferencia entre backpressure por count (10.000 FF) vs. por size (1GB). Habla del `Yield Duration` del procesador fallido — si está en yield loop, puede aparecer como "corriendo" pero sin procesar. Menciona el uso del Data Provenance para ver si los FlowFiles están siendo "tocados" por el procesador. Propone configurar Prometheus Reporting Task + Grafana para monitoreo proactivo que hubiera detectado la anomalía antes de llegar a backpressure.
+
+**🔴 Red flags:**
+- Primera acción: aumentar el threshold de backpressure de 10.000 a 50.000 FF (enmascara el problema).
+- No distingue entre el procesador upstream (detenido por backpressure) y el downstream (el que realmente falla).
+- No menciona los logs de NiFi como fuente de información.
+- No tiene un proceso de diagnóstico ordenado — revisa todo "a ver qué aparece".
+
+**Puntuación:**
+| Nivel | Criterio |
+|---|---|
+| 0 - No apto | Primera acción: aumentar threshold. No tiene proceso de diagnóstico. |
+| 1 - Básico | Revisa logs pero no tiene un orden claro ni entiende el mecanismo de backpressure. |
+| 2 - Competente | Proceso ordenado: procesador downstream → Bulletin Board → logs → DB. Justifica el orden. |
+| 3 - Destacado | Agrega Data Provenance, métricas JVM, yield duration, y tiene estrategia de monitoreo proactivo. |
+
+---
+
+#### Pregunta 3: Seguridad de datos personales en tránsito — Enmascaramiento PII
+
+> **Enunciado:** El equipo de Seguridad Informática te entrega el siguiente requerimiento formal:
+>
+> *"Todos los FlowFiles que circulen por los flujos de integración y contengan el atributo `tipo_dato=PII` deben tener el campo `rut_cliente` enmascarado antes de ser enviados al sistema destino. El sistema destino no acepta valores nulos ni vacíos — necesita un valor determinístico reproducible que no sea el RUT real."*
+>
+> Describe tu implementación en NiFi: ¿Qué procesadores usas, qué función de enmascaramiento eliges, y cuál es el riesgo principal de tu implementación que debes documentar?
+
+**🟢 Respuesta mínima esperada (must-mention):**
+- Routing condicional con `RouteOnAttribute` basado en el atributo `tipo_dato`.
+- Uso de `UpdateRecord` o `JoltTransformJSON` para modificar el campo `rut_cliente` en el contenido del FlowFile.
+- El enmascaramiento **determinístico** (mismo input → mismo output) requiere una función de **hashing con salt**: HMAC-SHA256 con una clave secreta almacenada en un Parameter Context cifrado.
+- **Riesgo principal que debe documentarse**: Si se usa hash sin salt (SHA-256 puro), el espacio del RUT chileno es acotado (~15 millones de valores posibles) y puede ser revertido con un ataque de diccionario precomputado en segundos. El salt secreto hace que la tabla de reversión sea computacionalmente inviable.
+
+**📖 Explicación de referencia (buenas prácticas):**
+El enmascaramiento determinístico con HMAC-SHA256 es la práctica estándar para seudonimización de identificadores únicos con cardinalidad baja. En NiFi, se implementa con `ExecuteScript` (Groovy o Python) que calcula el HMAC del campo usando una clave almacenada en un Parameter Context protegido (o HashiCorp Vault via NAR custom). El resultado es un string hexadecimal de 64 caracteres que sirve como pseudónimo estable. La documentación de riesgo debe especificar que la seudonimización no es anonimización: si la clave del HMAC se compromete, todos los pseudónimos pueden ser revertidos.
+
+**⭐ Respuesta destacada (diferenciador senior):**
+Distingue entre seudonimización (reversible con clave) y anonimización (irreversible) y aplica el marco de la **Ley 21.719** (nueva ley de datos personales de Chile, vigente desde 2024) que establece requisitos específicos para cada categoría. Propone tokenización como alternativa más robusta: el RUT real se reemplaza por un token opaco almacenado en un vault de tokens separado. Menciona auditoría del flujo: cada FlowFile procesado debe generar un evento de auditoría en una tabla de log con timestamp, ID de transacción y procesador — sin el dato original.
+
+**🔴 Red flags:**
+- Propone usar MD5 o SHA-1 (colisiones conocidas, deprecados para uso criptográfico).
+- No menciona el riesgo de hash sin salt sobre un espacio de valores acotado.
+- Propone simplemente eliminar el campo `rut_cliente` sin considerar que el destino requiere un valor.
+- Confunde enmascaramiento con cifrado simétrico (AES) — son enfoques distintos con casos de uso distintos.
+
+**Puntuación:**
+| Nivel | Criterio |
+|---|---|
+| 0 - No apto | Propone MD5/SHA-1 o eliminar el campo. No identifica ningún riesgo. |
+| 1 - Básico | Identifica HMAC-SHA256 pero no considera el salt ni el espacio acotado del RUT. |
+| 2 - Competente | HMAC-SHA256 con salt desde Parameter Context. Documenta el riesgo de cardinalidad baja. |
+| 3 - Destacado | Diferencia seudonimización/anonimización, menciona Ley 21.719, propone tokenización y auditoría. |
+
+---
+
+## SECCIÓN 3 — APLICACIÓN PRÁCTICA (20 min)
+
+> Evalúa razonamiento aplicado bajo condiciones reales con restricciones de negocio concretas.
+
+---
+
+#### Pregunta 4: Diseño de flujo — Ingesta masiva CSV con manejo de errores y SLA de tiempo
+
+> **Enunciado:** Debes construir un flujo NiFi que procese un archivo CSV de 500.000 filas que llega cada 4 horas desde un servidor SFTP. Cada fila debe:
+> 1. Validarse contra un schema predefinido.
+> 2. Transformarse a JSON.
+> 3. Cargarse en una tabla PostgreSQL.
+>
+> Los registros inválidos **NO deben detener el flujo** — deben ir a una tabla de errores con el motivo del rechazo. El **SLA es: procesamiento completo en menos de 15 minutos**.
+>
+> Describe la arquitectura del flujo: procesadores clave, conexiones de error, y estrategia de rendimiento para cumplir el SLA. No necesitas el nombre exacto de cada procesador — explica la lógica y las decisiones.
+
+**🟢 Respuesta mínima esperada (must-mention):**
+- **Ingesta SFTP**: `ListSFTP` + `FetchSFTP` (no solo `FetchSFTP` sin List — necesita saber qué archivos hay).
+- **Splitting**: `SplitRecord` con `CSVReader` + `JSONRecordSetWriter` — NO `SplitText` (SplitText no entiende el schema CSV).
+- **Validación**: `ValidateRecord` con `CSVReader` + schema (Avro/JSON Schema). La conexión `invalid` del procesador va a un flujo de errores paralelo.
+- **Carga**: `PutDatabaseRecord` con pool JDBC configurado, batch size >= 1.000 para reducir round-trips.
+- **Estrategia de rendimiento**: aumentar concurrent tasks del `SplitRecord` y `PutDatabaseRecord`, ajustar batch size de inserts. Calcular: 500k filas / 15 min = ~555 registros/segundo → con batch 1.000 = ~500 transacciones totales.
+
+**📖 Explicación de referencia (buenas prácticas):**
+Para 500k filas en 15 minutos se necesitan ~555 registros/segundo de throughput neto. El cuello de botella habitual es el `PutDatabaseRecord` con batch size 1 (insert fila a fila). Configurar batch size de 5.000 y concurrent tasks de 4 en el procesador de carga reduce drásticamente el tiempo de inserción. El uso de `SplitRecord` (en lugar de `SplitText`) permite aprovechar el schema para validación temprana y conversión directa a JSON sin procesadores intermedios. El manejo de errores con la conexión `invalid` del `ValidateRecord` garantiza que los registros malos no bloqueen el flujo principal.
+
+**⭐ Respuesta destacada (diferenciador senior):**
+Propone usar `MergeRecord` para consolidar micro-batches antes del insert (mejora throughput al reducir overhead de transacciones). Menciona el uso de un `DistributedMapCache` para deduplicación basada en una clave natural del registro. Habla de monitoreo del SLA con Reporting Tasks. Considera el escenario de fallo parcial: ¿qué pasa si la carga falla a mitad del archivo? Propone idempotencia en el insert (ON CONFLICT DO NOTHING en PostgreSQL).
+
+**🔴 Red flags:**
+- Propone `SplitText` para split del CSV (no entiende la diferencia con `SplitRecord`).
+- El flujo de errores simplemente descarta los registros inválidos sin registrarlos.
+- No considera el rendimiento — no menciona batch size ni concurrent tasks.
+- No maneja el archivo como una unidad — no hay List + Fetch, solo Fetch manual.
+
+**Puntuación:**
+| Nivel | Criterio |
+|---|---|
+| 0 - No apto | Flujo incoherente, usa SplitText, no hay manejo de errores. |
+| 1 - Básico | Flujo correcto pero sin manejo de errores o sin estrategia de rendimiento. |
+| 2 - Competente | Flujo completo: ingesta → split → validación con routing de errores → carga con batch size. |
+| 3 - Destacado | Agrega MergeRecord, deduplicación, idempotencia en PostgreSQL, y monitoreo de SLA. |
+
+---
+
+#### Pregunta 5: Integración con API REST — Token OAuth2 de larga duración
+
+> **Enunciado:** Debes integrar NiFi con una API REST externa que usa **OAuth2 Client Credentials flow**. El token de acceso expira cada 60 minutos. Tu flujo procesa 200 FlowFiles por minuto durante turnos de 8 horas continuas. Diseña el mecanismo de gestión del token para que la expiración **no interrumpa ni degrade el flujo productivo**. Nombra específicamente los componentes NiFi involucrados.
+
+**🟢 Respuesta mínima esperada (must-mention):**
+- Flujo secundario dedicado ("Token Manager Process Group") que obtiene el token via `InvokeHTTP` y lo almacena.
+- Almacenamiento del token en `DistributedMapCacheServer` (accesible por todos los threads del flujo principal).
+- El flujo principal usa `FetchDistributedMapCache` para obtener el token antes de cada llamada a la API.
+- Refresh periódico: un `GenerateFlowFile` con timer que dispara el Token Manager cada ~50-55 minutos (antes del vencimiento de 60 min).
+- Manejo del error 401 como señal de token expirado (fallback): el `InvokeHTTP` con 401 dispara una renovación inmediata antes de reintentar.
+
+**📖 Explicación de referencia (buenas prácticas):**
+El patrón correcto es desacoplar la gestión del token del flujo de datos. Un Process Group "Token Manager" corre independientemente, obtiene el token y lo escribe en `DistributedMapCacheServer`. El flujo principal siempre lee el token del cache antes de llamar a la API. Para NiFi 2.x, el `StandardOAuth2AccessTokenProvider` (Controller Service) maneja este ciclo de vida automáticamente sin necesidad de construir el patrón manualmente. El `client_secret` debe almacenarse en un Parameter Context sensible (cifrado) o en HashiCorp Vault, nunca en texto plano.
+
+**⭐ Respuesta destacada (diferenciador senior):**
+Menciona `StandardOAuth2AccessTokenProvider` de NiFi 2.x como solución nativa. Habla del riesgo de race condition: múltiples threads intentando renovar el token simultáneamente (thundering herd) y cómo el `DistributedMapCache` con `PutIfAbsent` puede mitigarlo. Menciona el uso de Parameter Providers con Vault para el `client_secret`. Propone un mecanismo de circuit breaker para la API externa: si el token falla X veces seguidas, detener el flujo y alertar en vez de crear un loop de reintentos.
+
+**🔴 Red flags:**
+- Propone hardcodear el token en los atributos del procesador `InvokeHTTP`.
+- No tiene estrategia para la expiración — espera a que el flujo falle con 401 y lo resuelve manualmente.
+- No considera la concurrencia: no tiene respuesta cuando se pregunta qué pasa si 4 threads intentan renovar el token al mismo tiempo.
+
+**Puntuación:**
+| Nivel | Criterio |
+|---|---|
+| 0 - No apto | Hardcodea el token o no tiene estrategia de renovación. |
+| 1 - Básico | Sabe que debe renovar el token pero no tiene un mecanismo sin interrumpir el flujo. |
+| 2 - Competente | Token Manager + DistributedMapCache + refresh periódico + manejo del 401. |
+| 3 - Destacado | Menciona NiFi 2.x OAuth2 nativo, race condition con thundering herd, circuit breaker. |
+
+---
+
+## SECCIÓN 4 — PROFUNDIDAD TÉCNICA (15 min)
+
+> Diferencia Senior competente de Senior excepcional. Requiere experiencia real en producción.
+
+---
+
+#### Pregunta 6: Debugging sin errores visibles — "El flujo está corriendo pero no procesa"
+
+> **Enunciado (situación real — viernes 14:00):**
+> Recibes este alerta de monitoreo: *"El flujo de integración de clientes lleva 2 horas sin procesar FlowFiles nuevos. No hay errores en el Bulletin Board. La cola de entrada tiene 3.000 FlowFiles esperando. Todos los procesadores muestran estado RUNNING."*
+>
+> **¿Cuáles son tus 3 hipótesis más probables sobre qué está pasando, en orden de probabilidad según tu experiencia? Para cada hipótesis, nombra exactamente cómo la confirmas o descartas.**
+
+**🟢 Respuesta mínima esperada (must-mention):**
+- **Hipótesis 1 — Backpressure oculto**: una cola *downstream* (no la de entrada) alcanzó su threshold y detuvo a todos los procesadores upstream. Se confirma revisando visualmente todas las conexiones en busca del indicador de backpressure (banda naranja/roja en la cola).
+- **Hipótesis 2 — Thread starvation**: todos los threads del scheduler están consumidos por otro procesador del mismo Process Group o de otro. Se confirma en `Controller Settings` → Thread Count vs. threads asignados por procesador.
+- **Hipótesis 3 — GC pause del JVM**: un garbage collection de larga duración pausó el procesamiento. Se confirma revisando `nifi-app.log` buscando entradas de GC pause o revisando el heap usage en la UI de NiFi (`Summary` → `JVM` tab).
+
+**📖 Explicación de referencia (buenas prácticas):**
+El síntoma "RUNNING pero sin procesar" es uno de los más engañosos en NiFi porque el estado RUNNING indica que el procesador está schedulado, no que está activamente procesando FlowFiles. Las causas más frecuentes en producción, en orden de probabilidad: 1) Backpressure downstream (la cola visible tiene 3k FF pero puede haber otra cola más adelante al límite), 2) Thread starvation (NiFi tiene un pool de threads compartido entre procesadores), 3) GC pause (heap bajo o leak de memoria). Una causa menos frecuente pero crítica: un `ExecuteScript` o `InvokeHTTP` con un timeout muy largo que está bloqueando sus threads asignados sin procesar ni fallar.
+
+**⭐ Respuesta destacada (diferenciador senior):**
+Usa `GET /nifi-api/flow/status` o el Data Provenance para ver si los FlowFiles están siendo "tocados" por algún procesador (si no hay eventos de provenance en 2 horas, el problema es upstream). Menciona `jstack [PID]` para capturar un thread dump del proceso Java de NiFi y ver si hay threads bloqueados en `TIMED_WAITING` o `BLOCKED`. Habla de cómo configurar alertas proactivas con Prometheus + Grafana que hubieran detectado la anomalía antes de las 2 horas.
+
+**🔴 Red flags:**
+- Primera acción: reiniciar el servicio NiFi.
+- No tiene hipótesis — dice "revisaría todo" sin orden ni metodología.
+- No entiende la diferencia entre RUNNING (scheduled) y realmente procesando FlowFiles.
+- No menciona los logs de NiFi como fuente de diagnóstico.
+
+**Puntuación:**
+| Nivel | Criterio |
+|---|---|
+| 0 - No apto | Reinicia NiFi sin diagnóstico o no tiene hipótesis. |
+| 1 - Básico | Tiene 1-2 hipótesis pero no sabe cómo confirmarlas/descartarlas. |
+| 2 - Competente | 3 hipótesis con metodología de confirmación/descarte clara. |
+| 3 - Destacado | Agrega Data Provenance, thread dump del JVM, y estrategia de monitoreo proactivo. |
+
+---
+
+#### Pregunta 7: NiFi Expression Language — Encuentra el bug
+
+> **Enunciado:** El siguiente Expression Language en un `UpdateAttribute` está causando que algunos FlowFiles generen un atributo `fecha_proceso` **vacío** en producción, pero no siempre — es intermitente. Identifica el problema y escribe la expresión corregida:
+>
+> ```
+> ${literal(''):equals(${fecha_origen:isEmpty()}):ifElse(${now():format('yyyy-MM-dd')}, ${fecha_origen:toDate('dd/MM/yyyy'):format('yyyy-MM-dd')})}
+> ```
+
+**🟢 Respuesta mínima esperada (must-mention):**
+- `isEmpty()` retorna un **booleano** (`true`/`false`). La expresión lo pasa a `literal(''):equals(boolean)`, que compara un string vacío con un booleano → la comparación siempre es `false` porque `''` nunca es igual a `true` ni a `false`.
+- La condición del `ifElse` resulta `false` en ambos casos → toma el "else" siempre: intenta ejecutar `${fecha_origen:toDate('dd/MM/yyyy'):format('yyyy-MM-dd')}`.
+- Cuando `fecha_origen` está vacío o ausente, `toDate()` falla silenciosamente y retorna string vacío → `fecha_proceso` queda vacío.
+- **Expresión corregida:**
+  ```
+  ${fecha_origen:isEmpty():ifElse(${now():format('yyyy-MM-dd')}, ${fecha_origen:toDate('dd/MM/yyyy'):format('yyyy-MM-dd')})}
+  ```
+
+**📖 Explicación de referencia (buenas prácticas):**
+En NiFi Expression Language, `isEmpty()` y funciones booleanas como `equals()` retornan el tipo booleano nativo del EL. La forma idiomática de usar un booleano como condición es pasarlo directamente al `ifElse()`, no envolverlo en una comparación de strings. El anti-patrón `literal(''):equals(fn())` es un error común de desarrolladores que vienen de otros lenguajes donde booleano y string vacío son equivalentes. La intermitencia ocurre porque algunos FlowFiles tienen `fecha_origen` como string vacío (atributo presente pero vacío) vs. atributo ausente — NiFi EL los trata diferente en `toDate()`.
+
+**⭐ Respuesta destacada (diferenciador senior):**
+Identifica además que `toDate()` lanza una excepción no manejada si `fecha_origen` tiene un formato inesperado (ej: `"N/A"` o `"null"` como string), lo que también puede producir FlowFiles con `fecha_proceso` vacío. Sugiere agregar validación de formato antes del `toDate()` o envolver en un `ExecuteScript` para manejo explícito de excepciones.
+
+**🔴 Red flags:**
+- Dice que la expresión "parece correcta" o no encuentra ningún error.
+- No puede leer la expresión — no tiene familiaridad real con NiFi EL.
+- Propone reescribir todo en Groovy/Python sin intentar entender el EL.
+
+**Puntuación:**
+| Nivel | Criterio |
+|---|---|
+| 0 - No apto | No puede analizar la expresión o no encuentra el error. |
+| 1 - Básico | Detecta que hay algo raro pero no puede explicar exactamente el problema de tipos. |
+| 2 - Competente | Identifica el anti-patrón `literal(''):equals(boolean)` y escribe la expresión correcta. |
+| 3 - Destacado | Explica la intermitencia (empty string vs. atributo ausente) y el riesgo de toDate() con formato inválido. |
+
+---
+
+## SECCIÓN 5 — CODE CHALLENGE (15 min)
+
+> **Instrucción al candidato:** Puedes usar pseudocódigo, nombres de procesadores, o describir la lógica en pasos numerados. Se evalúa el razonamiento, no la sintaxis exacta.
+
+---
+
+#### Desafío: Flujo de anonimización de datos de transacciones con PII
+
+**Contexto del negocio:**
+Recibes un stream JSON de transacciones de e-commerce con datos de clientes. El equipo legal exige que todos los datos PII sean enmascarados antes de ser enviados al Data Lake de análisis.
+
+**Formato de entrada:**
+```json
+{
+  "transaction_id": "TXN-9812",
+  "timestamp": "2026-06-03T14:32:00Z",
+  "customer": {
+    "rut": "12.345.678-9",
+    "nombre": "Juan Pérez",
+    "email": "juan.perez@email.com",
+    "telefono": "+56912345678"
+  },
+  "monto": 45900,
+  "tienda": "Cencosud-Costanera"
+}
+```
+
+**Requerimientos:**
+1. Enmascarar los campos PII (`customer.rut`, `customer.nombre`, `customer.email`, `customer.telefono`) usando HMAC-SHA256 con salt.
+2. Mantener `transaction_id`, `timestamp`, `monto` y `tienda` **sin modificar**.
+3. Si el FlowFile no contiene el campo `customer.rut`, enrutarlo a una cola de errores con el atributo `error_motivo=rut_ausente`.
+4. El JSON de salida debe tener la **misma estructura** que el de entrada, pero con los campos PII reemplazados por sus hashes.
+
+**Criterios de evaluación:**
+| Criterio | Peso |
+|---|---|
+| Selección correcta de procesadores NiFi | 25% |
+| Correcto routing hacia la cola de errores | 20% |
+| Implementación del HMAC con salt (no SHA-256 puro) | 25% |
+| Preservación de estructura JSON con campos no-PII intactos | 15% |
+| Consideraciones de rendimiento, edge cases, o auditoría | 15% |
+
+---
+
+**Solución de referencia (para uso exclusivo del entrevistador):**
+
+```
+PASO 1 — Validación de campo obligatorio:
+  [EvaluateJsonPath] → extraer customer.rut como atributo 'rut_raw'
+  [RouteOnAttribute] → si ${rut_raw:isEmpty()} → conexión "sin_rut"
+    En la conexión "sin_rut":
+    [UpdateAttribute] → error_motivo = rut_ausente
+    → [cola de errores / PutFile / tabla errores]
+
+PASO 2 — Extracción de campos PII como atributos:
+  [EvaluateJsonPath]:
+    - customer.rut → atributo 'pii_rut'
+    - customer.nombre → atributo 'pii_nombre'
+    - customer.email → atributo 'pii_email'
+    - customer.telefono → atributo 'pii_telefono'
+
+PASO 3 — Hashing HMAC-SHA256 con salt:
+  [ExecuteScript (Groovy o Python)] →
+    Leer el salt desde Parameter Context (variable protegida/cifrada).
+    Calcular HMAC-SHA256(salt + pii_rut), HMAC-SHA256(salt + pii_nombre), etc.
+    Actualizar atributos: hash_rut, hash_nombre, hash_email, hash_telefono.
+
+PASO 4 — Reconstrucción del JSON con campos enmascarados:
+  [JoltTransformJSON] o [UpdateRecord con JSONPathUpdateWriter] →
+    Reemplazar customer.rut con ${hash_rut}
+    Reemplazar customer.nombre con ${hash_nombre}
+    Reemplazar customer.email con ${hash_email}
+    Reemplazar customer.telefono con ${hash_telefono}
+    Mantener transaction_id, timestamp, monto, tienda sin cambios.
+
+PASO 5 — Envío al destino:
+  [PutFile / PublishKafka / InvokeHTTP] → Data Lake
+
+PASO 6 — Auditoría (diferenciador senior):
+  En paralelo al PASO 5: guardar en tabla de auditoría:
+  { transaction_id, timestamp_proceso, procesador_id, accion: "PII_masked" }
+  SIN guardar los valores PII originales.
+```
+
+> ⚠️ **Señal de evaluación**: Un candidato con experiencia real mencionará el riesgo de logging accidental de los atributos `pii_*` en los logs de NiFi (Bulletin Board puede loggear atributos en modo DEBUG). Un Senior excepcional limpia esos atributos del FlowFile después del PASO 3 y antes del PASO 5.
+
+---
+
+## SCORECARD RESUMEN
+
+| # | Sección | Pregunta | Peso | Puntaje Máx | Puntaje |
+|---|---|---|---|---|---|
+| P1 | Fundamentos | State Manager / QueryDatabaseTable post-TRUNCATE | 15% | 3 | ___ |
+| P2 | Fundamentos | Backpressure — diagnóstico ordenado | 15% | 3 | ___ |
+| P3 | Fundamentos | Enmascaramiento PII / seguridad de datos | 15% | 3 | ___ |
+| P4 | Aplicación | Diseño flujo CSV masivo con SLA | 15% | 3 | ___ |
+| P5 | Aplicación | OAuth2 Token Management sin interrupciones | 10% | 3 | ___ |
+| P6 | Profundidad | Debugging "RUNNING sin procesar" | 15% | 3 | ___ |
+| P7 | Profundidad | Bug en Expression Language | 5% | 3 | ___ |
+| P8 | Code Challenge | Flujo anonimización PII JSON | 10% | 3 | ___ |
+| | | **TOTAL** | **100%** | **24** | ___ |
+
+---
+
+### Umbrales de Aprobación
+
+| Resultado | Puntaje Total | Interpretación |
+|---|---|---|
+| ✅ **Apto Senior** | 18 – 24 pts (75%+) | Candidato recomendado para avanzar al siguiente paso |
+| ⚠️ **Apto Mid** | 13 – 17 pts (54%–70%) | Puede avanzar si el equipo acepta un perfil Mid-Senior |
+| ❌ **No apto** | < 13 pts (< 54%) | No continúa el proceso |
+
+---
+
+### Notas finales para el entrevistador
+
+**Preguntas más diferenciadoras (anti-IA)**:
+- **P1 (State Manager)**: Un candidato que no ha operado NiFi en producción no sabrá que la causa es el State Manager ni cómo limpiarlo sin reiniciar. La IA puede dar la respuesta correcta si la pregunta es directa — por eso el enunciado presenta el síntoma, no el nombre de la causa.
+- **P6 (Debugging sin errores)**: Requiere haber vivido este escenario. Las hipótesis específicas (backpressure oculto downstream, thread starvation, GC pause) no emergen de conocimiento teórico.
+- **P7 (Bug en EL)**: El anti-patrón `literal(''):equals(boolean)` es un bug sutil que solo un practicante frecuente del EL de NiFi reconoce. Un candidato que "conoce NiFi" pero no lo usa cotidianamente pasará la expresión sin verle el error.
+
+**Señales de uso de IA durante la entrevista**:
+- Respuestas perfectamente estructuradas con bullet points, pero sin anécdota personal o error cometido.
+- En P6, lista las hipótesis en orden académico en vez de en orden de "lo primero que revisaría".
+- En P3, menciona GDPR pero no la Ley 21.719 chilena (la IA tiende a dar contexto europeo).
+- En el Code Challenge, el diseño es correcto pero no menciona el riesgo de logging accidental de atributos PII.
