@@ -1,0 +1,750 @@
+================================================================================
+CHALLENGE TÉCNICO — EVALUACIÓN DE CANDIDATO
+================================================================================
+Puesto          : Ingeniero Backend Semi Senior
+Cliente         : Latam Airlines
+Centro de Costo : 202641287
+Jefatura        : Rodrigo Arturo Melo Moyano — DIGITAL TEAM LEAD, SUBGCIA PLATAFORMA DE DATOS
+KAM / Resp.     : Carolina Viloria
+Stack           : Java + Spring Boot, Go (Golang), gRPC + Protocol Buffers, REST APIs,
+                  PostgreSQL, GCP (Cloud Run / Pub/Sub / Cloud Trace), Observabilidad,
+                  DevOps / DevSecOps, IA Dev Tools
+Nivel           : Semi Senior (3+ años en backend distribuido)
+Duración        : 60 min
+Enfoque         : Mixto — Teórico + Situacional + Diagnóstico + Code Challenge
+Fecha           : 2026-06-09
+================================================================================
+
+╔══════════════════════════════════════════════════════════════════════════════╗
+║  GUÍA PARA EL ENTREVISTADOR                                                  ║
+║                                                                              ║
+║  ★ DISEÑO ANTI-IA: estas preguntas NO pueden responderse correctamente con  ║
+║    ChatGPT / Copilot en tiempo real. Los diferenciadores clave son:          ║
+║    · Follow-ups 🎯 declarados aquí pero NO visibles para el candidato.       ║
+║    · Preguntas de DIAGNÓSTICO por síntomas, no de definición.                ║
+║    · Bugs en código que requieren haberlos visto en producción.              ║
+║    · Interrupciones durante diseño en vivo que obligan a adaptarse.          ║
+║    · Vocabulario de nicho (slow call rate, bulkhead, shared hit, pprof).     ║
+║                                                                              ║
+║  ★ SEÑALES DE QUE EL CANDIDATO USÓ IA:                                      ║
+║    · Respuestas perfectamente estructuradas pero sin anécdota personal.      ║
+║    · En diagnóstico: lista hipótesis en orden académico en vez de decir      ║
+║      "lo primero que haría es…"                                              ║
+║    · No puede explicar por qué eligió ese enfoque versus otro.               ║
+║    · En follow-ups verbales: pausa larga + respuesta que cambia de registro. ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ SECCIÓN 1 — WARM-UP  (5 min)  | No evaluable — romper el hielo
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  Objetivo: Activar el modo conversacional y obtener contexto real de experiencia.
+  Instrucción: Escuchar sin interrumpir. Tomar nota de los proyectos mencionados
+  porque se usarán como referencia en follow-ups posteriores.
+
+WU-1  "Cuéntame el proyecto de microservicios más complejo en el que hayas
+       trabajado: ¿cuántos servicios aproximadamente, qué nivel de tráfico
+       manejaban, y cuál fue el mayor dolor técnico que te tocó resolver
+       personalmente?"
+
+  [Por qué es anti-IA] Exige datos concretos: número real, volumen en RPS/TPS,
+  incidente propio. La IA no puede inventar esto de forma convincente porque el
+  entrevistador puede repreguntar sobre cualquier detalle.
+
+WU-2  "De Java y Go, ¿con cuál tienes más tiempo en producción? Cuéntame
+       un caso donde elegiste uno sobre el otro deliberadamente."
+
+  [Por qué es anti-IA] La preferencia personal + la justificación situacional
+  no son generables sin experiencia real.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ SECCIÓN 2 — FUNDAMENTOS  (15 min)  | 4 preguntas conceptuales
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+──────────────────────────────────────────────────────────────────────────────
+Pregunta F-1: Transacciones distribuidas — Saga Pattern
+──────────────────────────────────────────────────────────────────────────────
+
+  ENUNCIADO:
+  "Tienes dos microservicios: 'reservation-service' (Spring Boot + PostgreSQL)
+   e 'inventory-service' (Spring Boot + PostgreSQL). Cuando se reserva un vuelo
+   necesitas decrementar asientos en inventory Y crear la reserva en reservation
+   de forma atómica. @Transactional no puede abarcar dos bases de datos distintas.
+   ¿Cómo resuelves esto?"
+
+🟢 RESPUESTA MÍNIMA ESPERADA (must-mention):
+  · No existe transacción distribuida ACID sin un coordinador externo (2PC), y
+    2PC introduce acoplamiento y punto único de fallo.
+  · La solución correcta en microservicios es el patrón Saga (choreography u
+    orchestration).
+  · Cada paso tiene una compensating transaction: si inventory se decrementa pero
+    la reserva falla, hay que revertir el decremento con una operación de
+    compensación.
+  · Consistencia eventual — no inmediata.
+
+📖 EXPLICACIÓN DE REFERENCIA:
+  En arquitecturas de microservicios el antipatrón más común es intentar
+  @Transactional distribuido usando XA/JTA. La alternativa robusta es Saga:
+  en coreografía, cada servicio emite un evento al completar su paso y el
+  siguiente reacciona; en orquestación, un proceso central (SagaOrchestrator)
+  coordina la secuencia. En Spring Boot, Axon Framework y Temporal son las
+  implementaciones de referencia. El punto crítico es diseñar cada paso como
+  idempotente para tolerar reintentos sin doble efecto.
+
+⭐ RESPUESTA DESTACADA (diferenciador):
+  Menciona el riesgo de "dirty reads" durante la saga y cómo mitigarlo con un
+  campo de estado en la reserva (PENDING → CONFIRMED → FAILED). Habla de
+  outbox pattern para garantizar que el evento se publica exactamente una vez
+  aunque la aplicación caiga justo después de hacer commit en la BD local.
+
+🔴 RED FLAGS:
+  · "Uso @Transactional con JTA y un XA datasource — lo he visto funcionar."
+  · "Hago la operación en una sola base de datos compartida entre los dos
+    servicios." (rompe el bounded context)
+  · No sabe qué es una compensating transaction.
+
+🎯 FOLLOW-UP VERBAL (sorpresa — NO mostrar al candidato):
+  Interrumpir mientras explica la Saga: "¿Y si la compensating transaction del
+  inventory también falla? ¿Cómo te enterás y cómo lo recuperás a las 3am
+  cuando no hay nadie en guardia?"
+  → Respuesta esperada: dead letter queue / alertas / proceso de reconciliación
+    periódica / tabla de sagas en estado FAILED con reintento manual o automático.
+
+PUNTUACIÓN:
+  ┌─────────┬──────────────────────────────────────────────────────────────────┐
+  │ 0-No apto│ Propone 2PC o base de datos compartida sin ver el problema.      │
+  │ 1-Básico │ Conoce Saga pero no puede explicar cómo implementar compensación.│
+  │ 2-Compet.│ Explica Saga + compensating transactions + consistencia eventual.│
+  │ 3-Destad.│ Agrega outbox pattern, idempotencia, estado de saga, alertas.   │
+  └─────────┴──────────────────────────────────────────────────────────────────┘
+
+
+──────────────────────────────────────────────────────────────────────────────
+Pregunta F-2: Goroutine leak en Go
+──────────────────────────────────────────────────────────────────────────────
+
+  ENUNCIADO:
+  "Tu servicio Go empezó a consumir memoria de forma creciente en producción.
+   Usando pprof ves decenas de miles de goroutines activas. El patrón en el
+   código es este:
+
+       func startWorker(ch <-chan *Event) {
+           go func() {
+               for {
+                   select {
+                   case evt := <-ch:
+                       process(evt)
+                   }
+               }
+           }()
+       }
+
+   Se llama a startWorker cada vez que llega una petición HTTP. ¿Qué está
+   pasando y cómo lo corriges?"
+
+🟢 RESPUESTA MÍNIMA ESPERADA (must-mention):
+  · Se crea una goroutine nueva por cada request HTTP — no se reutilizan.
+  · El select sin default ni done-channel bloquea el goroutine para siempre
+    cuando el canal deja de recibir datos (o nunca se cierra).
+  · La corrección requiere: 1) crear el worker una sola vez (al iniciar el
+    servicio), o 2) recibir un context.Context con cancelación y manejar
+    <-ctx.Done() en el select.
+
+📖 EXPLICACIÓN DE REFERENCIA:
+  Los goroutine leaks son la causa más común de degradación silenciosa en
+  servicios Go. La herramienta de diagnóstico es `go tool pprof` con el
+  endpoint /debug/pprof/goroutine. La corrección idiomática es usar
+  `context.WithCancel` (o `context.WithTimeout`) y agregar `case <-ctx.Done():
+  return` al select. Para workers de procesamiento de cola se prefiere un pool
+  fijo de goroutines iniciado al arranque del servicio, nunca uno por request.
+
+⭐ RESPUESTA DESTACADA:
+  Menciona `goleak` (uber-go/goleak) para detectar goroutine leaks en tests.
+  Habla de `errgroup.WithContext` para manejar goroutines con cancelación
+  coordinada. Explica cómo un goroutine bloqueado en un channel sin buffer
+  impide que el GC libere la memoria del closure.
+
+🔴 RED FLAGS:
+  · "Aumento el buffer del canal para que no se bloquee." (no resuelve el leak)
+  · No sabe qué es pprof.
+  · Propone usar runtime.GC() o runtime.GOMAXPROCS() como solución.
+
+🎯 FOLLOW-UP VERBAL:
+  "¿Cómo detectarías este leak ANTES de que llegue a producción?
+   Quiero una estrategia de testing, no de monitoreo."
+  → Esperado: test con `goleak.VerifyNone(t)`, o test que levanta el handler,
+    hace requests, cancela el context y verifica que el contador de goroutines
+    vuelve al baseline.
+
+PUNTUACIÓN:
+  ┌─────────┬──────────────────────────────────────────────────────────────────┐
+  │ 0-No apto│ No identifica el goroutine leak o propone soluciones irrelevantes│
+  │ 1-Básico │ Identifica el problema pero no sabe cómo corregirlo.            │
+  │ 2-Compet.│ Corrige con context.Context + case <-ctx.Done(), explica pprof. │
+  │ 3-Destad.│ Agrega goleak en tests, worker pool pattern, closure GC impact. │
+  └─────────┴──────────────────────────────────────────────────────────────────┘
+
+
+──────────────────────────────────────────────────────────────────────────────
+Pregunta F-3: Breaking changes en Protocol Buffers
+──────────────────────────────────────────────────────────────────────────────
+
+  ENUNCIADO:
+  "Tu equipo tiene este esquema Protobuf en producción con clientes reales:
+
+       message FlightReservation {
+         string flight_id    = 1;
+         string passenger_id = 2;
+         string booking_class = 3; // 'Y', 'J', 'F'
+       }
+
+   Un desarrollador propone: 'eliminamos booking_class (field 3) porque ya no
+   se usa, y reutilizamos el field number 3 para el nuevo campo loyalty_tier'.
+   ¿Qué problema tiene esta propuesta y cómo la corriges?"
+
+🟢 RESPUESTA MÍNIMA ESPERADA (must-mention):
+  · Los field numbers en Protobuf son el contrato de serialización, no los
+    nombres. Reusar el número 3 hace que clientes viejos deserialicen
+    loyalty_tier como booking_class → datos silenciosamente corruptos.
+  · La solución es usar `reserved 3; reserved "booking_class";` para prohibir
+    su reuso futuro.
+  · El campo nuevo debe tener un field number NUEVO (ej: 4).
+  · Backward compatibility: campos desconocidos se ignoran en Protobuf 3
+    (tolerancia hacia adelante), pero reusar un número rompe la tolerancia
+    hacia atrás.
+
+📖 EXPLICACIÓN DE REFERENCIA:
+  Protobuf serializa campos como (field_number, wire_type, value). Los nombres
+  no viajan en el binario. Si se reusa el field 3, un cliente compilado contra
+  el schema v1 que recibe un mensaje v2 leerá loyalty_tier pensando que es
+  booking_class, sin error ni excepción. Es el tipo de corrupción más silencioso
+  posible en un sistema distribuido. La regla es: nunca eliminar ni reusar field
+  numbers; siempre marcar con `reserved`.
+
+⭐ RESPUESTA DESTACADA:
+  Habla de cómo manejar la migración si ya hay mensajes serializados en Pub/Sub
+  o almacenados (leer con schema viejo, re-serializar con el nuevo). Menciona
+  buf.build como herramienta de lint/breaking-change detection para CI. Explica
+  la diferencia entre `oneof` y campos opcionales para evolución de schema.
+
+🔴 RED FLAGS:
+  · "Si cambia el nombre pero el field number es el mismo, los clientes
+    compilados con el schema viejo simplemente lo ignoran." — INCORRECTO.
+  · No conoce la directiva `reserved`.
+  · Confunde Protobuf 2 y Protobuf 3 en términos de comportamiento de campos
+    desconocidos.
+
+🎯 FOLLOW-UP VERBAL:
+  "Tengo mensajes serializados con el schema v1 guardados en Cloud Storage como
+   backup. Ahora migré al schema v2. ¿Cómo los proceso sin perder los datos de
+   booking_class?"
+  → Esperado: procesar backups con el descriptor del schema v1, migrar campo a
+    campo al schema v2, evitar leer con el descriptor v2 los mensajes v1 que
+    tienen datos en field 3.
+
+PUNTUACIÓN:
+  ┌─────────┬──────────────────────────────────────────────────────────────────┐
+  │ 0-No apto│ No identifica el problema de reuso de field numbers.            │
+  │ 1-Básico │ Sabe que hay un problema pero no explica por qué (serialización).│
+  │ 2-Compet.│ Explica field numbers como contrato, propone reserved + campo 4.│
+  │ 3-Destad.│ Agrega migración de backups, buf.build en CI, oneof evolution.  │
+  └─────────┴──────────────────────────────────────────────────────────────────┘
+
+
+──────────────────────────────────────────────────────────────────────────────
+Pregunta F-4: Diagnóstico de NullPointerException post-deploy en Spring Boot
+──────────────────────────────────────────────────────────────────────────────
+
+  ENUNCIADO:
+  "Un colega hizo deploy y el servicio Spring Boot arranca sin errores, pero
+   después de algunos minutos empieza a lanzar NullPointerException en un
+   @Service que tiene otro @Service inyectado. En su máquina local nunca falla.
+   ¿Qué causas investigarías, en qué orden?"
+
+🟢 RESPUESTA MÍNIMA ESPERADA (must-mention):
+  · Field injection (@Autowired sobre campo) vs constructor injection: con field
+    injection el bean existe pero sus dependencias no están inyectadas durante
+    @PostConstruct o código en el constructor.
+  · Dependencia circular no detectada: A → B → A puede resolverse en local con
+    lazy proxy pero fallar en producción con configuración distinta.
+  · Bean inicializado fuera del contexto Spring (new MiService() en vez de
+    inyectarlo) — la instancia no tiene sus dependencias.
+
+📖 EXPLICACIÓN DE REFERENCIA:
+  La causa más frecuente es que alguien hizo `new MiServicioDependiente()` en
+  vez de inyectarlo, o que el bean se guarda en un campo `static` (Spring no
+  inyecta campos static con @Autowired). En producción suele aparecer tarde
+  porque la ruta de código que usa el bean roto no se ejecuta hasta que hay
+  tráfico real. Migrar a constructor injection elimina esta clase de errores
+  porque el bean no puede instanciarse si le falta alguna dependencia.
+
+⭐ RESPUESTA DESTACADA:
+  Menciona `@Lazy` como workaround de dependencia circular y sus riesgos.
+  Habla de cómo detectarlo con tests de integración que carguen el contexto
+  completo (SpringBootTest). Habla del anti-patrón de usar ApplicationContext
+  como service locator.
+
+🔴 RED FLAGS:
+  · "Reinicio el servidor, seguro es un bug de Spring." (no diagnostica)
+  · No conoce la diferencia entre field injection y constructor injection.
+  · "Los campos estáticos se pueden inyectar igual con @Autowired."
+
+🎯 FOLLOW-UP VERBAL:
+  "Te muestro el stack trace: el NPE está en un método que accede a un campo
+   `private static UserRepository userRepo`. El campo tiene @Autowired.
+   ¿Qué está pasando exactamente?"
+  → Esperado: Spring no inyecta campos estáticos con @Autowired estándar.
+    El campo queda null. Necesita @Autowired con setter o eliminar el `static`.
+
+PUNTUACIÓN:
+  ┌─────────┬──────────────────────────────────────────────────────────────────┐
+  │ 0-No apto│ No identifica el problema o propone solo reiniciar el servicio. │
+  │ 1-Básico │ Menciona dependencia circular pero no la causa raíz real.       │
+  │ 2-Compet.│ Identifica static field o field injection como causa, explica DI│
+  │ 3-Destad.│ Agrega SpringBootTest para detectarlo, ApplicationContext risks. │
+  └─────────┴──────────────────────────────────────────────────────────────────┘
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ SECCIÓN 3 — APLICACIÓN PRÁCTICA  (15 min)  | 2 preguntas situacionales
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+──────────────────────────────────────────────────────────────────────────────
+Pregunta P-1: Diseño event-driven — Sistema de notificación de cambios de vuelo
+──────────────────────────────────────────────────────────────────────────────
+
+  ENUNCIADO (DISEÑO EN VIVO — darle papel o pizarrón):
+  "LATAM necesita notificar en tiempo real a múltiples sistemas cuando un vuelo
+   cambia de estado: SCHEDULED → DELAYED → CANCELLED. Los sistemas que deben
+   recibir la notificación son: app mobile de pasajeros, sistema de check-in,
+   sistema de manejo de equipaje y sistema de loyalty/millas. Cada sistema es
+   independiente y puede estar caído o lento.
+
+   Tenés 5 minutos para bosquejar el diseño. Explicame las decisiones mientras
+   dibujás."
+
+  [INSTRUCCIÓN PARA EL ENTREVISTADOR: Mientras el candidato explica, INTERRUMPIR
+   con los siguientes follow-ups. No esperar a que termine. El objetivo es ver
+   adaptación en tiempo real.]
+
+🟢 RESPUESTA MÍNIMA ESPERADA (must-mention):
+  · Event broker central (GCP Pub/Sub, Kafka, etc.) — no llamadas directas
+    entre servicios.
+  · Cada consumidor tiene su propia suscripción/consumer group — procesamiento
+    independiente.
+  · El evento debe ser tipado con schema versionable (Protobuf o Avro).
+  · Idempotencia en los consumidores (un evento procesado dos veces no debe
+    cambiar el estado dos veces).
+  · Dead letter topic/queue para mensajes que fallan repetidamente.
+
+🎯 FOLLOW-UP VERBAL 1 (interrumpir mientras dibuja):
+  "El sistema de equipaje necesita recibir el evento en menos de 200ms siempre.
+   ¿Cómo lo garantizás?"
+  → Esperado: SLA de latencia en el broker, consumer con recursos dedicados,
+    posible canal prioritario o topic separado, no poner lógica pesada en el
+    consumer de equipaje.
+
+🎯 FOLLOW-UP VERBAL 2 (interrumpir después del primer follow-up):
+  "¿Qué pasa si el sistema de loyalty está caído exactamente cuando se emite el
+   evento de CANCELLED? ¿Cómo asegurás que no pierde el evento?"
+  → Esperado: el broker retiene el mensaje hasta que el consumer lo acuse recibo
+    (ack). Con Pub/Sub/Kafka, el mensaje no se descarta; el consumer lo procesará
+    cuando vuelva. La clave es no hacer ack antes de procesar.
+
+🎯 FOLLOW-UP VERBAL 3 (al final):
+  "¿Cómo evitás que el mismo evento de CANCELLED dispare dos veces el proceso
+   de reembolso al pasajero?"
+  → Esperado: idempotency key en el evento (flight_id + status + timestamp/uuid),
+    tabla de eventos procesados o campo `processed_at` en BD, verificar antes
+    de ejecutar el reembolso si ya existe una transacción para ese evento.
+
+🔴 RED FLAGS:
+  · Propone llamadas REST directas entre los 4 sistemas (acoplamiento total).
+  · No habla de idempotencia.
+  · No considera que un consumidor puede estar caído.
+  · "Con un webhook funciona igual." (sin mensaje broker no hay garantía de
+    entrega ni replay).
+
+PUNTUACIÓN:
+  ┌─────────┬──────────────────────────────────────────────────────────────────┐
+  │ 0-No apto│ Propone REST directo o no puede adaptarse a los follow-ups.     │
+  │ 1-Básico │ Propone broker pero no habla de idempotencia ni DLQ.            │
+  │ 2-Compet.│ Broker + suscripciones independientes + idempotencia + DLQ.     │
+  │ 3-Destad.│ Incorpora SLA de latencia, schema versionado, responde follow-  │
+  │          │ ups con soluciones concretas sin dudar.                          │
+  └─────────┴──────────────────────────────────────────────────────────────────┘
+
+
+──────────────────────────────────────────────────────────────────────────────
+Pregunta P-2: Diagnóstico de performance en PostgreSQL
+──────────────────────────────────────────────────────────────────────────────
+
+  ENUNCIADO:
+  "Tu servicio de búsqueda de vuelos tarda 50ms en local pero entre 3 y 4
+   segundos en producción en GCP. La query busca vuelos disponibles por origen,
+   destino y fecha. Cuéntame tu plan de diagnóstico paso a paso — qué hacés
+   primero, luego, y por qué en ese orden."
+
+🟢 RESPUESTA MÍNIMA ESPERADA (must-mention):
+  · `EXPLAIN (ANALYZE, BUFFERS)` corrido EN producción (no en local) para ver
+    el plan real con datos reales.
+  · Verificar si hay sequential scan sobre una tabla con millones de filas —
+    indica índice faltante o no utilizado.
+  · Revisar el connection pool: ¿hay espera para obtener una conexión?
+    (PgBouncer / HikariCP metrics).
+  · Diferencia de volumen de datos: local tiene 100 filas, producción tiene
+    10 millones.
+
+📖 EXPLICACIÓN DE REFERENCIA:
+  El diagnóstico correcto empieza por obtener el execution plan real en el
+  entorno real. `EXPLAIN ANALYZE` muestra el plan estimado; `EXPLAIN (ANALYZE,
+  BUFFERS)` muestra además cuántos bloques se leyeron de disco vs cache
+  (shared read vs shared hit). Un ratio de shared hit bajo indica que la tabla
+  no está en el buffer cache de PostgreSQL, probablemente por tamaño de datos.
+  En GCP Cloud SQL, el parámetro `shared_buffers` puede estar subdimensionado.
+  El siguiente paso es revisar PgBouncer o HikariCP: si el pool está saturado,
+  la query espera antes de ejecutarse.
+
+⭐ RESPUESTA DESTACADA:
+  Menciona `pg_stat_statements` para ver las queries más lentas históricamente.
+  Habla de autovacuum y bloat de tabla como causa de slow queries que no tienen
+  problema de índice. Menciona `pg_stat_activity` para ver conexiones en estado
+  `idle in transaction` que bloquean.
+
+🔴 RED FLAGS:
+  · "Agrego más RAM al servidor en GCP." (sin diagnóstico previo)
+  · "Pongo cache de Redis delante." (sin saber si es la query o el infra)
+  · No conoce EXPLAIN ANALYZE.
+  · "Reviso los logs de la aplicación." (sin mencionar las herramientas de
+    PostgreSQL para diagnóstico).
+
+🎯 FOLLOW-UP VERBAL:
+  "Corrés EXPLAIN (ANALYZE, BUFFERS) y el output muestra que SÍ usa el índice
+   correcto, pero igual tarda. El output dice:
+     Buffers: shared hit=0 read=180000
+   ¿Qué significa ese dato y qué hacés ahora?"
+  → Esperado: shared hit=0 significa que NINGÚN bloque estaba en el buffer
+    cache — todo se leyó del disco. Con 180.000 bloques leídos de disco a
+    ~8KB cada uno, son ~1.4GB leídos de disco en cada query. Solución: aumentar
+    `shared_buffers`, revisar si el índice cubre todos los campos del SELECT
+    (index-only scan), o evaluar particionado de la tabla por fecha.
+
+PUNTUACIÓN:
+  ┌─────────┬──────────────────────────────────────────────────────────────────┐
+  │ 0-No apto│ Propone soluciones de infra sin diagnóstico o no conoce EXPLAIN. │
+  │ 1-Básico │ Menciona EXPLAIN pero no sabe interpretar BUFFERS.              │
+  │ 2-Compet.│ EXPLAIN+BUFFERS, índices, connection pool, diferencia de datos. │
+  │ 3-Destad.│ Interpreta shared hit=0, propone shared_buffers + particionado, │
+  │          │ menciona pg_stat_statements y autovacuum.                        │
+  └─────────┴──────────────────────────────────────────────────────────────────┘
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ SECCIÓN 4 — PROFUNDIDAD TÉCNICA  (15 min)  | 2 preguntas avanzadas
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+──────────────────────────────────────────────────────────────────────────────
+Pregunta A-1: Circuit Breaker + Bulkhead — Thread pool exhaustion
+──────────────────────────────────────────────────────────────────────────────
+
+  ENUNCIADO:
+  "Tu servicio A llama al servicio B con timeout de 5 segundos usando
+   RestTemplate/WebClient. El servicio B empieza a responder lento: tarda 4.8
+   segundos pero NO falla — devuelve 200 OK. Tu Circuit Breaker con Resilience4j
+   nunca abre porque las llamadas 'tienen éxito'. Ahora tenés 80 threads
+   bloqueados esperando respuesta de B y tu servicio A empieza a rechazar nuevos
+   requests con un error de pool exhausto. ¿Qué está pasando y cómo rediseñás?"
+
+🟢 RESPUESTA MÍNIMA ESPERADA (must-mention):
+  · Thread pool exhaustion: cada llamada a B ocupa un thread durante 4.8s.
+    Con alta concurrencia, todos los threads del pool están esperando a B.
+  · Circuit Breaker configurado solo con error rate no se activa porque no hay
+    errores. Necesita `slowCallRateThreshold` en Resilience4j.
+  · El timeout de 5s es demasiado alto; debe bajar para no bloquear threads
+    tanto tiempo.
+  · Bulkhead pattern: aislar las llamadas a B en un thread pool separado y
+    limitado. Si B está lento, solo ese pool se satura, no el pool principal.
+
+📖 EXPLICACIÓN DE REFERENCIA:
+  El Circuit Breaker por defecto mide error rate (excepciones y timeouts).
+  Si el servicio responde lento pero sin timeout (porque el timeout es 5s y
+  responde en 4.8s), el CB no lo ve. Resilience4j ofrece `slowCallDurationThreshold`
+  y `slowCallRateThreshold`: si el X% de las llamadas supera cierta duración,
+  el CB abre. El patrón complementario es Bulkhead (ThreadPoolBulkhead en
+  Resilience4j), que limita el número de llamadas concurrentes a un servicio
+  usando un Semaphore o thread pool dedicado. Si B está lento y el bulkhead
+  está lleno, nuevos requests fallan rápido (fail-fast) en vez de bloquear.
+
+⭐ RESPUESTA DESTACADA:
+  Propone configuración concreta de Resilience4j:
+    slowCallDurationThreshold: 1000ms
+    slowCallRateThreshold: 50
+    minimumNumberOfCalls: 10
+  Habla de reactive/non-blocking (WebFlux/WebClient) como alternativa a threads
+  bloqueados. Menciona back-pressure en Project Reactor.
+
+🔴 RED FLAGS:
+  · "Bajo el timeout a 1 segundo." (sin mencionar el problema del thread pool
+    ni el bulkhead)
+  · No conoce la diferencia entre error rate y slow call rate en CB.
+  · No conoce el patrón Bulkhead.
+  · "El Circuit Breaker debería haberlo detectado." (sin entender por qué no)
+
+🎯 FOLLOW-UP VERBAL:
+  "¿Dónde exactamente en la configuración de Resilience4j activarías el slow
+   call rate? ¿Qué parámetros pondrías y por qué esos valores?"
+  → Esperado: el candidato debe poder escribir o dictar la configuración YAML
+    con slowCallDurationThreshold y slowCallRateThreshold, y explicar el
+    trade-off entre sensibilidad y falsos positivos.
+
+PUNTUACIÓN:
+  ┌─────────┬──────────────────────────────────────────────────────────────────┐
+  │ 0-No apto│ No identifica thread pool exhaustion o propone solo bajar timeout│
+  │ 1-Básico │ Identifica el problema pero no conoce slowCallRateThreshold.    │
+  │ 2-Compet.│ Thread pool exhaustion + slowCallRate + Bulkhead con explicación │
+  │ 3-Destad.│ Escribe configuración concreta + menciona reactive como solución │
+  └─────────┴──────────────────────────────────────────────────────────────────┘
+
+
+──────────────────────────────────────────────────────────────────────────────
+Pregunta A-2: Observabilidad — Diagnóstico de latencia p99 anómala
+──────────────────────────────────────────────────────────────────────────────
+
+  ENUNCIADO:
+  "Son las 11pm un viernes. Las alertas de Grafana muestran que el p99 de
+   latencia del reservation-service saltó de 80ms a 2.3 segundos en los últimos
+   20 minutos. El p50 está completamente normal en 85ms. No hay errores (5xx)
+   en los logs. No hubo deploy reciente. ¿Cuál es tu hipótesis principal y
+   cómo la confirmás?"
+
+🟢 RESPUESTA MÍNIMA ESPERADA (must-mention):
+  · p99 alto con p50 normal indica que NO es el servicio completo — es un
+    subconjunto específico de requests el que está lento.
+  · Hipótesis: una query específica para ciertos datos, un downstream service
+    lento para ciertas rutas, o hot partition en la BD.
+  · Usar distributed tracing (OpenTelemetry / Cloud Trace) para identificar
+    qué span específico tiene la latencia alta.
+  · Correlacionar con métricas de infra: GC pause logs en JVM, CPU de la BD,
+    conexiones activas.
+
+📖 EXPLICACIÓN DE REFERENCIA:
+  La diferencia p50/p99 es el diagnóstico más valioso: si el p50 está bien, el
+  servicio en general funciona. El p99 alto significa que el 1% de los requests
+  (los más lentos) son los problemáticos. En un sistema de reservas de vuelos,
+  esto suele indicar una query que es lenta para ciertos IDs (hot partition,
+  falta de índice para un subset de datos) o un downstream service que falla
+  solo para ciertos requests (ej: un servicio de precios que es lento para rutas
+  internacionales pero rápido para domésticas). El trace distribuido te lleva
+  directo al span lento.
+
+⭐ RESPUESTA DESTACADA:
+  Menciona cómo correlacionar el trace con los atributos del request para
+  encontrar el patrón (¿todos los requests lentos van a la misma región de BD?
+  ¿Tienen el mismo origin airport?). Habla de `pg_stat_activity` para ver
+  si hay queries bloqueadas por un lock. Menciona autovacuum corriendo en una
+  tabla grande.
+
+🔴 RED FLAGS:
+  · "Reinicio el servicio." (primera acción destructiva sin diagnóstico)
+  · No sabe qué implica la diferencia entre p50 y p99 en términos prácticos.
+  · No menciona distributed tracing.
+  · "Reviso los logs de error." (no hay errores — el candidato no escuchó el
+    enunciado).
+
+🎯 FOLLOW-UP VERBAL:
+  "Abrís un trace del p99 y ves que el span lento SIEMPRE tiene un atributo
+   db.query = 'SELECT ... WHERE origin_airport = $1' y el valor de $1 es
+   siempre 'SCL' (Santiago). Los requests con otros orígenes son rápidos.
+   ¿Qué sospechás?"
+  → Esperado: hot partition — SCL tiene un volumen de datos mucho mayor que
+    otros aeropuertos. El índice puede no estar siendo usado eficientemente para
+    ese valor (statistics desactualizadas, query planner eligiendo seq scan por
+    el volumen). Solución: ANALYZE, revisar el índice con EXPLAIN ANALYZE para
+    origin_airport='SCL' específicamente, considerar índice parcial o
+    particionado de tabla por aeropuerto.
+
+PUNTUACIÓN:
+  ┌─────────┬──────────────────────────────────────────────────────────────────┐
+  │ 0-No apto│ No interpreta la diferencia p50/p99 o propone reiniciar.        │
+  │ 1-Básico │ Entiende que es un subset pero no sabe cómo encontrar el patrón.│
+  │ 2-Compet.│ p50/p99, distributed tracing, hipótesis de hot data + query.    │
+  │ 3-Destad.│ Interpreta follow-up de SCL: hot partition, statistics, ANALYZE, │
+  │          │ índice parcial, explica query planner behavior.                  │
+  └─────────┴──────────────────────────────────────────────────────────────────┘
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ SECCIÓN 5 — CODE CHALLENGE  (10 min)  | Sin IDE, sin IA, sin internet
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  INSTRUCCIÓN PARA EL ENTREVISTADOR:
+  Mostrar el código al candidato (en pantalla o impreso). Pedir que identifique
+  los bugs. NO aclarar cuántos son. Si los identifica todos rápido, pedir que
+  reescriba el handler correcto de memoria en papel o en pantalla SIN ver el
+  original.
+
+──────────────────────────────────────────────────────────────────────────────
+Código a analizar (Go — HTTP handler de búsqueda de vuelos):
+──────────────────────────────────────────────────────────────────────────────
+
+  func (h *FlightHandler) GetAvailableFlights(w http.ResponseWriter, r *http.Request) {
+      origin := r.URL.Query().Get("origin")
+      dest   := r.URL.Query().Get("destination")
+
+      rows, err := h.db.Query(r.Context(),
+          "SELECT id, origin, destination, departure_time, available_seats "+
+          "FROM flights WHERE origin = '"+origin+"' AND destination = '"+dest+"'")
+      if err != nil {
+          w.WriteHeader(http.StatusInternalServerError)
+          return
+      }
+
+      flights := make([]*Flight, 0)
+      for rows.Next() {
+          f := &Flight{}
+          rows.Scan(&f.ID, &f.Origin, &f.Destination, &f.DepartureTime, &f.AvailableSeats)
+          flights = append(flights, f)
+      }
+
+      json.NewEncoder(w).Encode(flights)
+  }
+
+──────────────────────────────────────────────────────────────────────────────
+BUGS ESPERADOS (el candidato debe encontrarlos):
+──────────────────────────────────────────────────────────────────────────────
+
+BUG 1 — SQL Injection (CRÍTICO)
+  Concatenación directa de `origin` y `dest` en el SQL.
+  Un atacante envía: origin = "'; DROP TABLE flights; --"
+  Corrección: usar consulta parametrizada
+    db.Query(ctx, "SELECT ... WHERE origin = $1 AND destination = $2", origin, dest)
+
+BUG 2 — rows nunca se cierra (goroutine / connection leak)
+  Falta `defer rows.Close()` inmediatamente después del Query exitoso.
+  Sin esto, la conexión de BD NO se devuelve al pool.
+  En producción bajo carga, el pool se agota y las queries nuevas fallan.
+  Corrección: agregar `defer rows.Close()` antes del loop.
+
+BUG 3 — Error de Scan silenciado
+  `rows.Scan(...)` retorna un error que se ignora por completo.
+  Si un campo no puede ser escaneado, la struct queda con valores zero y
+  el error se traga sin log ni respuesta de error al cliente.
+  Corrección:
+    if err := rows.Scan(...); err != nil {
+        // log + return error
+    }
+
+BUG 4 — rows.Err() no se verifica (bonus)
+  Después del loop, `rows.Err()` puede contener errores del servidor durante
+  la iteración. No verificarlo oculta errores parciales donde se retorna un
+  resultado incompleto como si fuera completo.
+  Corrección: verificar `if err := rows.Err(); err != nil { ... }` después
+  del loop.
+
+──────────────────────────────────────────────────────────────────────────────
+VERSIÓN CORREGIDA (referencia para el entrevistador):
+──────────────────────────────────────────────────────────────────────────────
+
+  func (h *FlightHandler) GetAvailableFlights(w http.ResponseWriter, r *http.Request) {
+      origin := r.URL.Query().Get("origin")
+      dest   := r.URL.Query().Get("destination")
+
+      rows, err := h.db.Query(r.Context(),
+          "SELECT id, origin, destination, departure_time, available_seats "+
+          "FROM flights WHERE origin = $1 AND destination = $2",
+          origin, dest)
+      if err != nil {
+          http.Error(w, "internal server error", http.StatusInternalServerError)
+          return
+      }
+      defer rows.Close()
+
+      flights := make([]*Flight, 0)
+      for rows.Next() {
+          f := &Flight{}
+          if err := rows.Scan(&f.ID, &f.Origin, &f.Destination,
+              &f.DepartureTime, &f.AvailableSeats); err != nil {
+              http.Error(w, "internal server error", http.StatusInternalServerError)
+              return
+          }
+          flights = append(flights, f)
+      }
+      if err := rows.Err(); err != nil {
+          http.Error(w, "internal server error", http.StatusInternalServerError)
+          return
+      }
+
+      w.Header().Set("Content-Type", "application/json")
+      json.NewEncoder(w).Encode(flights)
+  }
+
+PUNTUACIÓN:
+  ┌─────────┬──────────────────────────────────────────────────────────────────┐
+  │ 0-No apto│ No identifica SQL injection (el bug más crítico y visible).     │
+  │ 1-Básico │ Identifica SQL injection + 1 bug más.                           │
+  │ 2-Compet.│ Identifica los 3 bugs principales y explica el impacto en prod. │
+  │ 3-Destad.│ Encuentra los 4 bugs + reescribe el handler correcto de memoria.│
+  └─────────┴──────────────────────────────────────────────────────────────────┘
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ SECCIÓN 6 — SCORECARD RESUMEN
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  Candidato: _______________________________________  Fecha: _______________
+  Entrevistador: __________________________________
+
+  ┌───────┬───────────────────────────────────────────────────┬────┬────────┐
+  │ Cód.  │ Pregunta                                          │Max │ Score  │
+  ├───────┼───────────────────────────────────────────────────┼────┼────────┤
+  │ F-1   │ Saga Pattern / Transacciones distribuidas         │  3 │        │
+  │ F-2   │ Goroutine leak en Go                              │  3 │        │
+  │ F-3   │ Breaking changes en Protobuf                      │  3 │        │
+  │ F-4   │ NPE post-deploy en Spring Boot                    │  3 │        │
+  ├───────┼───────────────────────────────────────────────────┼────┼────────┤
+  │ P-1   │ Diseño event-driven (vuelos LATAM)                │  3 │        │
+  │ P-2   │ Diagnóstico de performance PostgreSQL             │  3 │        │
+  ├───────┼───────────────────────────────────────────────────┼────┼────────┤
+  │ A-1   │ Circuit Breaker + Bulkhead (thread exhaustion)    │  3 │        │
+  │ A-2   │ Observabilidad / p99 anómala                      │  3 │        │
+  ├───────┼───────────────────────────────────────────────────┼────┼────────┤
+  │ CC-1  │ Code review Go (bugs + corrección)                │  3 │        │
+  ├───────┼───────────────────────────────────────────────────┼────┼────────┤
+  │       │ TOTAL                                             │ 27 │        │
+  └───────┴───────────────────────────────────────────────────┴────┴────────┘
+
+  UMBRALES DE APROBACIÓN — SEMI SENIOR:
+  ┌─────────────────────────────────┬─────────────────────────────────────────┐
+  │ ≥ 20/27 (74%)                   │ AVANZA — perfil alineado al nivel        │
+  │ 15-19/27 (56%–70%)              │ CONSIDERA — evaluar con segunda instancia│
+  │ < 15/27                         │ NO AVANZA                                │
+  └─────────────────────────────────┴─────────────────────────────────────────┘
+
+  CONDICIÓN BLOQUEANTE (score = 0 en alguna de estas → NO AVANZA independiente
+  del total):
+  · F-3: no identifica el riesgo de reusar field numbers en Protobuf.
+  · CC-1: no identifica SQL injection.
+  · A-1: no entiende el problema de thread pool exhaustion.
+
+  Observaciones adicionales del entrevistador:
+  ___________________________________________________________________________
+  ___________________________________________________________________________
+  ___________________________________________________________________________
+
+  Señales de uso de IA durante la entrevista (marcar si aplica):
+  [ ] Respuestas perfectamente estructuradas sin anécdota o error personal
+  [ ] En preguntas de diagnóstico, lista hipótesis en orden académico
+  [ ] Pausa larga + cambio de registro en follow-ups verbales
+  [ ] No puede profundizar cuando el entrevistador repregunta el "por qué"
+  [ ] Usa terminología pero no puede dar un ejemplo propio concreto
+
+  Recomendación final:
+  [ ] AVANZA      [ ] SEGUNDA INSTANCIA      [ ] NO AVANZA
+
+  Firma entrevistador: _____________________
+
+================================================================================
+Generado por TechChallenge Architect — ACL Chile | 2026-06-09
+Diseño anti-IA aplicado. Prohibida distribución al candidato.
+================================================================================
