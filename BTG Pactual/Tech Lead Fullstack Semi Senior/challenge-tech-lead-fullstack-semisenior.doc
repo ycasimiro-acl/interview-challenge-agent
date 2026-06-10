@@ -1,0 +1,843 @@
+================================================================================
+CHALLENGE TÉCNICO — EVALUACIÓN DE CANDIDATO
+================================================================================
+Puesto          : Tech Lead Fullstack Semi Senior
+Cliente         : BTG Pactual
+Centro de Costo : 202640984
+Código interno  : 0000B
+Jefatura        : Tamara Escobar (Alta complejidad — muy exigente con plazos)
+KAM / Resp.     : Evelyn Alvarez
+Reclutador      : Natalia Araneda
+Stack           : React, Node.js, TypeScript, NestJS (deseable),
+                  AWS (Lambda, ECS, API Gateway, S3, RDS, ALB, CloudWatch),
+                  Docker, Kubernetes, CI/CD, OWASP, JWT, OAuth2
+Nivel           : Semi Senior con perfil de liderazgo (3-5 años)
+Enfoque         : Mixto — Teórico + Situacional + Diagnóstico + Code Challenge
+Duración        : 60 min
+Fecha           : 2026-06-10
+================================================================================
+
+╔══════════════════════════════════════════════════════════════════════════════╗
+║  GUÍA PARA EL ENTREVISTADOR                                                  ║
+║                                                                              ║
+║  ★ DISEÑO ANTI-IA: estas preguntas NO pueden responderse correctamente con  ║
+║    ChatGPT / Copilot en tiempo real. Los diferenciadores clave son:          ║
+║    · Follow-ups 🎯 declarados aquí pero NO visibles para el candidato.       ║
+║    · Preguntas de diagnóstico por síntomas reales, no de definición.         ║
+║    · Contexto bancario/CMF que la IA no puede aplicar situacionalmente.      ║
+║    · Bugs en código que requieren haberlos visto en producción.              ║
+║    · Interrupciones en diseño en vivo que obligan a adaptarse al instante.   ║
+║    · Preguntas de liderazgo con trade-offs reales de negocio vs técnica.     ║
+║                                                                              ║
+║  ★ SEÑALES DE QUE EL CANDIDATO USÓ IA:                                      ║
+║    · Respuestas perfectamente estructuradas pero sin anécdota personal.      ║
+║    · En diagnóstico: lista hipótesis en orden académico en vez de decir      ║
+║      "lo primero que revisaría es…"                                          ║
+║    · En preguntas de liderazgo: respuestas genéricas de manual agile.        ║
+║    · No puede extenderse cuando el entrevistador repregunta el "por qué".    ║
+║    · Pausa larga + cambio de registro en follow-ups verbales.                ║
+║                                                                              ║
+║  ★ CONTEXTO CLAVE DE BTG PACTUAL:                                           ║
+║    · Banco de inversión — las operaciones en horario bursátil (9am-6pm)      ║
+║      son críticas. Un incidente a las 10am vale 10x más que uno nocturno.    ║
+║    · La jefatura es exigente con plazos pero no con competencias técnicas    ║
+║      → el Tech Lead debe proteger al equipo técnicamente Y cumplir plazos.   ║
+║    · Regulación CMF (Comisión para el Mercado Financiero) obliga a          ║
+║      trazabilidad, auditoría y protección de datos financieros.              ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ SECCIÓN 1 — WARM-UP  (5 min)  | No evaluable — romper el hielo
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  Instrucción: Escuchar activamente. Tomar nota de proyectos y tecnologías
+  mencionadas — se usarán de ancla en los follow-ups posteriores.
+
+WU-1  "Cuéntame del proyecto de migración cloud más complejo en el que hayas
+       participado o liderado: ¿qué sistema era, cuántos usuarios afectados,
+       cuánto tiempo tomó, y cuál fue el incidente más crítico que tuviste que
+       resolver durante el proceso?"
+
+  [Por qué es anti-IA] Exige detalles concretos: sistema real, números reales,
+  incidente propio. La IA no puede inventarlo de forma convincente porque el
+  entrevistador puede repreguntar sobre cualquier detalle técnico.
+
+WU-2  "Como Tech Lead o alguien con aspiraciones de serlo, cuéntame de la
+       última vez que tuviste que frenar o redirigir una decisión técnica de
+       un compañero del equipo. ¿Cómo lo manejaste y qué pasó?"
+
+  [Por qué es anti-IA] La respuesta requiere un episodio real con tensión
+  interpersonal. Las respuestas de IA son manual-agile sin fricción real.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ SECCIÓN 2 — FUNDAMENTOS  (15 min)  | 4 preguntas técnicas
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+──────────────────────────────────────────────────────────────────────────────
+Pregunta F-1: Memory leak en Node.js — diagnóstico por síntomas
+──────────────────────────────────────────────────────────────────────────────
+
+  ENUNCIADO:
+  "Un microservicio Node.js en producción consume memoria de forma creciente:
+   arranca en 120 MB y llega a 1.4 GB en 6 horas hasta que el proceso muere con
+   OOM. El equipo lo 'resuelve' reiniciando con PM2 cada 4 horas. Tú llegas como
+   Tech Lead el lunes. ¿Cuál es tu diagnóstico y plan de acción? No me digas
+   'reiniciar' — me interesa la causa raíz."
+
+🟢 RESPUESTA MÍNIMA ESPERADA (must-mention):
+  · Generar un heap dump / heap snapshot con `--inspect` + Chrome DevTools o
+    con el módulo `v8.writeHeapSnapshot()` para identificar qué tipo de objetos
+    está acumulando.
+  · Las causas más comunes en Node.js: listeners de EventEmitter no removidos
+    (addListener sin su par removeListener), closures que retienen referencias
+    a arrays/objetos grandes, timers (setInterval) nunca cancelados, o caché
+    en memoria sin límite de tamaño ni TTL.
+  · Comparar dos heap snapshots con intervalo de tiempo para ver qué crece
+    (Comparison view en Chrome DevTools).
+
+📖 EXPLICACIÓN DE REFERENCIA:
+  El "reinicio cada 4 horas" es una señal clásica de memory leak no investigado.
+  El diagnóstico correcto es: 1) capturar heap snapshot en arranque, 2) capturar
+  otro después de 2 horas, 3) comparar con la vista Comparison en Chrome DevTools
+  o con `heapdump` + `memwatch-next`. Los patrones más frecuentes en Express/Node:
+  middleware que adjunta datos al objeto `req` o `res` sin limpiarlos, listeners
+  acumulados en el `process` o en un EventEmitter global, y caches tipo Map/Set
+  que crecen sin límite porque nunca se eliminan entradas.
+
+⭐ RESPUESTA DESTACADA:
+  Menciona `process.memoryUsage()` con métricas en Prometheus para graficarlo
+  antes del OOM. Habla de `--max-old-space-size` como mitigación temporal
+  mientras se investiga, no como solución. Menciona `clinic.js` (Nearform) o
+  `0x` para flame graphs de CPU que pueden revelar dónde se generan los objetos.
+
+🔴 RED FLAGS:
+  · "Le doy más RAM a la instancia de ECS/EC2." (sin diagnosticar)
+  · "Reinicio más frecuente con el health check." (no es solución)
+  · No conoce heap snapshot ni las herramientas de diagnóstico de Node.js.
+  · Confunde memory leak de Node.js con GC de Java/JVM.
+
+🎯 FOLLOW-UP VERBAL (sorpresa — NO mostrar al candidato):
+  "El heap snapshot muestra que el objeto más grande es un Map llamado
+   `sessionCache` con 340.000 entradas. El código es:
+
+     const sessionCache = new Map();
+     app.use((req, res, next) => {
+       if (!sessionCache.has(req.sessionId)) {
+         sessionCache.set(req.sessionId, { ...req.user, timestamp: Date.now() });
+       }
+       next();
+     });
+
+   ¿Qué está pasando y cómo lo corriges?"
+  → Esperado: el Map crece sin límite porque NUNCA se eliminan entradas.
+    Cada sesión única agrega una entrada que queda para siempre. Fix: usar
+    un LRU Cache con límite de tamaño (p.ej., `lru-cache` npm), o agregar
+    TTL y limpieza periódica con setInterval que elimine entradas viejas.
+    Para BTG (banca): la sesión del usuario en cache puede contener datos
+    financieros sensibles → debe tener TTL obligatorio por política de seguridad.
+
+PUNTUACIÓN:
+  ┌─────────┬──────────────────────────────────────────────────────────────────┐
+  │ 0-No apto│ No sabe diagnosticar o propone solo reiniciar / dar más RAM.    │
+  │ 1-Básico │ Sabe que hay leak pero no conoce las herramientas (heap dump).  │
+  │ 2-Compet.│ Heap snapshot + comparación + identifica causas comunes.        │
+  │ 3-Destad.│ Interpreta follow-up del Map, propone LRU cache + TTL + contexto│
+  │          │ de seguridad bancaria para datos en caché.                      │
+  └─────────┴──────────────────────────────────────────────────────────────────┘
+
+
+──────────────────────────────────────────────────────────────────────────────
+Pregunta F-2: React — stale closure en custom hook de polling
+──────────────────────────────────────────────────────────────────────────────
+
+  ENUNCIADO (mostrar el código al candidato):
+  "Este custom hook se usa en un dashboard de portafolios de BTG para refrescar
+   datos cada 5 segundos. Los usuarios reportan que el contador de actualizaciones
+   siempre muestra '1' sin importar cuánto tiempo pase. ¿Qué bug tiene?"
+
+  ┌──────────────────────────────────────────────────────────────┐
+  │  function usePolling(fetchFn, interval = 5000) {             │
+  │    const [data, setData] = useState(null);                   │
+  │    const [count, setCount] = useState(0);                    │
+  │                                                              │
+  │    useEffect(() => {                                         │
+  │      const id = setInterval(() => {                          │
+  │        fetchFn().then(result => {                            │
+  │          setData(result);                                    │
+  │          setCount(count + 1); // ← revisa aquí              │
+  │        });                                                   │
+  │      }, interval);                                           │
+  │      return () => clearInterval(id);                         │
+  │    }, [fetchFn, interval]); // ← y aquí                     │
+  │                                                              │
+  │    return { data, count };                                   │
+  │  }                                                           │
+  └──────────────────────────────────────────────────────────────┘
+
+🟢 RESPUESTA MÍNIMA ESPERADA (must-mention):
+  · Stale closure: la función dentro de setInterval captura el valor de `count`
+    del primer render (= 0). Cada vez que se ejecuta hace `setCount(0 + 1)`,
+    por eso el contador siempre es 1.
+  · `count` no está en el array de dependencias del useEffect, así que el
+    closure nunca se actualiza.
+  · Fix correcto: usar la forma funcional del setter: `setCount(prev => prev + 1)`.
+    No agregar `count` a las dependencias porque eso recrearía el intervalo
+    en cada tick.
+
+📖 EXPLICACIÓN DE REFERENCIA:
+  Las stale closures son uno de los bugs más frecuentes y confusos en React
+  hooks. El useEffect captura el scope léxico en el momento de su creación.
+  Como `count` no está en el array de dependencias, el useEffect no se
+  re-ejecuta cuando `count` cambia, y el closure dentro del setInterval mantiene
+  siempre el `count` = 0 del primer render. La solución idiomática en React para
+  contadores y acumuladores es siempre usar el form funcional del setter, que
+  recibe el valor previo más reciente sin necesitar capturarlo en el closure.
+
+⭐ RESPUESTA DESTACADA:
+  Identifica además el segundo problema: si el componente padre re-renderiza
+  con frecuencia y `fetchFn` no está memoizada con `useCallback`, `fetchFn`
+  cambia de referencia en cada render → el useEffect se re-ejecuta en cada
+  render del padre → clearInterval + nuevo setInterval en cada render → polling
+  inestable y potencial memory leak si los intervalos se acumulan. Fix: exigir
+  que `fetchFn` sea estable (useCallback en el padre) o usar `useRef` para
+  `fetchFn` dentro del hook.
+
+🔴 RED FLAGS:
+  · No identifica el stale closure — describe el bug como "un problema de
+    rendimiento" o "React que no re-renderiza".
+  · Propone agregar `count` al array de deps sin ver el problema secundario
+    (intervalo que se recrea en cada tick).
+  · No conoce la forma funcional del setter de useState.
+
+🎯 FOLLOW-UP VERBAL:
+  "El hook funciona en un dashboard con 8 widgets, cada uno llamando a
+   usePolling con distintas fetchFn. Un desarrollador junior del equipo
+   reporta que los widgets 'se frenan' cuando el usuario cambia de tab del
+   navegador y regresa. ¿Qué está pasando y qué le explicarías?"
+  → Esperado: Page Visibility API — los navegadores throttlean setInterval
+    en tabs en background. Al volver al tab activo, los 8 intervalos se
+    disparan casi simultáneamente produciendo 8 requests en ráfaga. Fix:
+    escuchar `visibilitychange` y resetear/pausar el polling cuando la tab
+    no está visible. Alternativa moderna: usar `requestAnimationFrame` o
+    librerías como React Query / SWR que manejan esto automáticamente.
+
+PUNTUACIÓN:
+  ┌─────────┬──────────────────────────────────────────────────────────────────┐
+  │ 0-No apto│ No identifica el stale closure como causa del bug.             │
+  │ 1-Básico │ Identifica el stale closure pero no sabe el fix correcto.      │
+  │ 2-Compet.│ Stale closure + fix con setter funcional + explica dependencias.│
+  │ 3-Destad.│ Agrega problema de fetchFn no memoizada + Page Visibility API. │
+  └─────────┴──────────────────────────────────────────────────────────────────┘
+
+
+──────────────────────────────────────────────────────────────────────────────
+Pregunta F-3: AWS — migración de estado en memoria a ECS con réplicas
+──────────────────────────────────────────────────────────────────────────────
+
+  ENUNCIADO:
+  "La aplicación Node.js legacy de BTG usa un Map global en memoria del proceso
+   para mantener sesiones de usuario (datos de portafolio en caché por sesión).
+   Vas a migrar a ECS con 3 réplicas detrás de un ALB. ¿Qué problema concreto
+   tendrás en producción y cómo lo resolvés sin cortar la experiencia de los
+   usuarios de trading?"
+
+🟢 RESPUESTA MÍNIMA ESPERADA (must-mention):
+  · El estado en memoria no se comparte entre instancias ECS. Si el usuario
+    llega a la réplica A en la primera request y a la réplica B en la segunda,
+    su sesión no existe en B → forzado a re-autenticarse o ve datos vacíos.
+  · Solución correcta: externalizar sesiones a ElastiCache (Redis) o a RDS.
+    Todas las réplicas leen y escriben en el mismo Redis → estado compartido.
+  · Sticky sessions (session affinity en el ALB) es un workaround temporal
+    pero NO una solución: si la réplica cae (deploy, crash), el usuario
+    pierde la sesión de todas formas.
+
+📖 EXPLICACIÓN DE REFERENCIA:
+  En arquitecturas horizontalmente escalables, toda sesión de usuario o estado
+  compartido debe vivir fuera del proceso de la aplicación. ElastiCache Redis
+  (con `connect-redis` + `express-session`) es el patrón estándar para sesiones
+  en Node.js en AWS. Para datos de portafolio en caché, Redis con TTL apropiado
+  es la solución, con invalidación activa cuando los datos subyacentes cambian.
+  Las sticky sessions del ALB alivian el síntoma pero no sobreviven deployments
+  rolling — que en BTG ocurren varias veces por semana.
+
+⭐ RESPUESTA DESTACADA:
+  Habla de la necesidad de cifrar los datos de sesión en Redis si contienen
+  información financiera sensible (CMF y política de seguridad de datos bancarios).
+  Menciona Redis Sentinel o Redis Cluster para alta disponibilidad del caché de
+  sesiones — si Redis cae, todos los usuarios pierden sesión simultáneamente.
+  Propone estrategia de calentamiento del caché post-deploy para evitar un
+  cold-start que impacta en latencia.
+
+🔴 RED FLAGS:
+  · "Configuro sticky sessions y listo." (sin entender por qué no es suficiente)
+  · No identifica el problema de sesiones distribuidas.
+  · "Uso una cookie con toda la información de sesión." (sin mencionar el riesgo
+    de tamaño de cookie y exposición de datos financieros al cliente).
+
+🎯 FOLLOW-UP VERBAL:
+  "Resolviste las sesiones con Redis. Ahora el equipo de seguridad de BTG
+   dice que los datos de portafolio en Redis deben estar cifrados y con TTL
+   máximo de 30 minutos por regulación CMF. Además, si el usuario cierra sesión
+   explícitamente, la sesión en Redis debe invalidarse de inmediato.
+   ¿Cómo implementás esto en Node.js?"
+  → Esperado: cifrado con `crypto` (AES-256) o usando el cifrado en tránsito
+    (TLS entre ECS y ElastiCache) + cifrado en reposo activado en ElastiCache.
+    TTL de 30 minutos con `redis.setex` o configurando el TTL en `connect-redis`.
+    Invalidación en logout: `req.session.destroy()` + `redis.del(sessionId)`
+    explícitamente. Importante: en banca, el logout debe ser inmediato en todos
+    los sistemas — no basta con expirar el cookie en el cliente.
+
+PUNTUACIÓN:
+  ┌─────────┬──────────────────────────────────────────────────────────────────┐
+  │ 0-No apto│ No identifica el problema de estado distribuido.               │
+  │ 1-Básico │ Identifica el problema pero propone solo sticky sessions.       │
+  │ 2-Compet.│ Redis externo + explica por qué sticky sessions no bastan.      │
+  │ 3-Destad.│ Cifrado en Redis + TTL regulatorio CMF + invalidación en logout.│
+  └─────────┴──────────────────────────────────────────────────────────────────┘
+
+
+──────────────────────────────────────────────────────────────────────────────
+Pregunta F-4: Seguridad — JWT almacenado en localStorage (contexto bancario)
+──────────────────────────────────────────────────────────────────────────────
+
+  ENUNCIADO:
+  "Un desarrollador del equipo propone este flujo de autenticación para la SPA
+   React de BTG: el frontend obtiene el JWT del Identity Provider, lo guarda en
+   localStorage, y lo envía en cada request como 'Authorization: Bearer {token}'.
+   ¿Qué problemas de seguridad ves y cómo los corriges? Considera que es un
+   sistema bancario con regulación CMF."
+
+🟢 RESPUESTA MÍNIMA ESPERADA (must-mention):
+  · localStorage es accesible desde cualquier script JavaScript de la página
+    → vulnerable a XSS. Si hay un solo script malicioso (CDN comprometido,
+    XSS en cualquier campo), el token se roba y el atacante puede operar como
+    el usuario.
+  · En banca, el robo de un JWT con acceso a operaciones financieras es
+    catastrófico y debe notificarse a la CMF.
+  · Fix: almacenar el token en una cookie httpOnly + Secure + SameSite=Strict.
+    JavaScript no puede leer cookies httpOnly, eliminando el vector XSS.
+  · El backend debe validar `exp`, `iss` y `aud` del JWT — no basta con que
+    la firma sea válida.
+
+📖 EXPLICACIÓN DE REFERENCIA:
+  La guía OWASP para JWT recomienda explícitamente NO almacenar tokens en
+  localStorage cuando el token da acceso a operaciones sensibles. La alternativa
+  es el patrón BFF (Backend For Frontend) donde el servidor maneja el token en
+  una cookie httpOnly. La SPA no necesita leer el JWT directamente — hace
+  requests autenticadas y el browser envía el cookie automáticamente. Si la SPA
+  necesita datos del usuario (nombre, rol), se obtienen de un endpoint /me que
+  lee el JWT del cookie en el servidor. Para BTG, OWASP ASVS nivel 2 como
+  mínimo es el estándar exigible.
+
+⭐ RESPUESTA DESTACADA:
+  Menciona el patrón BFF (Backend For Frontend) con token exchange. Habla de
+  PKCE para el flujo OAuth2 en SPAs (reemplaza el flujo implícito deprecado).
+  Menciona Content Security Policy (CSP) como defensa en profundidad contra
+  XSS. Habla de token rotation (refresh token rotation) para minimizar el
+  impacto de tokens robados.
+
+🔴 RED FLAGS:
+  · "localStorage está bien si implementamos HTTPS." (HTTPS no protege contra XSS)
+  · No conoce la diferencia entre cookies httpOnly y cookies normales.
+  · "Nunca tuvimos un problema con localStorage en producción." (argumento de
+    ausencia de evidencia).
+  · No menciona validación de claims del JWT en el backend.
+
+🎯 FOLLOW-UP VERBAL:
+  "El equipo dice que si cambian a cookies httpOnly, el flujo de la SPA se
+   rompe porque necesitan leer el token para decodificar el rol del usuario
+   y mostrar el menú correcto. ¿Cómo resolvés esto sin volver a localStorage?"
+  → Esperado: el rol y datos del usuario NO deben venir del token en el
+    cliente. Opciones: 1) endpoint /me que retorna los datos del usuario
+    (el servidor decodifica el JWT del cookie), 2) segunda cookie no-httpOnly
+    solo con datos no sensibles (nombre, rol — sin el JWT), 3) al hacer login
+    exitoso, el servidor retorna en el body del response los datos del usuario
+    (que la SPA guarda en estado de React, no en localStorage).
+
+PUNTUACIÓN:
+  ┌─────────┬──────────────────────────────────────────────────────────────────┐
+  │ 0-No apto│ No identifica XSS como vector o dice que HTTPS protege localStorage│
+  │ 1-Básico │ Identifica el riesgo pero no propone la solución correcta.      │
+  │ 2-Compet.│ Cookie httpOnly + validación de claims + contexto CMF.          │
+  │ 3-Destad.│ BFF pattern + PKCE + CSP + token rotation + solución para el rol│
+  └─────────┴──────────────────────────────────────────────────────────────────┘
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ SECCIÓN 3 — APLICACIÓN PRÁCTICA  (15 min)  | 2 preguntas situacionales
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+──────────────────────────────────────────────────────────────────────────────
+Pregunta P-1: Diseño de migración on-premise → AWS (diseño en vivo)
+──────────────────────────────────────────────────────────────────────────────
+
+  ENUNCIADO (darle papel o pizarrón — DISEÑO EN VIVO):
+  "BTG Pactual tiene una aplicación crítica on-premise: un sistema de gestión
+   de portafolios. Actualmente corre así:
+   · API Node.js Express en un servidor físico en el datacenter de BTG
+   · Frontend React servido como archivos estáticos desde el mismo servidor
+   · Base de datos SQL Server on-premise (tiene stored procedures con lógica
+     de negocio crítica que el equipo no quiere tocar)
+   · Un proceso nocturo que genera reportes PDF a las 2am con alto consumo
+     de CPU (a veces tarda 20-25 minutos)
+
+   Tienes 5 minutos para diseñar en papel la arquitectura AWS target.
+   Explicame tus decisiones mientras dibujás."
+
+  [INSTRUCCIÓN: Mientras el candidato explica, INTERRUMPIR con los follow-ups.
+   No esperar a que termine. Evaluar adaptación en tiempo real.]
+
+🟢 RESPUESTA MÍNIMA ESPERADA (must-mention):
+  · Frontend React: S3 + CloudFront (CDN, no servir estáticos desde EC2/ECS)
+  · Backend Node.js: ECS Fargate (containerizado) detrás de un ALB
+  · BD SQL Server: migrar a RDS SQL Server (lift-and-shift) para no romper
+    stored procedures; AWS DMS para la migración de datos
+  · Proceso de reportes nocturnos: NUNCA en el servidor del API principal —
+    AWS Batch, ECS Scheduled Task, o Step Functions dado que supera los 15 min
+  · VPC con subnets privadas para RDS y ECS; ALB en subnet pública
+  · Secrets Manager para credenciales de BD (nunca en código)
+
+🎯 FOLLOW-UP VERBAL 1 (interrumpir mientras dibuja):
+  "El proceso de reportes tarda hasta 25 minutos. AWS Lambda tiene límite
+   de 15 minutos. ¿Cómo lo resolvés?"
+  → Esperado: AWS Batch (para jobs de cómputo intensivo y larga duración),
+    ECS Task one-off lanzado por EventBridge Scheduler a las 2am, o Step
+    Functions si hay lógica de orquestación. Lambda definitivamente no aplica.
+
+🎯 FOLLOW-UP VERBAL 2 (después del primero):
+  "La BD SQL Server tiene stored procedures con lógica de negocio crítica
+   que el equipo de desarrollo actual no entiende completamente. ¿Qué riesgo
+   tiene esto para la migración y cómo lo manejás?"
+  → Esperado: riesgo altísimo — migrar una caja negra que nadie entiende.
+    Plan: 1) documentar los SPs con reverse engineering antes de migrar,
+    2) crear tests de integración que ejecuten los SPs con datos reales y
+    comparen outputs antes y después de la migración, 3) fase de validación
+    paralela (correr on-premise y RDS en paralelo comparando resultados).
+
+🎯 FOLLOW-UP VERBAL 3 (al final):
+  "Al revisar el repositorio encontrás esto en el archivo config.js:
+     module.exports = { DB_PASSWORD: 'BTG_Prod_2023!', JWT_SECRET: 'btg_key' }
+   ¿Qué hacés?"
+  → Esperado: esto es una vulnerabilidad crítica de seguridad. Pasos:
+    1) rotar INMEDIATAMENTE las credenciales expuestas (no primero migrar),
+    2) mover a AWS Secrets Manager / Parameter Store,
+    3) usar herramientas como git-secrets o truffleHog para auditar todo el
+    historial de git — las credenciales pueden haber estado expuestas por años,
+    4) reportar como incidente de seguridad según política de BTG/CMF.
+    No se puede simplemente borrar el archivo del repo — el historial de git
+    retiene el secreto.
+
+🔴 RED FLAGS:
+  · Propone EC2 en vez de ECS/Fargate para el backend.
+  · No menciona separar el proceso de reportes del servidor del API.
+  · No menciona DMS para migración de datos.
+  · En el follow-up de credenciales: "borro el archivo y hago commit." (el
+    historial de git sigue teniendo el secreto).
+
+PUNTUACIÓN:
+  ┌─────────┬──────────────────────────────────────────────────────────────────┐
+  │ 0-No apto│ Propone EC2 monolítico o no sabe separar la arquitectura.       │
+  │ 1-Básico │ Arquitectura básica pero no maneja ninguno de los 3 follow-ups. │
+  │ 2-Compet.│ S3+CF, ECS, RDS SQL, Batch para reportes + responde follow-ups. │
+  │ 3-Destad.│ Menciona DMS, plan de validación de SPs, rotación + git history │
+  │          │ en credenciales, documentación antes de migrar caja negra.      │
+  └─────────┴──────────────────────────────────────────────────────────────────┘
+
+
+──────────────────────────────────────────────────────────────────────────────
+Pregunta P-2: Incident response — API Gateway con 45% de errores en horario
+              bursátil de BTG
+──────────────────────────────────────────────────────────────────────────────
+
+  ENUNCIADO:
+  "Son las 10:15am de un martes — horario de alta operación bursátil. CloudWatch
+   muestra que la tasa de errores del API Gateway pasó de 0.5% a 45% hace 12
+   minutos. Las tasks de ECS están healthy. No hay errores en los logs del
+   servicio Node.js. No hubo deploy en las últimas 6 horas. ¿Cuál es tu plan
+   de acción inmediato como Tech Lead?"
+
+🟢 RESPUESTA MÍNIMA ESPERADA (must-mention):
+  · El backend sano + API GW con errores = el problema está entre API GW y ECS,
+    o en el propio API GW.
+  · Revisar métricas específicas de API GW: tipo de error (4XX vs 5XX),
+    IntegrationLatency, Count por ruta.
+  · Causas a evaluar: throttling (quota del API GW alcanzada), timeout de
+    integración, WAF bloqueando requests masivamente, security group/Network
+    ACL que cortó el tráfico entre API GW y el ALB.
+  · En banca: notificar al equipo de negocio con impacto estimado ANTES de
+    hacer cualquier cambio en producción. No tocar producción a ciegas.
+
+📖 EXPLICACIÓN DE REFERENCIA:
+  API Gateway en AWS tiene su propio conjunto de métricas independiente del
+  backend: `5XXError` (errores del backend o timeout de integración), `4XXError`
+  (throttling, authn/authz), `IntegrationLatency` (tiempo que tarda el backend
+  en responder), `Latency` (tiempo total incluyendo procesamiento de API GW).
+  Un 45% de errores con backend healthy generalmente apunta a timeout de
+  integración (backend lento que supera los 29 segundos por defecto) o a
+  throttling. El primer paso es siempre diagnosticar antes de actuar —
+  especialmente en sistemas financieros donde un cambio equivocado puede
+  empeorar el impacto.
+
+⭐ RESPUESTA DESTACADA:
+  Propone usar AWS X-Ray para trazar las requests fallidas end-to-end y
+  encontrar exactamente dónde está la latencia. Habla de CloudWatch Logs Insights
+  para hacer queries sobre los logs del API GW y filtrar por rutas afectadas.
+  Menciona que en BTG habría que activar el runbook de incidentes y escalar
+  según la matriz de criticidad.
+
+🔴 RED FLAGS:
+  · "Reinicio las tasks de ECS." (primera acción destructiva sin diagnóstico)
+  · No sabe que API Gateway tiene métricas propias independientes del backend.
+  · "Reviso los logs del servicio Node.js." (ya se dijo que no hay errores ahí)
+
+🎯 FOLLOW-UP VERBAL:
+  "Las métricas de API Gateway muestran 5XXError=45% con IntegrationLatency
+   promedio de 29.4 segundos. ¿Qué está pasando exactamente?"
+  → Esperado: IntegrationLatency de ~29.4s es sospechosamente cercano al
+    límite de timeout de integración de API Gateway que por defecto son 29
+    segundos. El backend tarda más de 29s en responder → API GW corta la
+    conexión y devuelve 504 Gateway Timeout. Causas probables: una query
+    lenta en RDS (lock de tabla, índice caído, autovacuum corriendo en tabla
+    caliente), o una llamada a un servicio externo (pricing, custodio) que se
+    cayó y el timeout del backend es mayor a 29s. Diagnóstico: CloudWatch
+    Logs Insights en RDS para queries lentas, revisar métricas de la BD.
+
+PUNTUACIÓN:
+  ┌─────────┬──────────────────────────────────────────────────────────────────┐
+  │ 0-No apto│ Reinicia ECS sin diagnóstico previo.                           │
+  │ 1-Básico │ Revisa métricas pero no sabe interpretar IntegrationLatency.   │
+  │ 2-Compet.│ Diferencia métricas API GW vs backend + interpreta el 29.4s.  │
+  │ 3-Destad.│ X-Ray + Logs Insights + runbook de incidentes + escala a negocio│
+  └─────────┴──────────────────────────────────────────────────────────────────┘
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ SECCIÓN 4 — PROFUNDIDAD TÉCNICA  (10 min)  | 2 preguntas avanzadas
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+──────────────────────────────────────────────────────────────────────────────
+Pregunta A-1: CI/CD — rollback y reconciliación en producción bancaria
+──────────────────────────────────────────────────────────────────────────────
+
+  ENUNCIADO:
+  "Tu equipo hizo un deploy a las 3pm usando rolling update en ECS. A las 3:15pm,
+   el monitoreo muestra que el 6% de las requests de transferencias retorna 422
+   Unprocessable Entity. El deploy usó rolling update (no blue/green). ¿Cuál es
+   tu secuencia de acciones como Tech Lead?"
+
+🟢 RESPUESTA MÍNIMA ESPERADA (must-mention):
+  · Acción inmediata: rollback a la versión anterior del task definition en ECS
+    (no esperar a diagnosticar la causa — primero restaurar el servicio).
+  · Verificar si las transacciones con error 422 fueron procesadas parcialmente
+    o no — en un banco, un 422 podría significar que la validación falló pero
+    la operación se ejecutó parcialmente en algún sistema downstream.
+  · Rolling update es riesgoso para cambios de contrato de API — blue/green
+    deployment permite rollback instantáneo.
+  · El 6% de errores puede ser el 100% de un tipo específico de operación —
+    segmentar por tipo antes de comunicar al negocio.
+
+📖 EXPLICACIÓN DE REFERENCIA:
+  En sistemas financieros, el orden correcto ante un incidente de deploy es:
+  1) restaurar el servicio (rollback), 2) evaluar el impacto (cuántas
+  operaciones, qué tipo, están reconciliadas), 3) comunicar al negocio con
+  datos concretos, 4) diagnosticar la causa raíz en ambiente no-productivo,
+  5) preparar el fix con testing exhaustivo, 6) volver a deployar con blue/green
+  y monitoreo intensivo los primeros 15 minutos. El rollback en ECS es cambiar
+  el task definition a la versión anterior — tarda 2-3 minutos con rolling update.
+
+⭐ RESPUESTA DESTACADA:
+  Menciona la necesidad de idempotency keys en operaciones financieras para
+  poder reintentar transacciones fallidas sin doble procesamiento. Propone un
+  proceso de reconciliación: query a la BD para identificar transacciones en
+  estado PENDING o en estado inconsistente durante la ventana del incidente.
+  Habla de la obligación de reportar incidentes a la CMF si hay impacto en
+  clientes de más de X minutos (umbral regulatorio).
+
+🔴 RED FLAGS:
+  · "Diagnostico la causa antes de hacer rollback." (en banca, primero se
+    restaura el servicio, luego se diagnostica)
+  · No entiende la diferencia entre rolling update y blue/green para rollback.
+  · No considera las transacciones que pueden haber quedado en estado ambiguo.
+  · "El 422 significa que la request fue inválida, no hay impacto real."
+    (en banca, hay que verificar — no asumir)
+
+🎯 FOLLOW-UP VERBAL:
+  "El rollback tardó 9 minutos. En ese tiempo hubo 280 transferencias con
+   error 422. ¿Cómo determinás si esas transferencias se procesaron o no,
+   y cómo informás al equipo de negocio de BTG?"
+  → Esperado: consultar la tabla de transacciones buscando las 280 por
+    timestamp de la ventana de incidente. Revisar el estado: COMPLETED
+    (procesadas), FAILED (no procesadas), PENDING (ambiguo — requieren
+    reconciliación manual o automática). Informar al negocio con número
+    exacto desglosado: X completadas, Y fallidas sin impacto, Z en estado
+    ambiguo que requieren revisión manual. No comunicar estimaciones.
+
+PUNTUACIÓN:
+  ┌─────────┬──────────────────────────────────────────────────────────────────┐
+  │ 0-No apto│ Diagnostica primero o no considera transacciones afectadas.    │
+  │ 1-Básico │ Hace rollback pero no considera reconciliación ni comunicación. │
+  │ 2-Compet.│ Rollback → reconciliación → comunicación concreta al negocio.  │
+  │ 3-Destad.│ Agrega idempotency keys, reporte CMF, blue/green para el futuro│
+  └─────────┴──────────────────────────────────────────────────────────────────┘
+
+
+──────────────────────────────────────────────────────────────────────────────
+Pregunta A-2: Liderazgo técnico — NestJS vs Express con restricción de plazo
+──────────────────────────────────────────────────────────────────────────────
+
+  ENUNCIADO:
+  "El equipo usa Express puro en Node.js. Para un nuevo módulo de gestión de
+   cuentas, un desarrollador senior propone migrar a NestJS. El equipo tiene
+   2 seniors que conocen NestJS y 3 juniors que nunca lo han visto. La jefatura
+   (Tamara Escobar) quiere el módulo completo en 6 semanas. Tú eres el Tech Lead.
+   ¿Qué decidís y cómo lo comunicás a ambos lados?"
+
+🟢 RESPUESTA MÍNIMA ESPERADA (must-mention):
+  · No es solo una decisión técnica — hay un componente de equipo (5/5 deben
+    poder trabajar en el módulo, no solo 2) y de negocio (plazo de 6 semanas).
+  · La curva de aprendizaje de NestJS para 3 juniors en 6 semanas es riesgo
+    real de plazo.
+  · Si se elige NestJS: el alcance del módulo debe reducirse o el plazo debe
+    extenderse — no se puede tener todo a la vez.
+  · Si se elige Express: establecer un plan de migración gradual con fechas.
+    No rechazar NestJS permanentemente, solo diferirlo con un plan concreto.
+  · La decisión se comunica al senior con argumento técnico-de-equipo (no como
+    un NO sin fundamento) y a la jefatura con las opciones y sus trade-offs
+    (no ocultarle el riesgo).
+
+📖 EXPLICACIÓN DE REFERENCIA:
+  Un buen Tech Lead no toma decisiones técnicas en el vacío — considera el
+  contexto del equipo y del negocio. La decisión correcta aquí no es
+  "NestJS sí" ni "NestJS no" — es gestionar las variables. Opciones reales:
+  1) Express para este módulo + plan de migración post-entrega documentado,
+  2) NestJS con alcance reducido negociado con la jefatura,
+  3) NestJS con los 2 seniors de "dueños técnicos" y los 3 juniors en modo
+  aprendizaje supervisado, ajustando la velocidad esperada. La opción peor
+  es comprometerse con 6 semanas + NestJS + alcance completo sin negociar nada.
+
+⭐ RESPUESTA DESTACADA:
+  Propone hacer un spike de 2 días con NestJS antes de decidir, para que los
+  3 juniors evalúen su propia curva de aprendizaje. Habla de cómo comunicar
+  riesgos técnicos a una jefatura que "no es exigente en competencias técnicas"
+  — traducir el riesgo a lenguaje de negocio: "si usamos NestJS sin ajustar
+  el plazo, hay un 60% de probabilidad de entregar con deuda técnica alta que
+  requerirá refactorización en los próximos 2 meses."
+
+🔴 RED FLAGS:
+  · "Uso NestJS — es técnicamente superior y el equipo se adapta." (ignora
+    el riesgo de plazo sin gestionarlo)
+  · "Mantengo Express — NestJS es para otro momento." (sin plan ni fecha)
+  · No menciona negociar el alcance o el plazo con la jefatura.
+  · Toma la decisión solo sin involucrar al equipo.
+
+🎯 FOLLOW-UP VERBAL:
+  "Elegiste Express para este módulo y lo comunicaste. El senior que propuso
+   NestJS está molesto y siente que su criterio técnico no fue valorado.
+   ¿Cómo lo manejás?"
+  → Esperado: 1) tener una conversación 1-1 explicando el razonamiento
+    (no fue un rechazo a su idea, fue una gestión de riesgo con el plazo
+    actual), 2) comprometerlo como líder del plan de migración a NestJS —
+    él define la hoja de ruta, 3) documentar la decisión con fecha de revisión.
+    El senior debe salir de la conversación con agencia, no con una derrota.
+
+PUNTUACIÓN:
+  ┌─────────┬──────────────────────────────────────────────────────────────────┐
+  │ 0-No apto│ Decide sin considerar equipo/plazo o no sabe comunicar al equipo│
+  │ 1-Básico │ Hace la decisión correcta pero no sabe manejar el follow-up.   │
+  │ 2-Compet.│ Balancea técnica + equipo + plazo + comunica con trade-offs.   │
+  │ 3-Destad.│ Propone spike + lenguaje de negocio para jefatura + 1-1 con    │
+  │          │ el senior afectado convirtiendo su molestia en liderazgo.      │
+  └─────────┴──────────────────────────────────────────────────────────────────┘
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ SECCIÓN 5 — CODE CHALLENGE  (10 min)  | Sin IDE, sin IA, sin internet
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  INSTRUCCIÓN: Mostrar el código al candidato. Pedir que identifique los bugs
+  sin decir cuántos son. Si los encuentra todos rápido, pedir que reescriba el
+  endpoint correcto de memoria en papel SIN ver el original.
+
+──────────────────────────────────────────────────────────────────────────────
+Código a analizar (Node.js/Express — endpoint de consulta de saldo):
+──────────────────────────────────────────────────────────────────────────────
+
+  const express = require('express');
+  const jwt     = require('jsonwebtoken');
+  const db      = require('./db');
+
+  const router = express.Router();
+  const SECRET = 'btg_secret_2024';  // ← (1)
+
+  router.get('/account/:id/balance', async (req, res) => {
+    const token = req.headers['authorization'];  // ← (2)
+
+    try {
+      jwt.verify(token, SECRET);
+    } catch (e) {
+      return res.status(401).json({ error: 'unauthorized' });
+    }
+
+    const { id } = req.params;
+
+    const result = await db.query(
+      `SELECT balance FROM accounts WHERE account_id = '${id}'`  // ← (3)
+    );
+
+    if (!result.rows.length) {
+      return res.status(404).json({ error: 'account not found' });
+    }
+
+    res.json({ balance: result.rows[0].balance });  // ← (4)
+  });
+
+──────────────────────────────────────────────────────────────────────────────
+BUGS ESPERADOS (el candidato debe encontrarlos):
+──────────────────────────────────────────────────────────────────────────────
+
+BUG 1 — SECRET hardcodeado en código fuente (CRÍTICO — bancario)
+  `const SECRET = 'btg_secret_2024'` está en el código → en el repositorio
+  Git → cualquier persona con acceso al repo puede falsificar tokens.
+  En BTG (banca regulada CMF), esto es un incidente de seguridad reportable.
+  Fix: `const SECRET = process.env.JWT_SECRET;` gestionado con Secrets Manager.
+
+BUG 2 — Token mal extraído del header (bug de producción)
+  `req.headers['authorization']` retorna "Bearer eyJhbGci..." (con prefijo).
+  `jwt.verify("Bearer eyJ...", SECRET)` falla siempre con
+  JsonWebTokenError: jwt malformed → todos los usuarios ven 401 en producción.
+  Fix: `const token = req.headers['authorization']?.split(' ')[1];`
+  Además: validar que `token` exista antes de llamar a `jwt.verify`.
+
+BUG 3 — SQL Injection (CRÍTICO — bancario)
+  Concatenación directa de `id` en la query SQL.
+  Un atacante envía como :id el valor: `' OR '1'='1` → retorna todos los
+  saldos. O peor: `'; DROP TABLE accounts; --`
+  En un banco, esto expone saldos de todos los clientes — regulación CMF
+  obliga a notificar el breach en 72 horas.
+  Fix: usar query parametrizada: `db.query('SELECT ... WHERE account_id = $1', [id])`
+
+BUG 4 — Authorization sin verificar (CRÍTICO — lógica de negocio)
+  `jwt.verify(token, SECRET)` confirma que el token es válido pero NO verifica
+  que el usuario del token tiene permiso para ver la cuenta `:id`.
+  Un usuario autenticado puede ver el saldo de CUALQUIER cuenta cambiando el
+  :id en la URL (Broken Object Level Authorization — BOLA, OWASP API #1).
+  Fix: extraer `accountId` o `sub` del payload del JWT y verificar que coincide
+  con el `id` del path:
+    const payload = jwt.verify(token, SECRET);
+    if (payload.accountId !== id) return res.status(403).json({...});
+
+──────────────────────────────────────────────────────────────────────────────
+VERSIÓN CORREGIDA (referencia para el entrevistador):
+──────────────────────────────────────────────────────────────────────────────
+
+  const SECRET = process.env.JWT_SECRET;
+
+  router.get('/account/:id/balance', async (req, res) => {
+    const authHeader = req.headers['authorization'];
+    const token = authHeader?.split(' ')[1];
+
+    if (!token) {
+      return res.status(401).json({ error: 'unauthorized' });
+    }
+
+    let payload;
+    try {
+      payload = jwt.verify(token, SECRET);
+    } catch (e) {
+      return res.status(401).json({ error: 'unauthorized' });
+    }
+
+    const { id } = req.params;
+
+    if (payload.accountId !== id) {
+      return res.status(403).json({ error: 'forbidden' });
+    }
+
+    const result = await db.query(
+      'SELECT balance FROM accounts WHERE account_id = $1',
+      [id]
+    );
+
+    if (!result.rows.length) {
+      return res.status(404).json({ error: 'account not found' });
+    }
+
+    res.json({ balance: result.rows[0].balance });
+  });
+
+PUNTUACIÓN:
+  ┌─────────┬──────────────────────────────────────────────────────────────────┐
+  │ 0-No apto│ No identifica SQL injection o BOLA (los dos más críticos).     │
+  │ 1-Básico │ Identifica SQL injection + 1 bug más.                           │
+  │ 2-Compet.│ Los 4 bugs identificados con explicación del impacto en banca. │
+  │ 3-Destad.│ 4 bugs + reescribe el handler correcto de memoria + menciona   │
+  │          │ contexto OWASP API Top 10 (BOLA = API Security #1).             │
+  └─────────┴──────────────────────────────────────────────────────────────────┘
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ SECCIÓN 6 — SCORECARD RESUMEN
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  Candidato: _______________________________________  Fecha: _______________
+  Entrevistador: __________________________________
+
+  ┌───────┬───────────────────────────────────────────────────┬────┬────────┐
+  │ Cód.  │ Pregunta                                          │Max │ Score  │
+  ├───────┼───────────────────────────────────────────────────┼────┼────────┤
+  │ F-1   │ Memory leak Node.js (heap dump + diagnóstico)     │  3 │        │
+  │ F-2   │ Stale closure en custom hook React                │  3 │        │
+  │ F-3   │ Estado en memoria → ECS multi-réplica             │  3 │        │
+  │ F-4   │ JWT en localStorage — seguridad bancaria (CMF)    │  3 │        │
+  ├───────┼───────────────────────────────────────────────────┼────┼────────┤
+  │ P-1   │ Diseño migración on-premise → AWS (en vivo)       │  3 │        │
+  │ P-2   │ Incident response — API GW 45% errores horario    │  3 │        │
+  │       │ bursátil                                          │    │        │
+  ├───────┼───────────────────────────────────────────────────┼────┼────────┤
+  │ A-1   │ Rollback + reconciliación de transacciones        │  3 │        │
+  │ A-2   │ Liderazgo: NestJS vs Express con restricción      │  3 │        │
+  │       │ de plazo y equipo mixto                           │    │        │
+  ├───────┼───────────────────────────────────────────────────┼────┼────────┤
+  │ CC-1  │ Code review Node.js (4 bugs de seguridad)         │  3 │        │
+  ├───────┼───────────────────────────────────────────────────┼────┼────────┤
+  │       │ TOTAL                                             │ 27 │        │
+  └───────┴───────────────────────────────────────────────────┴────┴────────┘
+
+  UMBRALES DE APROBACIÓN — SEMI SENIOR CON PERFIL TECH LEAD:
+  ┌─────────────────────────────────┬─────────────────────────────────────────┐
+  │ ≥ 20/27 (74%)                   │ AVANZA — perfil alineado al nivel        │
+  │ 15-19/27 (56%–70%)              │ CONSIDERA — segunda instancia técnica    │
+  │ < 15/27                         │ NO AVANZA                                │
+  └─────────────────────────────────┴─────────────────────────────────────────┘
+
+  CONDICIONES BLOQUEANTES (score = 0 en alguna → NO AVANZA independiente del
+  total):
+  · CC-1: no identifica SQL injection en código bancario.
+  · CC-1: no identifica BOLA (acceso a cuenta de otro usuario).
+  · F-4: dice que localStorage es seguro si se usa HTTPS.
+  · P-1 follow-up 3: dice "borro el archivo y hago commit" para resolver
+    credenciales expuestas (demuestra desconocimiento del problema de git history).
+
+  Observaciones adicionales del entrevistador:
+  ___________________________________________________________________________
+  ___________________________________________________________________________
+  ___________________________________________________________________________
+
+  Señales de uso de IA durante la entrevista (marcar si aplica):
+  [ ] Respuestas perfectamente estructuradas sin anécdota o error personal
+  [ ] En diagnóstico, lista hipótesis en orden académico ("primero verificaría
+      A, luego B, luego C") en vez de "lo primero que haría es..."
+  [ ] En liderazgo (A-2), respuesta de manual agile sin fricción ni trade-offs
+  [ ] Pausa larga + cambio de registro al recibir follow-ups verbales
+  [ ] No puede extenderse cuando se le pide el "por qué" de su respuesta
+
+  Recomendación final:
+  [ ] AVANZA      [ ] SEGUNDA INSTANCIA      [ ] NO AVANZA
+
+  Firma entrevistador: _____________________
+
+================================================================================
+Generado por TechChallenge Architect — ACL Chile | 2026-06-10
+Diseño anti-IA aplicado. Prohibida distribución al candidato.
+================================================================================
