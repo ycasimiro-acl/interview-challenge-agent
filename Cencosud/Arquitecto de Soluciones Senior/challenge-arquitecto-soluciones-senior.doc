@@ -1,0 +1,331 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">
+<head>
+<meta charset="utf-8">
+<title>Challenge - Arquitecto de Soluciones Senior</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; color: #1a1a1a; line-height: 1.45; }
+h1 { font-size: 20pt; color: #0b3d6b; border-bottom: 3px solid #0b3d6b; padding-bottom: 6px; }
+h2 { font-size: 15pt; color: #0b3d6b; margin-top: 26px; border-bottom: 1px solid #c9c9c9; padding-bottom: 3px; }
+h3 { font-size: 12.5pt; color: #14507f; margin-top: 20px; }
+table { border-collapse: collapse; width: 100%; margin: 8px 0; }
+th, td { border: 1px solid #bcbcbc; padding: 6px 9px; text-align: left; vertical-align: top; font-size: 10.5pt; }
+th { background: #0b3d6b; color: #fff; }
+.meta th { background: #eef3f8; color: #0b3d6b; width: 28%; }
+blockquote { background: #f4f7fb; border-left: 4px solid #0b3d6b; margin: 8px 0; padding: 8px 14px; font-style: italic; }
+.must { color: #1c7c3c; font-weight: bold; }
+.ref { color: #14507f; font-weight: bold; }
+.star { color: #b8860b; font-weight: bold; }
+.red { color: #b3261e; font-weight: bold; }
+ul { margin: 4px 0 10px 0; }
+li { margin-bottom: 3px; }
+.hr { border-top: 2px dashed #c9c9c9; margin: 22px 0; }
+.tag { display: inline-block; background: #eef3f8; color: #0b3d6b; border: 1px solid #b8cbe0; border-radius: 4px; padding: 1px 8px; font-size: 9pt; margin-right: 4px; }
+</style>
+</head>
+<body>
+
+<h1>Challenge Técnico — Arquitecto de Soluciones Senior</h1>
+
+<table class="meta">
+<tr><th>Cliente</th><td>Cencosud</td></tr>
+<tr><th>Puesto</th><td>Arquitecto de Soluciones Senior</td></tr>
+<tr><th>Seniority</th><td>Senior</td></tr>
+<tr><th>Stack / Dominio</th><td>AWS (Lambda, S3, Step Functions, API Gateway, EventBridge, DynamoDB), patrones de integración (REST, eventos, files/SFTP), middleware y buses de eventos, microservicios, Amazon Redshift + ETL/ELT, seguridad y cumplimiento, CI/CD &amp; DevOps, modelado (C4, BPMN). Deseable: CRM / Customer Service.</td></tr>
+<tr><th>Modalidad</th><td>Teórico</td></tr>
+<tr><th>Duración estimada</th><td>45 minutos</td></tr>
+<tr><th>Contexto del rol</th><td>Liderar levantamiento, diseño y validación de arquitecturas de integración en retail (sistemas core, middleware, SaaS) en entornos híbridos cloud / on-premise. Fuerte componente de liderazgo técnico y gestión de stakeholders.</td></tr>
+<tr><th>Fecha de generación</th><td>24-06-2026</td></tr>
+</table>
+
+<p><span class="tag">Warm-up 5'</span><span class="tag">Fundamentos 12'</span><span class="tag">Aplicación 14'</span><span class="tag">Profundidad 14'</span></p>
+
+<!-- ============================================================ -->
+<h2>1. Warm-up (5 min) — no evaluable</h2>
+<p>Objetivo: romper el hielo y ubicar la experiencia real del candidato. No puntúa, pero permite calibrar el resto de la conversación.</p>
+
+<p><b>W1.</b> Cuéntame de la arquitectura de integración más compleja que hayas liderado de punta a punta. ¿Cuál era el problema de negocio, qué sistemas conectaba (core, SaaS, legacy) y cuál fue tu rol concreto en el diseño y la validación?</p>
+
+<p><b>W2.</b> En tu experiencia liderando equipos técnicos y workshops de discovery, ¿cómo logras que stakeholders de negocio y de TI lleguen a una definición común de requisitos funcionales y no funcionales? Dame un ejemplo en que negocio y tecnología tenían expectativas distintas.</p>
+
+<div class="hr"></div>
+
+<!-- ============================================================ -->
+<h2>2. Fundamentos (12 min)</h2>
+
+<h3>Pregunta 1: Patrones de integración — cuándo síncrono, cuándo asíncrono</h3>
+<blockquote><b>Enunciado:</b> En un ecosistema retail conviven APIs REST, eventos, archivos batch y SFTP. ¿Cómo decides qué patrón de integración usar para un caso dado? Dame criterios concretos y un ejemplo de cada uno en un escenario de retail (ej.: catálogo, stock, ventas, facturación).</blockquote>
+
+<p><span class="must">🟢 Respuesta mínima esperada (must-mention):</span></p>
+<ul>
+<li>Distingue integración <b>síncrona (request/response, REST)</b> de <b>asíncrona (eventos / mensajería)</b> y el criterio de acoplamiento temporal.</li>
+<li>Reconoce que <b>batch / files / SFTP</b> sigue siendo válido para grandes volúmenes, cargas nocturnas o partners legacy.</li>
+<li>Menciona criterios de selección: latencia/tiempo real, volumen, consistencia, acoplamiento, capacidad del sistema contraparte, idempotencia.</li>
+</ul>
+
+<p><span class="ref">📖 Explicación de referencia (buenas prácticas):</span></p>
+<p>La elección no es de moda sino de requisitos no funcionales. Síncrono (API Gateway + REST) cuando se necesita respuesta inmediata y el consumidor no puede continuar sin el dato (ej.: consulta de stock en el checkout). Asíncrono por eventos (EventBridge / SNS / SQS / Kafka) cuando se busca desacoplar productores y consumidores, absorber picos y permitir múltiples suscriptores (ej.: "venta confirmada" que dispara facturación, fidelización y reposición). Batch/SFTP cuando el partner no expone APIs, el volumen es masivo o la ventana es nocturna (ej.: catálogo de proveedores). Lo correcto es combinarlos y aislar a los sistemas legacy detrás de una capa de integración (middleware / anti-corruption layer).</p>
+
+<p><span class="star">⭐ Respuesta destacada:</span></p>
+<p>Habla de <b>idempotencia</b> y de claves de deduplicación, de <b>contratos</b> (OpenAPI / schema registry de eventos) y versionado, de entrega <b>at-least-once</b> vs <b>exactly-once</b> y sus implicancias. Introduce el patrón <b>outbox transaccional</b> para no perder eventos, y discute observabilidad de extremo a extremo (correlation id) sobre flujos mixtos.</p>
+
+<p><span class="red">🔴 Red flags:</span></p>
+<ul>
+<li>"Todo debería ser REST" o "todo debería ser eventos" sin criterios.</li>
+<li>No distingue acoplamiento temporal ni considera al sistema contraparte.</li>
+<li>Descarta batch/SFTP como "obsoleto" sin entender la realidad de integración con legacy/proveedores.</li>
+</ul>
+
+<table>
+<tr><th>Nivel</th><th>Criterio</th></tr>
+<tr><td>0 — No apto</td><td>No diferencia patrones o los elige por preferencia personal.</td></tr>
+<tr><td>1 — Básico</td><td>Distingue síncrono/asíncrono pero sin criterios de selección claros.</td></tr>
+<tr><td>2 — Competente</td><td>Da criterios concretos y ejemplos de retail correctos para cada patrón.</td></tr>
+<tr><td>3 — Destacado</td><td>Agrega idempotencia, contratos/versionado, outbox y observabilidad end-to-end.</td></tr>
+</table>
+
+<h3>Pregunta 2: Servicios serverless de AWS y su rol en una arquitectura de integración</h3>
+<blockquote><b>Enunciado:</b> Para los servicios AWS del stack (Lambda, S3, Step Functions, API Gateway, EventBridge, DynamoDB), explícame brevemente qué problema resuelve cada uno y cómo los combinarías en un flujo de integración orientado a eventos. ¿Cuándo usarías Step Functions en lugar de orquestar con Lambdas encadenadas?</blockquote>
+
+<p><span class="must">🟢 Respuesta mínima esperada (must-mention):</span></p>
+<ul>
+<li>Rol correcto de cada servicio: <b>API Gateway</b> (entrada/exposición de APIs), <b>Lambda</b> (cómputo event-driven), <b>EventBridge</b> (bus de eventos/routing), <b>S3</b> (almacenamiento/landing de files), <b>DynamoDB</b> (estado NoSQL baja latencia), <b>Step Functions</b> (orquestación de workflows).</li>
+<li>Diferencia <b>orquestación</b> (Step Functions) de <b>coreografía</b> (eventos vía EventBridge).</li>
+<li>Justifica Step Functions cuando hay estado, reintentos, manejo de errores, ramas y procesos de larga duración.</li>
+</ul>
+
+<p><span class="ref">📖 Explicación de referencia (buenas prácticas):</span></p>
+<p>Un flujo típico: API Gateway recibe la petición → Lambda valida y publica un evento en EventBridge → reglas enrutan a distintos consumidores (Lambdas, colas SQS, Step Functions). S3 sirve como landing zone para ingestas de archivos (con notificación a EventBridge/Lambda); DynamoDB guarda estado de baja latencia y alta escala. <b>Step Functions</b> es preferible a encadenar Lambdas a mano cuando el proceso tiene múltiples pasos con manejo explícito de errores, reintentos con backoff, ramas condicionales, paralelismo o esperas largas (saga/orquestación): hace el flujo visible, auditable y mantenible, evitando el "Lambda pinball" (Lambdas que se invocan entre sí sin trazabilidad).</p>
+
+<p><span class="star">⭐ Respuesta destacada:</span></p>
+<p>Distingue <b>Standard vs Express Workflows</b> en Step Functions (duración/costo/idempotencia), menciona límites (payload de Lambda, timeouts, throttling), patrón de <b>colas SQS + DLQ</b> para resiliencia entre Lambda y consumidores, y el patrón <b>Saga</b> para transacciones distribuidas con compensaciones. Menciona costo y cold starts como criterios de diseño.</p>
+
+<p><span class="red">🔴 Red flags:</span></p>
+<ul>
+<li>Confunde EventBridge con un simple SQS o no distingue bus de eventos de cola.</li>
+<li>Encadena Lambdas para todo sin considerar orquestación ni trazabilidad.</li>
+<li>Usa DynamoDB como si fuera relacional (joins, queries ad-hoc) sin modelar por patrones de acceso.</li>
+</ul>
+
+<table>
+<tr><th>Nivel</th><th>Criterio</th></tr>
+<tr><td>0 — No apto</td><td>No conoce el rol de la mayoría de los servicios.</td></tr>
+<tr><td>1 — Básico</td><td>Describe servicios aislados pero no los combina en un flujo coherente.</td></tr>
+<tr><td>2 — Competente</td><td>Arma un flujo event-driven correcto y justifica Step Functions vs Lambdas.</td></tr>
+<tr><td>3 — Destacado</td><td>Standard/Express, SQS+DLQ, Saga, límites, costo y cold starts.</td></tr>
+</table>
+
+<h3>Pregunta 3: Datos analíticos — Redshift y ETL/ELT</h3>
+<blockquote><b>Enunciado:</b> Necesitas consolidar ventas, stock y datos de clientes de múltiples sistemas en Amazon Redshift para análisis. ¿ETL o ELT? ¿Cómo diseñarías el esquema y la ingesta para que el análisis sea performante y los datos consistentes?</blockquote>
+
+<p><span class="must">🟢 Respuesta mínima esperada (must-mention):</span></p>
+<ul>
+<li>Diferencia <b>ETL vs ELT</b> y por qué en un MPP/cloud como Redshift suele preferirse <b>ELT</b> (transformar dentro del warehouse).</li>
+<li>Menciona <b>modelado dimensional</b> (esquema estrella/copo de nieve, hechos y dimensiones) para análisis.</li>
+<li>Habla de claves de distribución y ordenamiento de Redshift (<b>DISTKEY / SORTKEY</b>) y de carga eficiente (COPY desde S3, no inserts fila a fila).</li>
+</ul>
+
+<p><span class="ref">📖 Explicación de referencia (buenas prácticas):</span></p>
+<p>El patrón moderno es ELT: aterrizar datos crudos en S3 (data lake / staging) y cargarlos a Redshift con <b>COPY</b>, transformando luego con SQL/dbt dentro del warehouse para aprovechar el motor MPP. El modelo analítico se diseña dimensionalmente (tablas de hechos de ventas/stock + dimensiones cliente, producto, tienda, tiempo). El rendimiento depende de elegir bien <b>DISTKEY</b> (para colocalizar joins frecuentes), <b>SORTKEY</b> (para filtros por fecha/rango) y de mantener estadísticas (ANALYZE/VACUUM o gestión automática). La consistencia se asegura con cargas idempotentes, control de duplicados, manejo de late-arriving data y validaciones de calidad.</p>
+
+<p><span class="star">⭐ Respuesta destacada:</span></p>
+<p>Menciona arquitectura <b>medallion (bronze/silver/gold)</b> o lakehouse, <b>Redshift Spectrum</b> para consultar S3 sin cargar, SCD (slowly changing dimensions) para historizar clientes, y separación de cómputo/almacenamiento (RA3). Discute gobierno y linaje de datos, y trade-off entre data lake y warehouse según el caso de uso.</p>
+
+<p><span class="red">🔴 Red flags:</span></p>
+<ul>
+<li>Trata a Redshift como una base transaccional OLTP.</li>
+<li>Propone inserts fila a fila o no conoce COPY desde S3.</li>
+<li>No menciona modelado para análisis ni claves de distribución/orden.</li>
+</ul>
+
+<table>
+<tr><th>Nivel</th><th>Criterio</th></tr>
+<tr><td>0 — No apto</td><td>Confunde analítico con transaccional; sin noción de modelado.</td></tr>
+<tr><td>1 — Básico</td><td>Conoce ETL/ELT a alto nivel pero no el diseño en Redshift.</td></tr>
+<tr><td>2 — Competente</td><td>ELT, modelado dimensional, COPY y DISTKEY/SORTKEY.</td></tr>
+<tr><td>3 — Destacado</td><td>Medallion/lakehouse, Spectrum, SCD, RA3 y gobierno de datos.</td></tr>
+</table>
+
+<div class="hr"></div>
+
+<!-- ============================================================ -->
+<h2>3. Aplicación práctica (14 min)</h2>
+
+<h3>Pregunta 4: Diseño de una integración híbrida core ↔ SaaS (caso retail)</h3>
+<blockquote><b>Enunciado:</b> Un sistema core <i>on-premise</i> (ERP de inventario) debe sincronizarse en near-real-time con una plataforma SaaS de e-commerce en la nube, y además alimentar Redshift para reporting. El core solo expone una base de datos y archivos; el SaaS expone APIs REST con rate limits. Diséñame la arquitectura de extremo a extremo: ¿qué componentes, qué patrones de integración, cómo manejas el entorno híbrido y la conectividad?</blockquote>
+
+<p><span class="must">🟢 Respuesta mínima esperada (must-mention):</span></p>
+<ul>
+<li>Una <b>capa de integración / middleware</b> que aísle el legacy (anti-corruption layer); no acoplar el SaaS directo al core.</li>
+<li>Mecanismo de <b>captura de cambios</b> del core (CDC, outbox, o extracción de archivos a S3) y publicación a un bus de eventos.</li>
+<li>Manejo de los <b>rate limits</b> del SaaS: colas (SQS), throttling/backoff, reintentos e idempotencia.</li>
+<li>Conectividad híbrida segura: <b>VPN / Direct Connect / PrivateLink</b> entre on-prem y AWS.</li>
+<li>Rama analítica separada hacia Redshift (no mezclar el flujo operacional con el de reporting).</li>
+</ul>
+
+<p><span class="ref">📖 Explicación de referencia (buenas prácticas):</span></p>
+<p>Diseño esperado: el core publica cambios (CDC o exportación de archivos a una landing en S3) → ingesta vía Lambda/EventBridge → un dominio de integración normaliza y publica eventos canónicos. Para el SaaS, los eventos van a una cola SQS con consumidores que respetan los rate limits (concurrencia controlada, backoff exponencial, DLQ para fallos) y aplican idempotencia con claves de negocio. La conectividad on-prem ↔ AWS se hace por Direct Connect o VPN con PrivateLink para no exponer a internet. En paralelo, los mismos eventos/archivos alimentan Redshift por ELT, desacoplando el plano operacional del analítico. Todo con observabilidad (correlation id, métricas, alarmas) y trazabilidad de punta a punta.</p>
+
+<p><span class="star">⭐ Respuesta destacada:</span></p>
+<p>Define el <b>modelo canónico de datos</b> y contratos versionados, discute <b>consistencia eventual</b> y cómo comunicarla al negocio, propone reconciliación periódica (batch de control) para detectar drift entre core y SaaS, y plantea estrategia de <b>resiliencia ante caída del SaaS</b> (buffering en cola, replay desde el bus). Aterriza un diagrama mental tipo C4 (contenedores) y nombra riesgos con mitigaciones.</p>
+
+<p><span class="red">🔴 Red flags:</span></p>
+<ul>
+<li>Conecta el SaaS directo al core sin capa intermedia ni manejo de rate limits.</li>
+<li>Ignora la conectividad híbrida segura (asume "todo en la nube").</li>
+<li>Mezcla el flujo operacional con el analítico en un solo pipeline.</li>
+<li>No contempla fallos, reintentos ni idempotencia.</li>
+</ul>
+
+<table>
+<tr><th>Nivel</th><th>Criterio</th></tr>
+<tr><td>0 — No apto</td><td>No propone arquitectura coherente o acopla todo directamente.</td></tr>
+<tr><td>1 — Básico</td><td>Esboza componentes pero omite resiliencia, rate limits o conectividad híbrida.</td></tr>
+<tr><td>2 — Competente</td><td>Capa de integración, CDC/eventos, manejo de rate limits, conectividad segura y rama analítica separada.</td></tr>
+<tr><td>3 — Destacado</td><td>Modelo canónico, consistencia eventual, reconciliación, replay y riesgos con mitigaciones.</td></tr>
+</table>
+
+<h3>Pregunta 5: Documentación y comunicación de la arquitectura (C4 / BPMN)</h3>
+<blockquote><b>Enunciado:</b> Tras diseñar la solución anterior, debes comunicarla a tres audiencias: la jefatura de negocio, el equipo implementador y el área de seguridad. ¿Qué artefactos y diagramas usas para cada una y por qué? ¿Dónde encaja C4 y dónde BPMN?</blockquote>
+
+<p><span class="must">🟢 Respuesta mínima esperada (must-mention):</span></p>
+<ul>
+<li>Adapta el <b>nivel de detalle a la audiencia</b> (negocio vs implementadores vs seguridad).</li>
+<li><b>C4</b> para arquitectura de software (Context → Containers → Components); <b>BPMN</b> para procesos de negocio/flujos.</li>
+<li>Documenta requisitos no funcionales, decisiones y supuestos (no solo cajas y flechas).</li>
+</ul>
+
+<p><span class="ref">📖 Explicación de referencia (buenas prácticas):</span></p>
+<p>Para negocio: diagrama de <b>contexto C4 (nivel 1)</b> y/o BPMN del proceso, enfocado en valor y actores, sin tecnicismos. Para implementadores: C4 de <b>contenedores y componentes</b>, contratos de API/eventos, secuencias para los flujos críticos. Para seguridad: diagrama de despliegue con zonas de red, flujos de datos sensibles, puntos de autenticación/cifrado y controles de acceso. La buena práctica es complementar los diagramas con <b>ADRs</b> (Architecture Decision Records) que capturen decisiones, alternativas y trade-offs, manteniendo "diagrams as code" para versionarlos.</p>
+
+<p><span class="star">⭐ Respuesta destacada:</span></p>
+<p>Menciona <b>ADRs</b>, diagramas como código (Structurizr, PlantUML, Mermaid) versionados junto al repo, y <b>threat modeling</b> (STRIDE / data flow diagram) para la audiencia de seguridad. Enfatiza que la documentación es viva y se valida en revisiones de diseño.</p>
+
+<p><span class="red">🔴 Red flags:</span></p>
+<ul>
+<li>Un único diagrama técnico para todas las audiencias.</li>
+<li>No conoce C4 más allá del nombre o confunde C4 con BPMN.</li>
+<li>Documentación = solo cajas y flechas, sin decisiones ni NFRs.</li>
+</ul>
+
+<table>
+<tr><th>Nivel</th><th>Criterio</th></tr>
+<tr><td>0 — No apto</td><td>No adapta a audiencia ni conoce los notaciones.</td></tr>
+<tr><td>1 — Básico</td><td>Usa diagramas pero sin diferenciar audiencias ni propósito de C4/BPMN.</td></tr>
+<tr><td>2 — Competente</td><td>Adapta artefactos por audiencia y aplica C4 y BPMN correctamente.</td></tr>
+<tr><td>3 — Destacado</td><td>ADRs, diagrams-as-code versionados y threat modeling para seguridad.</td></tr>
+</table>
+
+<div class="hr"></div>
+
+<!-- ============================================================ -->
+<h2>4. Profundidad técnica (14 min)</h2>
+
+<h3>Pregunta 6: Resiliencia, escalabilidad y disponibilidad</h3>
+<blockquote><b>Enunciado:</b> Es Cyber Monday: el tráfico se multiplica por 20 y el SaaS de e-commerce empieza a responder con errores intermitentes y timeouts. ¿Cómo diseñaste (o rediseñarías) la arquitectura para que el negocio no se caiga? Habla de escalabilidad, tolerancia a fallos y degradación controlada.</blockquote>
+
+<p><span class="must">🟢 Respuesta mínima esperada (must-mention):</span></p>
+<ul>
+<li><b>Desacoplamiento por colas/buffer</b> para absorber picos (SQS, EventBridge) en vez de llamadas síncronas directas.</li>
+<li>Patrones de resiliencia: <b>reintentos con backoff, DLQ, circuit breaker, timeouts</b>.</li>
+<li>Escalabilidad: serverless autoescalable, control de <b>concurrencia/throttling</b>, idempotencia para reintentos seguros.</li>
+<li>Noción de <b>degradación controlada</b> (graceful degradation) y prioridad de flujos críticos.</li>
+</ul>
+
+<p><span class="ref">📖 Explicación de referencia (buenas prácticas):</span></p>
+<p>La clave es no acoplar el plano de captura de pedidos al SaaS: los pedidos se aceptan y encolan, y consumidores con concurrencia controlada los entregan al SaaS respetando sus límites; ante errores, reintentos con backoff exponencial + jitter y DLQ para no perder mensajes ni martillar al servicio caído (circuit breaker). El cómputo serverless escala solo, pero hay que proteger los recursos aguas abajo (reserved/provisioned concurrency, throttling). Se prioriza la disponibilidad del flujo crítico (capturar la venta) sobre el resto, y se aplica idempotencia para que los reintentos no dupliquen. Complementar con caché para lecturas, pruebas de carga previas y observabilidad con alarmas.</p>
+
+<p><span class="star">⭐ Respuesta destacada:</span></p>
+<p>Habla de <b>bulkheads</b>, <b>rate limiting / shedding</b> de carga no crítica, multi-AZ y consideraciones DR/RTO-RPO, <b>replay</b> desde el bus tras recuperación, y de hacer <b>game days / chaos engineering</b> y load testing antes del evento. Cuantifica con SLOs/SLAs y error budgets.</p>
+
+<p><span class="red">🔴 Red flags:</span></p>
+<ul>
+<li>"Escalo agregando más servidores/Lambdas" sin proteger los recursos aguas abajo.</li>
+<li>Mantiene llamadas síncronas al SaaS bajo pico sin buffer.</li>
+<li>Reintentos sin backoff ni idempotencia (tormenta de reintentos / duplicados).</li>
+</ul>
+
+<table>
+<tr><th>Nivel</th><th>Criterio</th></tr>
+<tr><td>0 — No apto</td><td>No identifica el acoplamiento ni patrones de resiliencia.</td></tr>
+<tr><td>1 — Básico</td><td>Menciona escalar pero sin colas, backoff ni degradación controlada.</td></tr>
+<tr><td>2 — Competente</td><td>Desacopla con colas, aplica backoff/DLQ/circuit breaker e idempotencia.</td></tr>
+<tr><td>3 — Destacado</td><td>Bulkheads, load shedding, DR, replay, chaos/game days y SLOs.</td></tr>
+</table>
+
+<h3>Pregunta 7: Seguridad y cumplimiento en una arquitectura de integración</h3>
+<blockquote><b>Enunciado:</b> Estos flujos mueven datos de clientes (PII) entre on-premise, AWS y un SaaS de terceros. ¿Cómo diseñas la seguridad de extremo a extremo: control de acceso, cifrado, gestión de secretos y cumplimiento? ¿Cómo aplicas el principio de menor privilegio en AWS?</blockquote>
+
+<p><span class="must">🟢 Respuesta mínima esperada (must-mention):</span></p>
+<ul>
+<li><b>Cifrado en tránsito (TLS) y en reposo (KMS)</b> en todos los puntos.</li>
+<li><b>IAM con menor privilegio</b>: roles por servicio, políticas mínimas, nada de credenciales embebidas.</li>
+<li><b>Gestión de secretos</b> en Secrets Manager / Parameter Store, nunca en código ni variables planas.</li>
+<li>Protección de PII: clasificación de datos, control de acceso y registro/auditoría (no loggear PII).</li>
+</ul>
+
+<p><span class="ref">📖 Explicación de referencia (buenas prácticas):</span></p>
+<p>Defensa en profundidad: TLS en todas las conexiones (incluida la híbrida vía VPN/Direct Connect/PrivateLink), cifrado en reposo con KMS (S3, DynamoDB, Redshift) y claves gestionadas con rotación. Acceso por <b>IAM roles temporales</b> con privilegio mínimo y segmentación de red (VPC, security groups, subredes privadas). Los secretos y credenciales del SaaS viven en Secrets Manager con rotación automática. La PII se clasifica, se enmascara/tokeniza donde aplica, se restringe por necesidad de conocer y se audita con CloudTrail; los logs nunca contienen datos sensibles. Para el tercero (SaaS) se valida su cumplimiento y se acota qué datos se comparten (minimización), considerando normativa local de protección de datos.</p>
+
+<p><span class="star">⭐ Respuesta destacada:</span></p>
+<p>Menciona <b>tokenización/anonimización</b> de PII, <b>data residency</b> y minimización de datos, WAF en API Gateway, validación de entrada, escaneo de dependencias y secretos en CI/CD, y un enfoque de <b>security/compliance as code</b> con detección automatizada (Config, GuardDuty, Security Hub). Conecta con la normativa aplicable (ej. Ley de protección de datos, PCI-DSS si hay medios de pago).</p>
+
+<p><span class="red">🔴 Red flags:</span></p>
+<ul>
+<li>Credenciales o secretos hardcodeados / en variables de entorno planas.</li>
+<li>Políticas IAM con <code>*:*</code> "para que funcione".</li>
+<li>No cifra en reposo o loggea PII sin reparo.</li>
+<li>Asume que el SaaS de terceros "ya es seguro" sin validar ni minimizar datos.</li>
+</ul>
+
+<table>
+<tr><th>Nivel</th><th>Criterio</th></tr>
+<tr><td>0 — No apto</td><td>No aplica cifrado, menor privilegio ni gestión de secretos.</td></tr>
+<tr><td>1 — Básico</td><td>Menciona cifrado/IAM superficialmente, sin secretos ni PII.</td></tr>
+<tr><td>2 — Competente</td><td>Cifrado en tránsito/reposo, IAM mínimo, secretos gestionados y manejo de PII.</td></tr>
+<tr><td>3 — Destacado</td><td>Tokenización, data residency, security-as-code, GuardDuty/Config y normativa.</td></tr>
+</table>
+
+<div class="hr"></div>
+
+<!-- ============================================================ -->
+<h2>5. Scorecard resumen</h2>
+
+<p>Puntuación por pregunta evaluable (Warm-up no puntúa). Escala 0–3 por pregunta. <b>Total máximo: 21 puntos</b> (7 preguntas × 3).</p>
+
+<table>
+<tr><th>#</th><th>Bloque</th><th>Pregunta</th><th>Peso</th><th>Puntaje (0-3)</th></tr>
+<tr><td>1</td><td>Fundamentos</td><td>Patrones de integración (sync/async/batch)</td><td>Alta</td><td></td></tr>
+<tr><td>2</td><td>Fundamentos</td><td>Servicios serverless AWS y orquestación</td><td>Alta</td><td></td></tr>
+<tr><td>3</td><td>Fundamentos</td><td>Redshift y ETL/ELT</td><td>Media</td><td></td></tr>
+<tr><td>4</td><td>Aplicación</td><td>Diseño integración híbrida core ↔ SaaS</td><td>Crítica</td><td></td></tr>
+<tr><td>5</td><td>Aplicación</td><td>Documentación C4 / BPMN y comunicación</td><td>Media</td><td></td></tr>
+<tr><td>6</td><td>Profundidad</td><td>Resiliencia, escalabilidad y disponibilidad</td><td>Crítica</td><td></td></tr>
+<tr><td>7</td><td>Profundidad</td><td>Seguridad y cumplimiento</td><td>Alta</td><td></td></tr>
+<tr><td colspan="4" style="text-align:right;"><b>TOTAL</b></td><td></td></tr>
+</table>
+
+<h3>Umbral de aprobación (nivel Senior)</h3>
+<table>
+<tr><th>Rango</th><th>Interpretación</th></tr>
+<tr><td><b>≥ 16 / 21</b></td><td><b>Aprobado fuerte</b> — perfil senior sólido; domina integración, AWS, resiliencia y seguridad. Avanzar.</td></tr>
+<tr><td>12 – 15 / 21</td><td><b>Aprobado con observaciones</b> — buen nivel pero con brechas en algún bloque crítico (aplicación o profundidad). Profundizar en 2ª entrevista.</td></tr>
+<tr><td>8 – 11 / 21</td><td><b>En duda</b> — conocimientos parciales, no alcanza el nivel de arquitecto senior esperado.</td></tr>
+<tr><td>&lt; 8 / 21</td><td><b>No apto</b> para el rol.</td></tr>
+</table>
+
+<p style="margin-top:10px;"><b>Regla de corte adicional:</b> obtener <b>0</b> en alguna de las preguntas <b>críticas (4 o 6)</b> es señal de alerta independientemente del total, dado que el rol exige diseño de integración resiliente de extremo a extremo.</p>
+
+<h3>Notas del entrevistador</h3>
+<table>
+<tr><th>Aspecto</th><th>Observaciones</th></tr>
+<tr><td>Liderazgo / comunicación (warm-up + transversal)</td><td></td></tr>
+<tr><td>Visión de negocio aplicada a lo técnico</td><td></td></tr>
+<tr><td>Manejo de trade-offs y justificación de decisiones</td><td></td></tr>
+<tr><td>Deseable: CRM / Customer Service</td><td></td></tr>
+<tr><td>Recomendación final</td><td></td></tr>
+</table>
+
+<p style="margin-top:24px; font-size:9pt; color:#888;">Documento generado por TechChallenge Architect — ACL Chile · Uso interno para proceso de selección Cencosud.</p>
+
+</body>
+</html>
