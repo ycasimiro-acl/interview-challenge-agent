@@ -1,2 +1,7 @@
 scripts/token.json
 scripts/credentials.json
+news-digests/
+logs/
+
+# Archivos temporales de Microsoft Word (lock files)
+~$*
